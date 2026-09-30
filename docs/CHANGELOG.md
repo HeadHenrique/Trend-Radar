@@ -1,37 +1,47 @@
 # Changelog
 
-## 2026-09-30
+## 2026-09-30 — Etapa 2
 
-### Added
+### Database
 
-- bootstrap do Caliber Trend Radar;
-- React + TypeScript + Vite;
-- conexão com Supabase;
-- rotas executivas;
-- dashboard;
-- trends e trend detail;
-- competitors;
-- USA;
-- profiles;
-- posts;
-- opportunities;
-- alerts;
-- settings;
-- filtros;
-- Trend Card;
-- estados loading, empty, error e success;
-- layout responsivo;
-- documentação técnica e de produto;
-- workflow de CI.
+- migration `20260930195835_create_monitored_profiles_foundation`;
+- tabela `public.monitored_profiles`;
+- constraints e índices;
+- triggers de auditoria e proteção de username;
+- RLS;
+- grants por coluna;
+- sem DELETE para frontend.
 
-### Data
+### Auth
 
-- nenhum dado fictício persistente criado;
-- nenhuma tabela criada;
-- nenhuma alteração de schema;
-- schema `public` observado vazio no momento da implementação.
+- login com e-mail + senha;
+- restauração de sessão;
+- logout;
+- proteção de rotas;
+- papéis via `app_metadata.trend_radar_role`.
+
+### Profiles
+
+- tipos reais gerados do Supabase;
+- data access centralizado;
+- normalização de username/URL do Instagram;
+- cadastro real;
+- listagem real;
+- edição dos campos humanos;
+- pausa/reativação;
+- busca e filtros;
+- estados reais sem mocks.
 
 ### Security
 
-- publishable key no cliente;
-- nenhuma secret key/service role no frontend.
+- campos provider somente leitura para frontend;
+- `created_by` e `updated_by` protegidos;
+- security advisor sem findings.
+
+## 2026-09-30 — Fundação inicial
+
+- frontend React + TypeScript + Vite;
+- dashboard e rotas executivas;
+- integração Supabase;
+- documentação técnica;
+- CI.
