@@ -21,21 +21,19 @@ Frontend executivo de Instagram Social Intelligence.
 
 Atualmente o projeto pode estar com zero usuários.
 
-1. Crie o primeiro usuário real em **Supabase Dashboard → Authentication → Users** usando e-mail e senha.
-2. Em um ambiente administrativo seguro, atribua em `app_metadata`:
-   `trend_radar_role: "admin"`.
+O procedimento completo e seguro está em:
+
+`docs/AUTH_SETUP.md`
+
+Resumo:
+
+1. Crie o primeiro usuário real no Supabase Auth usando e-mail e senha.
+2. Em ambiente server-side/admin, atribua `app_metadata.trend_radar_role = "admin"`.
 3. Não use o frontend para alterar `app_metadata`.
 4. Não exponha secret/service role em `VITE_*`, GitHub ou bundle.
+5. Para um produto estritamente interno, verifique no painel do Supabase que self-signup público está desabilitado.
 
-Exemplo conceitual server-side com Admin API:
-
-```ts
-await supabaseAdmin.auth.admin.updateUserById(userId, {
-  app_metadata: { trend_radar_role: 'admin' },
-})
-```
-
-Depois do primeiro login, o JWT precisa conter `app_metadata.trend_radar_role`.
+Depois de alterar `app_metadata`, renove a sessão para o JWT refletir o papel.
 
 ## Desenvolvimento
 
