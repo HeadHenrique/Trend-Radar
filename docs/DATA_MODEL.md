@@ -2,42 +2,53 @@
 
 ## Estado observado
 
-Em 30/09/2026 o schema `public` do projeto Supabase `zqwlyqnwcpddmknjnune` não possui tabelas.
+Inspeção renovada em 30/09/2026 no projeto Supabase `zqwlyqnwcpddmknjnune`.
 
-Nenhum schema foi criado ou alterado durante a implementação do frontend.
+- schema `public`: 0 tabelas de negócio;
+- migrations de projeto: 0;
+- Edge Functions: 0;
+- policies em `public` e `storage`: 0;
+- Auth: 0 usuários e 0 identidades.
 
-## Consequência
+Nenhum schema foi criado ou alterado nesta etapa.
 
-O frontend não assume nomes de tabelas, colunas ou relacionamentos inexistentes. Todas as telas de negócio permanecem em estado vazio até que um contrato real de dados seja aprovado.
+## Fundação de Perfis Monitorados
 
-## Contrato lógico necessário
+A próxima entidade proposta é `monitored_profiles`, ainda **não aprovada e não criada**.
 
-Para cumprir integralmente o produto, o backend precisará fornecer dados equivalentes aos conceitos abaixo. Estes nomes são **conceituais, não tabelas existentes**:
+A especificação completa está em:
 
-- perfil monitorado;
+`docs/PROFILE_FOUNDATION.md`
+
+### Decisões propostas
+
+- username do Instagram armazenado em forma canônica e lowercase;
+- `instagram_url` não deve ser persistida, pois é derivável;
+- país representado por `country_code` ISO alpha-2;
+- grupo representado por referência dinâmica a `profile_groups`;
+- prioridade em `smallint` de 1 a 3;
+- `active` representa intenção do usuário;
+- `monitoring_status` representa saúde operacional;
+- delete físico não faz parte do fluxo normal;
+- `created_by` referencia o usuário autenticado;
+- metadados específicos do provider ficam fora da entidade canônica.
+
+## Contrato lógico futuro
+
+Depois da fundação de perfis, o produto poderá evoluir para conceitos separados de:
+
 - post coletado;
+- snapshot de perfil;
+- snapshot de post;
+- execução de coleta;
 - tendência;
 - observação temporal de tendência;
 - participação de perfil em tendência;
-- concorrente;
 - oportunidade;
 - alerta.
 
-## Campos mínimos por tendência
-
-- identificador;
-- nome;
-- Trend Score;
-- Adoption Velocity;
-- Creator Breadth;
-- Relative Performance;
-- International Momentum;
-- Brazil Gap;
-- quantidade de concorrentes adotando;
-- primeira detecção;
-- última atualização;
-- status.
+Essas entidades **não estão aprovadas para implementação nesta etapa**.
 
 ## Regra
 
-Qualquer implementação futura do banco deve ser revisada separadamente. Este documento não autoriza criação, exclusão ou alteração de tabelas.
+Qualquer implementação futura do banco deve passar por autorização explícita. Este documento não autoriza criação, alteração ou exclusão de tabelas, policies, funções ou migrations.
