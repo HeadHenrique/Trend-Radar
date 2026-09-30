@@ -1,3 +1,4 @@
+import type { TablesUpdate } from '../../lib/database.types'
 import { supabase } from '../../lib/supabase'
 import { normalizeInstagramUsername } from './normalizeInstagram'
 import type {
@@ -11,30 +12,6 @@ import type {
   ProfilesRepository,
   UpdateProfileInput,
 } from './types'
-
-const PROFILE_COLUMNS = [
-  'id',
-  'instagram_username',
-  'instagram_external_id',
-  'display_name',
-  'profile_picture_url',
-  'primary_market_code',
-  'profile_group',
-  'niche',
-  'category',
-  'priority',
-  'tags',
-  'followers_count',
-  'monitoring_status',
-  'active',
-  'last_collected_at',
-  'next_collection_at',
-  'last_collection_error',
-  'created_at',
-  'updated_at',
-  'created_by',
-  'updated_by',
-].join(',')
 
 function toDomain(row: MonitoredProfileRow): MonitoredProfile {
   return {
@@ -83,7 +60,7 @@ export const profilesRepository: ProfilesRepository = {
   async listProfiles(params: ListProfilesParams = {}) {
     let query = supabase
       .from('monitored_profiles')
-      .select(PROFILE_COLUMNS)
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (typeof params.active === 'boolean') query = query.eq('active', params.active)
@@ -94,7 +71,7 @@ export const profilesRepository: ProfilesRepository = {
     const { data, error } = await query
     if (error) throw dataError(error)
 
-    const profiles = (data as MonitoredProfileRow[]).map(toDomain)
+    const profiles = data.map(toDomain)
     const term = params.search?.trim().toLowerCase()
 
     if (!term) return profiles
@@ -120,15 +97,15 @@ export const profilesRepository: ProfilesRepository = {
         tags: input.tags ?? [],
         active: input.active ?? true,
       })
-      .select(PROFILE_COLUMNS)
+      .select('*')
       .single()
 
     if (error) throw dataError(error)
-    return toDomain(data as MonitoredProfileRow)
+    return toDomain(data)
   },
 
   async updateProfile(id: string, input: UpdateProfileInput) {
-    const payload: Record<string, unknown> = {}
+    const payload: TablesUpdate<'monitored_profiles'> = {}
 
     if (input.instagramUsername !== undefined) {
       payload.instagram_username = normalizeInstagramUsername(input.instagramUsername)
@@ -147,11 +124,11 @@ export const profilesRepository: ProfilesRepository = {
       .from('monitored_profiles')
       .update(payload)
       .eq('id', id)
-      .select(PROFILE_COLUMNS)
+      .select('*')
       .single()
 
     if (error) throw dataError(error)
-    return toDomain(data as MonitoredProfileRow)
+    return toDomain(data)
   },
 
   async setProfileActive(id: string, active: boolean) {
