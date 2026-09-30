@@ -4,32 +4,27 @@
 
 O frontend usa `@supabase/supabase-js` conectado ao projeto `zqwlyqnwcpddmknjnune`.
 
-No momento da inspeção:
+Ainda não existem:
 
-- não existem tabelas de negócio em `public`;
-- não existem endpoints de negócio consumidos pelo frontend;
-- não existe implementação de Profiles Repository;
-- não existe Auth de aplicação implementado;
-- não existem Edge Functions de negócio.
-
-## Health check atual
-
-A aplicação usa `supabase.auth.getSession()` em `useSupabaseHealth` somente para verificar a disponibilidade da conexão.
-
-Isso não protege rotas e não representa um fluxo de login.
-
-## Chaves
-
-No browser deve existir somente publishable key.
-
-Nunca usar `service_role` ou secret key no frontend.
+- tabelas de negócio em `public`;
+- Profiles Repository implementado;
+- Auth de aplicação;
+- Edge Functions de negócio.
 
 ## Contrato conceitual de Perfis
 
 Não implementado:
 
 ```ts
-interface ProfilesRepository {
+export type MarketCode = string
+
+export type ProfileGroup =
+  | 'own'
+  | 'competitor'
+  | 'reference'
+  | 'trendsetter'
+
+export interface ProfilesRepository {
   listProfiles(params?: ListProfilesParams): Promise<MonitoredProfile[]>
   createProfile(input: CreateProfileInput): Promise<MonitoredProfile>
   updateProfile(id: string, input: UpdateProfileInput): Promise<MonitoredProfile>
@@ -37,51 +32,107 @@ interface ProfilesRepository {
 }
 ```
 
-### `listProfiles()`
+## `listProfiles()`
 
-Futuramente poderá filtrar por:
+Filtros conceituais:
 
 - ativo/inativo;
-- país;
-- grupo;
+- `primaryMarketCode`;
+- `profileGroup`;
 - prioridade;
 - busca por username/nome.
 
-### `createProfile()`
+## `createProfile()`
 
-Recebe entrada humana de Instagram e classificação editorial.
+Entrada humana:
 
-Deve:
-
-1. normalizar URL/@ localmente;
-2. não fingir validação de existência;
-3. persistir somente após autenticação e autorização;
-4. preencher `created_by` com o usuário autenticado.
-
-### `updateProfile()`
-
-O frontend deve alterar somente campos de classificação humana:
-
-- país;
-- grupo;
+- Instagram URL ou @;
+- mercado principal;
+- grupo estratégico;
 - nicho;
 - categoria;
 - prioridade;
-- tags.
+- tags;
+- ativo.
 
-Campos derivados do provider e campos operacionais de coleta não devem ser editados pelo formulário normal.
+O cliente não envia:
 
-### `setProfileActive()`
+- `created_by`;
+- `updated_by`;
+- campos derivados do provider.
 
-Troca somente a intenção de monitoramento.
+`created_by` deve ser preenchido no banco com o usuário autenticado.
 
-`active = false` deve ser o fluxo comum de pausa, preservando histórico.
+## `updateProfile()`
 
-## n8n futuro
+O frontend comum altera somente campos humanos:
 
-A automação deve consultar perfis ativos e vencidos por `next_collection_at`, chamar o adapter de provider e atualizar somente dados derivados/operacionais.
+- `instagramUsername`, apenas enquanto a identidade ainda não foi resolvida;
+- `primaryMarketCode`;
+- `profileGroup`;
+- `niche`;
+- `category`;
+- `priority`;
+- `tags`;
+- `active`.
 
-A credencial da automação deverá ser server-side e não poderá ser reutilizada no frontend.
+O cliente não pode atualizar:
+
+- `instagramExternalId`;
+- `displayName`;
+- `profilePictureUrl`;
+- `followersCount`;
+- `monitoringStatus`;
+- `lastCollectedAt`;
+- `nextCollectionAt`;
+- `lastCollectionError`;
+- `createdBy`;
+- `updatedBy`.
+
+A restrição deve existir no banco por privilégios de coluna, não apenas na UI.
+
+## Regra de username
+
+Antes de existir `instagramExternalId`, editor/admin pode corrigir o username.
+
+Depois da resolução da identidade, o frontend autenticado comum não pode alterá-lo.
+
+Rename real do Instagram deve ser sincronizado por backend/provider confirmando o mesmo external ID.
+
+## Auditoria humana
+
+`updated_by` representa o último editor humano.
+
+Ele deve ser preenchido por lógica de banco quando campos humanos mudarem.
+
+Atualizações do n8n em campos operacionais não devem alterar `updated_by`.
+
+## RLS e privilégios
+
+### anon
+
+Nenhum acesso.
+
+### viewer
+
+SELECT permitido pelas policies.
+
+### editor/admin
+
+- SELECT;
+- INSERT nos campos humanos;
+- UPDATE somente nos campos humanos;
+- sem DELETE.
+
+RLS controla quais linhas podem ser lidas/alteradas.
+
+GRANT por coluna controla quais campos o frontend pode gravar.
+
+## Backend/n8n futuro
+
+A automação será responsável pelos campos operacionais/provider.
+
+Ela deverá usar credencial server-side separada, nunca a publishable key do frontend.
 
 ## Estados de resposta
 
@@ -94,4 +145,4 @@ A credencial da automação deverá ser server-side e não poderá ser reutiliza
 
 Ver `docs/PROFILE_FOUNDATION.md`.
 
-Nenhum contrato deste documento cria uma API ou tabela automaticamente.
+Nenhum contrato deste documento cria API, tabela ou policy automaticamente.
