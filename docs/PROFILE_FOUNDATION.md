@@ -36,20 +36,23 @@ Inspeção realizada em 30/09/2026 no projeto Supabase `zqwlyqnwcpddmknjnune`.
 
 O schema `auth` possui as tabelas internas padrão do Supabase Auth. Isso não significa que a aplicação já tenha fluxo de login, autorização ou usuários configurados.
 
-## 2. Decisões propostas
+## 2. Decisões arquiteturais corrigidas
 
-1. Manter `/profiles` como origem de monitoramento.
-2. Não permitir escrita anônima.
-3. Exigir Supabase Auth antes de qualquer escrita futura.
-4. Usar RLS em toda tabela de negócio exposta no schema `public`.
-5. Preferir desativação lógica a exclusão física.
-6. Separar intenção do usuário (`active`) da saúde operacional (`monitoring_status`).
-7. Guardar identidade canônica do Instagram separada de metadados de qualquer provider.
-8. Não armazenar `instagram_url`, pois ela é derivável do username.
-9. Representar país com código ISO alpha-2 em texto, sem ENUM.
-10. Representar grupos por tabela de referência, permitindo novos grupos sem migration.
-11. Representar prioridade por inteiro pequeno, adequado para ordenação de fila.
-12. Manter no perfil somente o último valor operacional necessário; histórico futuro deve ir para snapshots e execuções próprias.
+1. `profile_group` representa somente a função estratégica do perfil no Radar.
+2. Geografia não faz parte de `profile_group`.
+3. Os grupos do MVP serão `own`, `competitor`, `reference` e `trendsetter`.
+4. Para o MVP, `profile_group` será `text + check`, sem tabela `profile_groups`.
+5. A dimensão geográfica será `primary_market_code`.
+6. `primary_market_code` representa o mercado principal associado ao perfil no Radar, não nacionalidade.
+7. `created_by` será nullable, com FK para `auth.users` e `ON DELETE SET NULL`.
+8. `updated_by` será nullable, com FK para `auth.users` e `ON DELETE SET NULL`.
+9. `updated_by` representa o último usuário humano que alterou campos editoriais, não o ator da última escrita operacional.
+10. Campos humanos e campos operacionais terão privilégios de coluna separados.
+11. `created_by` não será atualizável pelo frontend autenticado.
+12. `instagram_username` é editável apenas enquanto o perfil ainda não tiver identidade externa resolvida.
+13. Depois que `instagram_external_id` existir, mudanças de username passam a ser responsabilidade do backend/provider.
+14. `active` continua representando intenção do usuário.
+15. `monitoring_status` continua representando saúde operacional, com `pending`, `healthy` e `error`.
 
 ## 3. Modelo conceitual de `monitored_profiles`
 
@@ -60,252 +63,336 @@ O nome `monitored_profiles` continua **proposto**, não aprovado.
 | Campo proposto | PostgreSQL | Obrigatório | Default | Constraint / FK | Índice | Unique | Justificativa |
 |---|---|---:|---|---|---|---|---|
 | `id` | `uuid` | sim | `gen_random_uuid()` | PK | PK | sim | Identificador interno estável. |
-| `instagram_username` | `text` | sim | nenhum | lowercase, regex local, tamanho de segurança | btree | sim | Identidade canônica usada pela aplicação. |
-| `instagram_external_id` | `text` | não | `NULL` | nenhum | parcial | sim quando não nulo | ID estável da conta no Instagram quando um provider confiável o entregar. |
-| `display_name` | `text` | não | `NULL` | nenhum | não | não | Cache do nome público mais recente. |
-| `profile_picture_url` | `text` | não | `NULL` | nenhum | não | não | Cache da imagem pública mais recente. |
-| `country_code` | `text` | sim | nenhum | `^[A-Z]{2}$` | btree | não | Classificação de mercado escalável, sem limitar a BR/US. |
-| `profile_group` | `text` | sim | nenhum | FK para tabela de referência `profile_groups(key)` | btree | não | Permite grupos dinâmicos sem alterar schema. |
-| `niche` | `text` | não | `NULL` | nenhum | inicialmente não | não | Classificação editorial livre. |
-| `category` | `text` | não | `NULL` | nenhum | inicialmente não | não | Classificação de negócio/conteúdo. |
-| `priority` | `smallint` | sim | `2` | `1..3` | via índice de fila | não | Ordenação operacional simples: 1 alta, 2 média, 3 baixa. |
-| `tags` | `text[]` | sim | `{}` | nenhum | GIN | não | Segmentação flexível sem criar colunas. |
-| `followers_count` | `bigint` | não | `NULL` | `>= 0` | não | não | Último valor conhecido para listagem; histórico ficará em snapshots. |
-| `monitoring_status` | `text` | sim | `pending` | CHECK de estados | inicialmente não | não | Estado operacional da coleta, separado de `active`. |
-| `active` | `boolean` | sim | `true` | nenhum | índice parcial de fila | não | Intenção do usuário de continuar monitorando. |
-| `last_collected_at` | `timestamptz` | não | `NULL` | nenhum | não | não | Última coleta concluída com sucesso. |
-| `next_collection_at` | `timestamptz` | não | `NULL` | nenhum | índice parcial de fila | não | Base de seleção futura do n8n. |
-| `last_collection_error` | `text` | não | `NULL` | limite de tamanho | não | não | Último erro resumido; não substitui logs históricos. |
+| `instagram_username` | `text` | sim | nenhum | lowercase, regex local, proteção contra troca após resolução | btree | sim | Username canônico atual; humano na criação e controlado após identidade resolvida. |
+| `instagram_external_id` | `text` | não | `NULL` | nenhum | parcial | sim quando não nulo | Identidade estável da conta quando o provider a fornecer. |
+| `display_name` | `text` | não | `NULL` | nenhum | não | não | Cache operacional do nome público. |
+| `profile_picture_url` | `text` | não | `NULL` | nenhum | não | não | Cache operacional da imagem pública. |
+| `primary_market_code` | `text` | sim | nenhum | `^[A-Z]{2}$` no MVP | btree | não | Mercado principal do Radar, sem confundir com nacionalidade. |
+| `profile_group` | `text` | sim | nenhum | CHECK `own/competitor/reference/trendsetter` | btree | não | Papel estratégico, sem dimensão geográfica. |
+| `niche` | `text` | não | `NULL` | nenhum | inicialmente não | não | Classificação editorial humana. |
+| `category` | `text` | não | `NULL` | nenhum | inicialmente não | não | Classificação humana de negócio/conteúdo. |
+| `priority` | `smallint` | sim | `2` | `1..3` | via índice de fila | não | 1 alta, 2 média, 3 baixa. |
+| `tags` | `text[]` | sim | `{}` | nenhum | GIN | não | Segmentação flexível. |
+| `followers_count` | `bigint` | não | `NULL` | `>= 0` | não | não | Último valor conhecido; histórico futuro ficará em snapshots. |
+| `monitoring_status` | `text` | sim | `pending` | CHECK `pending/healthy/error` | inicialmente não | não | Saúde operacional, separada de `active`. |
+| `active` | `boolean` | sim | `true` | nenhum | índice parcial de fila | não | Intenção do usuário de monitorar. |
+| `last_collected_at` | `timestamptz` | não | `NULL` | nenhum | não | não | Última coleta bem-sucedida. |
+| `next_collection_at` | `timestamptz` | não | `NULL` | nenhum | índice parcial de fila | não | Base futura da fila do n8n. |
+| `last_collection_error` | `text` | não | `NULL` | limite de tamanho | não | não | Último erro resumido e sanitizado. |
 | `created_at` | `timestamptz` | sim | `now()` | nenhum | não | não | Auditoria básica. |
-| `updated_at` | `timestamptz` | sim | `now()` | trigger futuro | não | não | Auditoria básica. |
-| `created_by` | `uuid` | sim | `auth.uid()` | FK `auth.users(id)` | btree | não | Identifica o usuário interno que cadastrou a fonte. |
+| `updated_at` | `timestamptz` | sim | `now()` | trigger futuro | não | não | Última alteração de qualquer natureza. |
+| `created_by` | `uuid` | não | `auth.uid()` | FK `auth.users(id) ON DELETE SET NULL` | btree | não | Criador humano, preservando o registro se o usuário for removido. |
+| `updated_by` | `uuid` | não | `NULL` | FK `auth.users(id) ON DELETE SET NULL` | btree | não | Último editor humano dos campos editoriais. |
 
 ### Campos descartados ou substituídos
 
 #### `instagram_url`
 
-**Descartar como coluna.** Deve ser derivada de `instagram_username`:
+Não persistir. Derivar de `instagram_username`.
 
-`https://www.instagram.com/{instagram_username}/`
+#### `country_code`
 
-Guardar os dois cria risco de inconsistência quando o username muda.
+Substituído por `primary_market_code`.
 
-#### `country`
+`country_code` é tecnicamente válido, mas transmite a ideia de país/nacionalidade. O Radar precisa classificar **mercado relevante**. O nome `primary_market_code` deixa explícito que:
 
-**Substituir por `country_code`** para deixar explícito que o valor é um código de mercado, não um texto livre.
+- é uma classificação de mercado;
+- é o mercado principal do MVP;
+- no futuro poderá coexistir com uma relação multi-mercado sem renomear o campo.
+
+No MVP os códigos serão ISO alpha-2, por exemplo `BR` e `US`.
+
+Se futuramente uma conta tiver relevância em múltiplos mercados, poderá ser adicionada uma relação conceitual `profile_markets`, mantendo `primary_market_code` como mercado principal.
+
+#### `profile_groups` como tabela
+
+Não recomendado no MVP.
+
+Com quatro papéis estratégicos estáveis, uma tabela de referência adicionaria join, gestão e superfície administrativa sem benefício suficiente.
+
+O MVP usará `TEXT + CHECK`.
+
+Se o produto passar a permitir grupos customizados ou gerenciáveis por usuário, a arquitetura poderá evoluir para uma tabela de referência.
 
 #### `provider` e `provider_profile_id`
 
-**Não colocar em `monitored_profiles`.** O perfil canônico não deve depender do fornecedor de coleta.
-
-Metadados específicos de provider devem, futuramente, ficar em uma entidade de binding, por exemplo:
-
-`instagram_provider_bindings(monitored_profile_id, provider_key, provider_profile_id, metadata, last_seen_at)`
-
-Esse nome também é apenas conceitual.
+Não colocar em `monitored_profiles`. Metadados específicos de fornecedor devem ficar em uma entidade futura de bindings.
 
 ## 4. Username do Instagram
 
-A normalização local deve produzir uma chave canônica antes de qualquer tentativa de consultar o Instagram.
+### Normalização local
 
-### Exemplos
+As regras de normalização permanecem:
 
-| Entrada | Resultado |
-|---|---|
-| `@alfredosoares` | `alfredosoares` |
-| `alfredosoares` | `alfredosoares` |
-| `instagram.com/alfredosoares` | `alfredosoares` |
-| `https://instagram.com/alfredosoares/` | `alfredosoares` |
-| `https://www.instagram.com/alfredosoares/?hl=pt-br` | `alfredosoares` |
+- remover `@` inicial;
+- extrair username de URL válida do Instagram;
+- remover query string, fragment e barra final;
+- lowercase;
+- rejeitar espaços internos;
+- aceitar localmente `a-z`, `0-9`, `.` e `_`;
+- não tratar normalização como validação de existência.
 
-### Regras propostas
+### Regra de alteração
 
-1. aplicar `trim()`;
-2. aceitar username puro, username iniciado por `@` ou URL do Instagram;
-3. quando URL, aceitar somente host do Instagram previamente permitido;
-4. remover query string e fragment;
-5. usar somente o primeiro segmento de path esperado para perfil;
-6. remover `@` inicial;
-7. remover barras externas;
-8. transformar em lowercase;
-9. rejeitar espaços internos;
-10. aceitar localmente somente `a-z`, `0-9`, `.` e `_`;
-11. rejeitar string vazia;
-12. limitar o tamanho por proteção da aplicação, sem tratar isso como prova de existência;
-13. rejeitar rotas conhecidas que não representam perfil quando a entrada for URL.
+`instagram_username` possui dois estágios:
 
-### Limite da normalização
+#### Antes da identidade ser resolvida
 
-Normalizar **não confirma que a conta existe**.
+Enquanto `instagram_external_id IS NULL`, um editor/admin pode corrigir o username.
 
-A validação de existência será responsabilidade do provider futuro e poderá retornar perfil inexistente, privado, indisponível, renomeado ou temporariamente inacessível.
+#### Depois da identidade ser resolvida
+
+Quando `instagram_external_id IS NOT NULL`, o frontend autenticado comum não pode mudar o username.
+
+Motivo: o external ID passa a representar a identidade histórica da conta. Uma mudança manual arbitrária poderia apontar o registro para outra pessoa e quebrar histórico.
+
+Se o Instagram renomear a conta, o backend/provider poderá atualizar `instagram_username` somente após confirmar que o `instagram_external_id` continua o mesmo.
+
+Correções excepcionais após resolução devem ocorrer por fluxo administrativo/backend controlado, não pelo formulário normal.
 
 ## 5. `profile_group`
 
-### Opções avaliadas
+### Decisão final do MVP
 
-#### PostgreSQL ENUM
+Usar:
 
-Vantagem: integridade forte.
+```text
+own
+competitor
+reference
+trendsetter
+```
 
-Desvantagem: adicionar ou reorganizar grupos exige alteração de schema. Não combina com a expectativa de novos grupos.
+Labels:
 
-#### TEXT + CHECK
+```text
+Próprio
+Concorrente
+Referência
+Trendsetter
+```
 
-Vantagem: simples.
-
-Desvantagem: qualquer novo grupo ainda exige alterar a constraint, ou então perde-se integridade se o CHECK for removido.
-
-#### Tabela de referência
-
-**Recomendação.**
-
-Tabela conceitual `profile_groups` com chave estável, label, ativo e ordenação. `monitored_profiles.profile_group` referencia a chave.
-
-Benefícios:
-
-- novos grupos não exigem migration;
-- labels podem mudar sem alterar registros;
-- grupos podem ser desativados sem apagar histórico;
-- permite ordem de UI e metadados futuros.
-
-Grupos iniciais previstos, como dados de configuração futuros:
-
-- próprio;
-- concorrente;
-- referência Brasil;
-- referência EUA;
-- trendsetter.
-
-Nenhum desses registros foi criado nesta etapa.
-
-## 6. País
-
-Usar `country_code text` com ISO 3166-1 alpha-2 em uppercase.
+A geografia vem exclusivamente de `primary_market_code`.
 
 Exemplos:
+
+```text
+profile_group = reference
+primary_market_code = BR
+UI = Referência Brasil
+```
+
+```text
+profile_group = reference
+primary_market_code = US
+UI = Referência EUA
+```
+
+Isso elimina combinações redundantes como `reference_us + BR`.
+
+### TEXT + CHECK vs tabela de referência
+
+**Escolha para o MVP: TEXT + CHECK.**
+
+Critérios:
+
+- simplicidade: melhor;
+- manutenção: quatro valores centrais e raramente alterados;
+- integridade: forte via CHECK;
+- escalabilidade: suficiente para o MVP;
+- novos grupos futuros: exigem migration, o que é aceitável para uma mudança de taxonomia estratégica.
+
+Tabela dinâmica só passa a valer a complexidade quando grupos precisarem ser criados/configurados em runtime.
+
+## 6. Mercado
+
+### Decisão
+
+Usar `primary_market_code text`.
+
+No MVP:
 
 - `BR`
 - `US`
 
-Não usar ENUM de países. Novos mercados não devem exigir migration.
+Constraint inicial:
 
-O campo representa o **mercado operacional associado ao perfil no Radar**, não uma inferência automática de nacionalidade.
+`^[A-Z]{2}$`
+
+O campo responde:
+
+> Qual é o mercado principal deste perfil dentro do Radar?
+
+Ele não afirma nacionalidade do criador.
+
+### Futuro multi-mercado
+
+Não modelar agora.
+
+Quando necessário, criar relação própria para mercados adicionais. O campo `primary_market_code` continua sendo útil como classificação principal.
 
 ## 7. Prioridade
 
-Usar `smallint`:
+Permanece:
 
 - `1` = alta;
 - `2` = média;
 - `3` = baixa.
 
+Tipo: `smallint`.
+
 Default: `2`.
-
-Motivos:
-
-- ordenação natural de fila;
-- comparação simples;
-- fácil uso em n8n;
-- evita depender de ordem lexicográfica de strings.
-
-A frequência exata de coleta não deve ser codificada nesta tabela. Ela deve ser calculada pela camada de orquestração/configuração futura.
 
 ## 8. Status operacional
 
 ### `active`
 
-Responde:
+Intenção humana:
 
-> O usuário quer que este perfil continue sendo monitorado?
-
-`true` ou `false`.
+> Este perfil deve continuar sendo monitorado?
 
 ### `monitoring_status`
 
-Responde:
+Saúde operacional:
 
-> Qual é a saúde operacional conhecida da fonte?
+- `pending`;
+- `healthy`;
+- `error`.
 
-Estados iniciais propostos:
+Nenhum estado adicional é essencial para o MVP.
 
-- `pending`: cadastrado e ainda sem primeira coleta bem-sucedida;
-- `healthy`: última operação relevante concluiu normalmente;
-- `error`: existe falha operacional que requer retry ou atenção.
+Não adicionar `paused`, pois `active = false` já representa isso.
 
-### Por que não armazenar `paused`
+Não adicionar estados transitórios como `collecting` nesta fase.
 
-`paused` duplicaria o significado de `active = false` e poderia gerar inconsistência.
+## 9. Campos humanos vs operacionais
 
-Na UI, quando `active = false`, o estado visual pode ser “Pausado”, preservando `monitoring_status` como a última saúde operacional conhecida.
+### Campos humanos
 
-Estados transitórios como `collecting` devem ser avaliados junto com a futura estratégia de fila/lock e tabela de execuções, para evitar estados presos.
+Campos controlados pelo fluxo editorial:
 
-## 9. Segurança, Auth e RLS
+- `instagram_username` — somente criação/correção enquanto ainda não resolvido;
+- `primary_market_code`;
+- `profile_group`;
+- `niche`;
+- `category`;
+- `priority`;
+- `tags`;
+- `active`.
 
-### Estado atual
+### Campos operacionais / provider
 
-- O Supabase Auth existe como subsistema.
-- Existem 0 usuários e 0 identidades.
-- O frontend não possui tela de login nem guard de rotas.
-- `useSupabaseHealth` chama `getSession()` apenas para validar a disponibilidade da conexão.
-- Não existem tabelas de negócio nem policies de negócio.
+Não editáveis pelo frontend autenticado comum:
 
-### Arquitetura recomendada para uso interno
+- `instagram_external_id`;
+- `display_name`;
+- `profile_picture_url`;
+- `followers_count`;
+- `monitoring_status`;
+- `last_collected_at`;
+- `next_collection_at`;
+- `last_collection_error`.
 
-Usar Supabase Auth com acesso por convite, sem cadastro público aberto.
+Esses campos serão futuramente atualizados apenas por backend/n8n autorizado.
 
-Papéis propostos em `raw_app_meta_data` / `app_metadata`:
+### Auditoria
 
-- `viewer`: pode visualizar;
-- `editor`: pode visualizar, cadastrar, alterar e pausar;
-- `admin`: mesmos poderes operacionais, além de futuras configurações administrativas.
+- `created_by`: usuário humano que criou o registro;
+- `updated_by`: último usuário humano que alterou campos humanos;
+- `updated_at`: última alteração do registro, humana ou operacional.
 
-Não usar `user_metadata` para autorização.
+Por isso, uma atualização automática pode mudar `updated_at` sem mudar `updated_by`.
 
-### Matriz de acesso futura
+## 10. Segurança, Auth e RLS
 
-| Ação | viewer | editor | admin | anon |
-|---|---:|---:|---:|---:|
-| visualizar perfis | sim | sim | sim | não |
-| cadastrar perfil | não | sim | sim | não |
-| alterar classificação | não | sim | sim | não |
-| pausar/reativar | não | sim | sim | não |
-| editar dados derivados do provider | não | não | não pelo frontend | não |
-| excluir fisicamente | não | não | não pelo fluxo normal | não |
+### Papéis
 
-### DELETE
+- `viewer`: leitura;
+- `editor`: leitura, criação e edição de campos humanos;
+- `admin`: mesmas permissões operacionais do editor, com futura gestão administrativa;
+- `anon`: nenhum acesso.
 
-Não criar policy de DELETE para o frontend.
-
-Preferir `active = false`.
-
-Exclusão física, se algum dia for necessária por privacidade, erro operacional ou retenção, deve ocorrer por fluxo administrativo controlado e explícito.
+Autorização futura deve usar `app_metadata`, não `user_metadata`.
 
 ### `created_by`
 
-- preenchido com `auth.uid()` no INSERT;
-- validado por RLS;
-- imutável depois da criação;
-- não deve ser editável pelo formulário.
+Decisão:
 
-### Observação sobre claims
+```sql
+created_by uuid null
+references auth.users(id)
+on delete set null
+```
 
-Papéis em `app_metadata` entram no JWT. Mudanças de papel podem exigir refresh de sessão para refletir imediatamente nas policies.
+Motivos:
 
-## 10. Contrato TypeScript
+- preservar dados de negócio;
+- permitir remoção de usuário do Auth;
+- manter vínculo enquanto o usuário existir;
+- evitar bloquear offboarding por histórico antigo.
 
-Proposta conceitual, não implementada em `src` nesta etapa:
+Na inserção humana, o default conceitual é `auth.uid()`.
+
+### `updated_by`
+
+Aprovado para o MVP:
+
+```sql
+updated_by uuid null
+references auth.users(id)
+on delete set null
+```
+
+Ele será preenchido no banco por trigger quando houver mudança em campos humanos e `auth.uid()` existir.
+
+Não será enviado pelo formulário.
+
+Atualizações operacionais que mudem somente campos de provider não alteram `updated_by`.
+
+### Imutabilidade de `created_by`
+
+Não depender da UI.
+
+O papel `authenticated` não receberá privilégio `UPDATE(created_by)`.
+
+Também não receberá `UPDATE(updated_by)`; o trigger interno do banco é quem atualiza `updated_by`.
+
+Assim, mesmo que um cliente tente enviar esses campos manualmente, o Postgres nega a alteração por privilégio de coluna.
+
+### Proteção dos campos operacionais
+
+O papel `authenticated` recebe UPDATE somente para as colunas humanas.
+
+Campos operacionais não aparecem no GRANT UPDATE do frontend.
+
+RLS decide **quais linhas** podem ser atualizadas; privilégios de coluna decidem **quais colunas** podem ser atualizadas.
+
+### Username após resolução
+
+Como `instagram_username` precisa ser corrigível antes da primeira resolução, ele permanece no GRANT UPDATE humano.
+
+Um trigger defensivo impede alteração por usuário autenticado quando `OLD.instagram_external_id IS NOT NULL`.
+
+Backend autorizado poderá sincronizar um rename confirmado.
+
+### DELETE
+
+Sem GRANT DELETE e sem policy DELETE para frontend.
+
+Fluxo normal de pausa: `active = false`.
+
+## 11. Contrato TypeScript
+
+Proposta conceitual, ainda não implementada em `src`:
 
 ```ts
-export type CountryCode = string
+export type MarketCode = string
 
-export interface ProfileGroup {
-  key: string
-  label: string
-  active: boolean
-  sortOrder: number
-}
+export type ProfileGroup =
+  | 'own'
+  | 'competitor'
+  | 'reference'
+  | 'trendsetter'
 
 export type ProfilePriority = 1 | 2 | 3
 
@@ -320,8 +407,8 @@ export interface MonitoredProfile {
   instagramExternalId: string | null
   displayName: string | null
   profilePictureUrl: string | null
-  countryCode: CountryCode
-  profileGroup: string
+  primaryMarketCode: MarketCode
+  profileGroup: ProfileGroup
   niche: string | null
   category: string | null
   priority: ProfilePriority
@@ -334,21 +421,22 @@ export interface MonitoredProfile {
   lastCollectionError: string | null
   createdAt: string
   updatedAt: string
-  createdBy: string
+  createdBy: string | null
+  updatedBy: string | null
 }
 
 export interface ListProfilesParams {
   active?: boolean
-  countryCode?: CountryCode
-  profileGroup?: string
+  primaryMarketCode?: MarketCode
+  profileGroup?: ProfileGroup
   priority?: ProfilePriority
   search?: string
 }
 
 export interface CreateProfileInput {
   instagramInput: string
-  countryCode: CountryCode
-  profileGroup: string
+  primaryMarketCode: MarketCode
+  profileGroup: ProfileGroup
   niche?: string | null
   category?: string | null
   priority: ProfilePriority
@@ -357,104 +445,62 @@ export interface CreateProfileInput {
 }
 
 export interface UpdateProfileInput {
-  countryCode?: CountryCode
-  profileGroup?: string
+  instagramUsername?: string
+  primaryMarketCode?: MarketCode
+  profileGroup?: ProfileGroup
   niche?: string | null
   category?: string | null
   priority?: ProfilePriority
   tags?: string[]
-}
-
-export interface ProfilesRepository {
-  listProfiles(params?: ListProfilesParams): Promise<MonitoredProfile[]>
-  createProfile(input: CreateProfileInput): Promise<MonitoredProfile>
-  updateProfile(id: string, input: UpdateProfileInput): Promise<MonitoredProfile>
-  setProfileActive(id: string, active: boolean): Promise<MonitoredProfile>
+  active?: boolean
 }
 ```
 
-Campos derivados do provider não entram em `UpdateProfileInput` do frontend.
+A presença de `instagramUsername` em `UpdateProfileInput` não significa atualização irrestrita: o banco deve bloquear troca após resolução da identidade.
 
-## 11. Próxima versão técnica de `/profiles`
+## 12. Próxima versão técnica de `/profiles`
 
-### Cabeçalho
+A interface futura continua fora desta etapa.
 
-**Perfis Monitorados**
-
-CTA: **Adicionar perfil**
-
-### Drawer ou modal
-
-Campos:
+Campos do formulário:
 
 - Instagram URL ou @;
 - Grupo;
-- País;
+- Mercado;
 - Nicho;
 - Categoria;
 - Prioridade;
 - Tags;
 - Ativo.
 
-O formulário deve normalizar a entrada localmente e, futuramente, enviar apenas a forma canônica.
+Na listagem, grupo e mercado podem ser compostos visualmente.
 
-### Listagem
+Exemplo:
 
-Colunas previstas:
+`reference + BR` → **Referência Brasil**
 
-- Avatar;
-- Nome;
-- @username;
-- Grupo;
-- País;
-- Seguidores;
-- Status;
-- Última coleta;
-- Posts coletados;
-- Prioridade.
+Isso é apresentação, não armazenamento redundante.
 
-### Regras de ausência
-
-Antes da primeira coleta:
-
-**Aguardando primeira coleta**
-
-Métrica inexistente:
-
-**Dados insuficientes**
-
-`posts coletados` não deve ser uma coluna persistida em `monitored_profiles` agora. Quando posts existirem, esse total deverá vir de agregação ou leitura derivada.
-
-## 12. Contrato futuro com n8n
+## 13. Contrato futuro com n8n
 
 Não implementado.
 
 Fluxo conceitual:
 
-1. n8n consulta perfis com `active = true`;
-2. filtra `next_collection_at IS NULL OR next_collection_at <= now()`;
-3. ordena por prioridade e vencimento;
-4. seleciona lote limitado;
-5. chama um `InstagramProviderAdapter`;
-6. normaliza a resposta;
-7. atualiza somente os campos derivados e operacionais autorizados;
-8. define `last_collected_at`, `next_collection_at`, `monitoring_status`;
-9. em erro, registra resumo em `last_collection_error` e agenda retry;
-10. futuramente persiste posts, snapshots e execução em entidades próprias.
+1. consulta `active = true`;
+2. verifica `next_collection_at`;
+3. ordena por prioridade;
+4. chama `InstagramProviderAdapter`;
+5. atualiza somente campos operacionais/provider;
+6. atualiza `updated_at`, mas não `updated_by`;
+7. registra erros/retry;
+8. futuramente persiste posts, snapshots e execuções em entidades próprias.
 
-### Credenciais
+A automação deve usar credencial server-side, nunca a publishable key do browser.
 
-n8n é servidor e não deve usar a publishable key do frontend como credencial operacional.
+## 14. Provider Adapter
 
-Uma credencial privilegiada futura deve ficar somente no cofre/credentials do n8n ou em outra camada server-side, nunca no browser, GitHub ou logs.
-
-O desenho definitivo da credencial n8n exige autorização na etapa de implementação.
-
-## 13. Provider Adapter
-
-O domínio não deve conhecer detalhes de Apify, Playwright, Instaloader, API oficial ou qualquer fornecedor pago.
-
-Contrato conceitual:
+Permanece independente de fornecedor.
 
 ```ts
 export interface InstagramProviderProfileResult {
@@ -475,42 +521,37 @@ export interface InstagramProviderAdapter {
 }
 ```
 
-### Metadata específica do provider
+Metadados específicos de provider devem ficar futuramente em entidade separada de bindings.
 
-Não guardar `provider` e `provider_profile_id` em `monitored_profiles`.
+## 15. Riscos e decisões pendentes
 
-Se necessário, criar futuramente uma entidade separada de bindings. Assim o provider pode ser trocado sem migrar a identidade canônica do perfil.
+### Riscos principais
 
-## 14. Riscos
+1. username pode mudar;
+2. falha de provider não significa conta inexistente;
+3. dados operacionais são caches temporais;
+4. JWT pode ficar stale após mudança de papel;
+5. credencial do n8n terá alto impacto;
+6. delete físico prejudica histórico;
+7. classificação de mercado é editorial e não deve ser inferida automaticamente.
 
-1. **Username muda:** usar `instagram_external_id` quando disponível ajuda a reconhecer a mesma conta.
-2. **Provider indisponível:** não marcar conta como inexistente com base em uma única falha.
-3. **Followers é variável temporal:** valor em `monitored_profiles` é apenas cache do último estado.
-4. **URL de avatar expira:** tratar como cache descartável.
-5. **Claims de papel podem ficar stale:** refresh da sessão após mudanças de `app_metadata`.
-6. **Credencial n8n privilegiada:** comprometimento teria alto impacto; manter em cofre e restringir escopo.
-7. **Erros longos ou sensíveis:** `last_collection_error` deve ser sanitizado e limitado.
-8. **Delete físico perde histórico:** preferir desativação.
-9. **Grupo dinâmico:** não codificar grupos como ENUM.
-10. **País inferido automaticamente:** evitar; país é classificação operacional definida pelo produto.
-
-## 15. Decisões pendentes
-
-Requerem aprovação antes de implementação:
+### Decisões que ainda exigem aprovação
 
 1. nome final `monitored_profiles`;
-2. criação de `profile_groups`;
-3. valores iniciais dos grupos;
-4. obrigatoriedade de `country_code`;
-5. estados finais de `monitoring_status`;
-6. papéis internos `viewer/editor/admin`;
-7. método de login interno;
-8. desativação de signup público no Supabase Auth;
-9. política de retenção/exclusão;
-10. estratégia exata de credencial n8n;
-11. provider inicial do Instagram;
-12. frequência de coleta por prioridade;
-13. modelo futuro de provider bindings.
+2. uso definitivo de `primary_market_code`;
+3. `profile_group` como TEXT + CHECK;
+4. valores `own/competitor/reference/trendsetter`;
+5. `created_by nullable + ON DELETE SET NULL`;
+6. inclusão de `updated_by`;
+7. trigger de `updated_by` em mudanças humanas;
+8. regra de bloqueio de username após `instagram_external_id`;
+9. estados `pending/healthy/error`;
+10. papéis `viewer/editor/admin`;
+11. grants de coluna propostos;
+12. método futuro de login interno;
+13. estratégia de credencial n8n;
+14. provider inicial do Instagram;
+15. frequência de coleta por prioridade.
 
 ## 16. SQL draft
 
@@ -522,55 +563,43 @@ Requerem aprovação antes de implementação:
 ```sql
 -- ============================================================
 -- DRAFT — NÃO APLICADO
--- Caliber Trend Radar: foundation for monitored profiles
+-- Caliber Trend Radar: monitored profiles foundation
 -- ============================================================
-
-create table public.profile_groups (
-  key text primary key,
-  label text not null,
-  active boolean not null default true,
-  sort_order smallint not null default 100,
-  created_at timestamptz not null default now(),
-
-  constraint profile_groups_key_format
-    check (key ~ '^[a-z0-9_]+$')
-);
 
 create table public.monitored_profiles (
   id uuid primary key default gen_random_uuid(),
 
+  -- identidade / entrada humana
   instagram_username text not null,
-  instagram_external_id text null,
-
-  display_name text null,
-  profile_picture_url text null,
-
-  country_code text not null,
-  profile_group text not null
-    references public.profile_groups(key)
-    on update cascade
-    on delete restrict,
-
+  primary_market_code text not null,
+  profile_group text not null,
   niche text null,
   category text null,
-
   priority smallint not null default 2,
   tags text[] not null default '{}',
-
-  followers_count bigint null,
-
-  monitoring_status text not null default 'pending',
   active boolean not null default true,
 
+  -- dados operacionais / provider
+  instagram_external_id text null,
+  display_name text null,
+  profile_picture_url text null,
+  followers_count bigint null,
+  monitoring_status text not null default 'pending',
   last_collected_at timestamptz null,
   next_collection_at timestamptz null,
   last_collection_error text null,
 
+  -- auditoria
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  created_by uuid not null default auth.uid()
+
+  created_by uuid null default auth.uid()
     references auth.users(id)
-    on delete restrict,
+    on delete set null,
+
+  updated_by uuid null
+    references auth.users(id)
+    on delete set null,
 
   constraint monitored_profiles_instagram_username_lowercase
     check (instagram_username = lower(instagram_username)),
@@ -581,8 +610,18 @@ create table public.monitored_profiles (
       and instagram_username ~ '^[a-z0-9._]+$'
     ),
 
-  constraint monitored_profiles_country_code_format
-    check (country_code ~ '^[A-Z]{2}$'),
+  constraint monitored_profiles_primary_market_code_format
+    check (primary_market_code ~ '^[A-Z]{2}$'),
+
+  constraint monitored_profiles_profile_group
+    check (
+      profile_group in (
+        'own',
+        'competitor',
+        'reference',
+        'trendsetter'
+      )
+    ),
 
   constraint monitored_profiles_priority_range
     check (priority between 1 and 3),
@@ -607,14 +646,19 @@ create unique index monitored_profiles_instagram_external_id_uq
   on public.monitored_profiles (instagram_external_id)
   where instagram_external_id is not null;
 
-create index monitored_profiles_country_idx
-  on public.monitored_profiles (country_code);
+create index monitored_profiles_primary_market_idx
+  on public.monitored_profiles (primary_market_code);
 
 create index monitored_profiles_group_idx
   on public.monitored_profiles (profile_group);
 
 create index monitored_profiles_created_by_idx
-  on public.monitored_profiles (created_by);
+  on public.monitored_profiles (created_by)
+  where created_by is not null;
+
+create index monitored_profiles_updated_by_idx
+  on public.monitored_profiles (updated_by)
+  where updated_by is not null;
 
 create index monitored_profiles_tags_gin_idx
   on public.monitored_profiles
@@ -624,7 +668,7 @@ create index monitored_profiles_collection_queue_idx
   on public.monitored_profiles (priority, next_collection_at)
   where active = true;
 
-create or replace function public.set_updated_at()
+create or replace function public.set_monitored_profile_updated_at()
 returns trigger
 language plpgsql
 security invoker
@@ -639,22 +683,80 @@ $$;
 create trigger monitored_profiles_set_updated_at
 before update on public.monitored_profiles
 for each row
-execute function public.set_updated_at();
+execute function public.set_monitored_profile_updated_at();
 
-alter table public.profile_groups enable row level security;
+create or replace function public.set_monitored_profile_updated_by()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if (select auth.uid()) is not null then
+    new.updated_by = (select auth.uid());
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger monitored_profiles_set_updated_by
+before update on public.monitored_profiles
+for each row
+when (
+  old.instagram_username is distinct from new.instagram_username
+  or old.primary_market_code is distinct from new.primary_market_code
+  or old.profile_group is distinct from new.profile_group
+  or old.niche is distinct from new.niche
+  or old.category is distinct from new.category
+  or old.priority is distinct from new.priority
+  or old.tags is distinct from new.tags
+  or old.active is distinct from new.active
+)
+execute function public.set_monitored_profile_updated_by();
+
+create or replace function public.protect_resolved_instagram_username()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if
+    old.instagram_username is distinct from new.instagram_username
+    and old.instagram_external_id is not null
+    and (select auth.uid()) is not null
+  then
+    raise exception
+      'instagram_username cannot be changed by an authenticated client after identity resolution';
+  end if;
+
+  return new;
+end;
+$$;
+
+create trigger monitored_profiles_protect_resolved_username
+before update of instagram_username on public.monitored_profiles
+for each row
+execute function public.protect_resolved_instagram_username();
+
 alter table public.monitored_profiles enable row level security;
 
--- Explicitly deny anonymous access.
-revoke all on public.profile_groups from anon;
+-- Anonymous: nenhum acesso.
 revoke all on public.monitored_profiles from anon;
 
--- Authenticated users get only the privileges needed by the client.
-grant select on public.profile_groups to authenticated;
+-- Remove privilégios amplos antes de conceder somente o necessário.
+revoke all on public.monitored_profiles from authenticated;
+
+-- viewer/editor/admin poderão ler via RLS.
 grant select on public.monitored_profiles to authenticated;
 
+-- Criação humana: somente campos de entrada/classificação.
+-- created_by é preenchido pelo DEFAULT auth.uid().
+-- updated_by não é aceito do cliente.
 grant insert (
   instagram_username,
-  country_code,
+  primary_market_code,
   profile_group,
   niche,
   category,
@@ -663,8 +765,11 @@ grant insert (
   active
 ) on public.monitored_profiles to authenticated;
 
+-- Edição humana: somente campos humanos.
+-- Campos operacionais/provider, created_by e updated_by ficam fora deste GRANT.
 grant update (
-  country_code,
+  instagram_username,
+  primary_market_code,
   profile_group,
   niche,
   category,
@@ -672,15 +777,6 @@ grant update (
   tags,
   active
 ) on public.monitored_profiles to authenticated;
-
-create policy "profile_groups_select_internal"
-on public.profile_groups
-for select
-to authenticated
-using (
-  ((select auth.jwt()) -> 'app_metadata' ->> 'trend_radar_role')
-    in ('viewer', 'editor', 'admin')
-);
 
 create policy "monitored_profiles_select_internal"
 on public.monitored_profiles
@@ -696,9 +792,12 @@ on public.monitored_profiles
 for insert
 to authenticated
 with check (
-  ((select auth.jwt()) -> 'app_metadata' ->> 'trend_radar_role')
-    in ('editor', 'admin')
+  (select auth.uid()) is not null
   and created_by = (select auth.uid())
+  and (
+    ((select auth.jwt()) -> 'app_metadata' ->> 'trend_radar_role')
+      in ('editor', 'admin')
+  )
 );
 
 create policy "monitored_profiles_update_editor"
@@ -714,6 +813,12 @@ with check (
     in ('editor', 'admin')
 );
 
--- Deliberadamente sem GRANT DELETE e sem policy DELETE.
--- Desativação normal: active = false.
+-- Deliberadamente:
+-- - sem GRANT DELETE;
+-- - sem policy DELETE;
+-- - sem UPDATE grant para campos operacionais/provider;
+-- - sem UPDATE grant para created_by/updated_by.
+--
+-- n8n/backend futuro usará credencial server-side apropriada e separada.
+-- Este draft não define nem aplica essa credencial.
 ```
