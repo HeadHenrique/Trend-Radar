@@ -6,11 +6,13 @@ import {
   FileText,
   Gauge,
   Globe2,
+  LogOut,
   Settings,
   Sparkles,
   UsersRound,
 } from 'lucide-react'
 import { NavLink, Outlet } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import { useSupabaseHealth } from '../hooks/useSupabaseHealth'
 
 const navigation = [
@@ -27,6 +29,7 @@ const navigation = [
 
 export function Layout() {
   const health = useSupabaseHealth()
+  const { user, role, signOut } = useAuth()
 
   return (
     <div className="app-shell">
@@ -57,7 +60,7 @@ export function Layout() {
                 ? 'Supabase conectado'
                 : 'Falha na conexão'}
           </div>
-          <small>Instagram Social Intelligence</small>
+          <small>{role ? `Papel: ${role}` : 'Sem papel de negócio'}</small>
         </div>
       </aside>
 
@@ -67,12 +70,18 @@ export function Layout() {
             <span className="eyebrow">Inteligência executiva</span>
             <strong>Caliber Trend Radar</strong>
           </div>
-          <div className="topbar-meta">
-            <span>Brasil</span>
-            <span>•</span>
-            <span>Estados Unidos</span>
+
+          <div className="topbar-user">
+            <div>
+              <strong>{user?.email ?? 'Usuário interno'}</strong>
+              <span>{role ?? 'sem acesso de negócio'}</span>
+            </div>
+            <button className="icon-button" type="button" onClick={() => void signOut()} aria-label="Sair">
+              <LogOut size={16} />
+            </button>
           </div>
         </header>
+
         <Outlet />
       </main>
     </div>
