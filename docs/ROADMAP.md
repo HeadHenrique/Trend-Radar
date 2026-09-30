@@ -13,23 +13,55 @@
 - [x] documentação;
 - [x] CI para typecheck/build.
 
-## Fase 2 — Contrato de dados
+## Fase 1.5 — Fundação de Perfis Monitorados
 
-- [ ] aprovar modelo real do banco;
-- [ ] definir fontes Instagram;
-- [ ] definir grupos de perfis;
-- [ ] aprovar categorias e formatos;
-- [ ] definir thresholds e pesos do Trend Engine;
-- [ ] aprovar estratégia de RLS/GRANT.
+### Projeto e validação
 
-## Fase 3 — Ingestão
+- [x] reinspecionar Supabase real;
+- [x] confirmar estado de tabelas, migrations, policies, Auth e Edge Functions;
+- [x] revisar segurança do repositório;
+- [x] projetar modelo conceitual de `monitored_profiles`;
+- [x] definir normalização de username;
+- [x] definir estratégia de grupo;
+- [x] definir estratégia de país;
+- [x] definir estratégia de prioridade;
+- [x] separar `active` de `monitoring_status`;
+- [x] propor Auth/RLS;
+- [x] propor contratos TypeScript;
+- [x] documentar contrato futuro com n8n;
+- [x] propor Provider Adapter;
+- [x] escrever SQL draft não aplicado.
 
-- [ ] provider Instagram;
-- [ ] pipeline/orquestração;
-- [ ] normalização;
+### Implementação
+
+- [ ] aprovar nome/modelo de `monitored_profiles`;
+- [ ] aprovar `profile_groups`;
+- [ ] aprovar Auth e papéis internos;
+- [ ] autorizar migration;
+- [ ] autorizar policies/RLS;
+- [ ] implementar Auth;
+- [ ] implementar tela funcional de cadastro/listagem;
+- [ ] conectar `/profiles` ao banco real.
+
+**Bloqueio:** nenhum item de implementação acima deve começar sem autorização explícita.
+
+## Fase 2 — Ingestão
+
+- [ ] escolher provider inicial;
+- [ ] definir credencial server-side;
+- [ ] implementar `InstagramProviderAdapter`;
+- [ ] implementar pipeline n8n;
+- [ ] normalização de resposta;
 - [ ] deduplicação;
-- [ ] armazenamento;
-- [ ] observações temporais.
+- [ ] política de retries;
+- [ ] observabilidade de coleta.
+
+## Fase 3 — Posts e snapshots
+
+- [ ] aprovar modelo de posts;
+- [ ] aprovar profile snapshots;
+- [ ] aprovar post snapshots;
+- [ ] armazenar histórico temporal.
 
 ## Fase 4 — Intelligence
 
@@ -45,7 +77,7 @@
 ## Fase 5 — Operação
 
 - [ ] monitoramento;
-- [ ] auditoria;
+- [ ] auditoria avançada;
 - [ ] custos;
 - [ ] SLA;
 - [ ] observabilidade;
