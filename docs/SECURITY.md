@@ -8,7 +8,9 @@
 - nenhuma service role/secret no bundle;
 - Auth por e-mail + senha;
 - rotas internas protegidas;
-- sem signup público na UI.
+- sessão autenticada sem papel válido recebe tela de acesso não autorizado e não carrega o shell;
+- sem signup público na UI;
+- configuração do Supabase no frontend depende exclusivamente de `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`, sem fallback hardcoded.
 
 ### Autorização
 
@@ -33,7 +35,18 @@ RLS habilitado.
 - editor/admin: leitura + criação + update humano;
 - sem DELETE.
 
-Privilégios de coluna impedem UPDATE pelo frontend em:
+Privilégios de coluna impedem INSERT/UPDATE pelo frontend nos campos provider e de auditoria. O frontend pode alterar somente:
+
+- instagram_username;
+- primary_market_code;
+- profile_group;
+- niche;
+- category;
+- priority;
+- tags;
+- active.
+
+Campos provider/auditoria permanecem somente leitura para clientes autenticados:
 
 - instagram_external_id;
 - display_name;
@@ -46,14 +59,18 @@ Privilégios de coluna impedem UPDATE pelo frontend em:
 - created_by;
 - updated_by.
 
-Testes estruturais confirmaram:
+Validações estruturais e reais confirmaram:
 
-- anon sem SELECT/INSERT/UPDATE/DELETE;
+- anon sem grants em `monitored_profiles`;
 - authenticated sem DELETE;
-- campos humanos com UPDATE;
-- campos provider sem UPDATE;
-- created_by/updated_by sem UPDATE;
-- funções de trigger sem EXECUTE para anon/authenticated.
+- SELECT condicionado por RLS a `viewer|editor|admin`;
+- INSERT/UPDATE condicionado por RLS a `editor|admin`;
+- campos humanos com INSERT/UPDATE;
+- campos provider e de auditoria sem INSERT/UPDATE;
+- funções de trigger sem EXECUTE para anon/authenticated;
+- cadastro real grava `created_by` com o usuário autenticado;
+- edição humana atualiza `updated_at` e `updated_by`;
+- pausa/reativação altera apenas `active` e preserva o estado operacional.
 
 ### Auditoria
 
@@ -61,35 +78,53 @@ Testes estruturais confirmaram:
 
 `updated_by` preserva o último editor humano quando uma atualização server-side não possui `auth.uid()`.
 
+### Username do Instagram
+
+Antes de existir `instagram_external_id`, o username pode ser corrigido pelo editor/admin.
+
+Depois da resolução da identidade, o trigger `a_monitored_profiles_protect_resolved_username` bloqueia alteração do username feita por cliente autenticado.
+
+Não foi criado `instagram_external_id` artificialmente para testar esse bloqueio.
+
 ### Primeiro admin
 
-Procedimento detalhado:
+Existe um usuário interno real com `app_metadata.trend_radar_role = admin`.
 
-`docs/AUTH_SETUP.md`
+Credenciais, e-mail e UUID não são versionados na documentação.
 
-Criar o usuário real no Supabase Auth e atribuir `trend_radar_role = admin` por Admin API/server-side ou mecanismo administrativo equivalente.
+O fluxo real foi validado com:
 
-Nunca permitir que o próprio frontend atualize `app_metadata`.
+- login;
+- restauração de sessão após reload;
+- logout;
+- novo login.
+
+Procedimento de criação permanece documentado em `docs/AUTH_SETUP.md`.
 
 ### Signup público
 
 A aplicação não possui tela de signup.
 
-Como o conector atual não expõe a configuração administrativa do Supabase Auth, ainda é necessário **verificar manualmente** no Dashboard que self-signup público está desabilitado se o ambiente deve ser estritamente interno.
+O conector disponível não expõe a configuração administrativa de self-signup do Supabase Auth. A confirmação dessa configuração continua manual no Dashboard do Supabase.
 
 Isso não altera RLS: mesmo um usuário autenticado sem `trend_radar_role` válido não acessa dados de negócio.
 
 ### Advisors
 
-Security advisor após a migration: **0 findings**.
+Security advisor em 2026-09-30:
 
-Performance advisor: 6 avisos INFO de índices ainda não utilizados:
+- 1 WARN de projeto/Auth: `auth_leaked_password_protection` — Leaked Password Protection está desabilitado.
+- Esse aviso não foi criado pela migration de `monitored_profiles` e não exige mudança de schema da Etapa 2.5.
+- Referência: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 
-- monitored_profiles_primary_market_idx;
-- monitored_profiles_group_idx;
-- monitored_profiles_created_by_idx;
-- monitored_profiles_updated_by_idx;
-- monitored_profiles_tags_gin_idx;
-- monitored_profiles_collection_queue_idx.
+Performance advisor em 2026-09-30:
 
-A tabela ainda está vazia, então esse resultado é esperado. Os índices não foram removidos antes de haver carga real para medir uso.
+- 6 avisos INFO de índices ainda não utilizados:
+  - monitored_profiles_primary_market_idx;
+  - monitored_profiles_group_idx;
+  - monitored_profiles_created_by_idx;
+  - monitored_profiles_updated_by_idx;
+  - monitored_profiles_tags_gin_idx;
+  - monitored_profiles_collection_queue_idx.
+
+Com apenas um perfil real e sem carga de coleta, esse resultado ainda não é evidência para remoção de índices.
