@@ -1,19 +1,41 @@
 # Caliber Trend Radar
 
-Frontend executivo de Instagram Social Intelligence para identificar tendências emergentes, aceleração, saturação, diferenças EUA × Brasil, movimentos de concorrentes e oportunidades de conteúdo.
+Frontend executivo de Instagram Social Intelligence.
 
 ## Estado atual
 
-- Frontend: implementado em React + TypeScript + Vite.
-- Supabase: conectado ao projeto `zqwlyqnwcpddmknjnune`.
-- Banco observado em 30/09/2026: schema `public` sem tabelas.
-- Dados fictícios: não utilizados.
-- Métricas ausentes: exibidas como **Dados insuficientes**.
-- Backend/schema: não alterado.
+- React + TypeScript + Vite.
+- Supabase: `zqwlyqnwcpddmknjnune`.
+- Auth interno por e-mail + senha.
+- Rotas internas protegidas.
+- `public.monitored_profiles` implementada com RLS.
+- `/profiles` conectado a dados reais.
+- Nenhum perfil fake ou seed persistente.
+- n8n, provider Instagram, posts, snapshots e Trend Engine ainda não foram implementados.
 
 ## Rotas
 
-`/dashboard`, `/trends`, `/trends/:id`, `/competitors`, `/usa`, `/profiles`, `/posts`, `/opportunities`, `/alerts`, `/settings`.
+`/login`, `/dashboard`, `/trends`, `/trends/:id`, `/competitors`, `/usa`, `/profiles`, `/posts`, `/opportunities`, `/alerts`, `/settings`.
+
+## Primeiro usuário admin
+
+Atualmente o projeto pode estar com zero usuários.
+
+1. Crie o primeiro usuário real em **Supabase Dashboard → Authentication → Users** usando e-mail e senha.
+2. Em um ambiente administrativo seguro, atribua em `app_metadata`:
+   `trend_radar_role: "admin"`.
+3. Não use o frontend para alterar `app_metadata`.
+4. Não exponha secret/service role em `VITE_*`, GitHub ou bundle.
+
+Exemplo conceitual server-side com Admin API:
+
+```ts
+await supabaseAdmin.auth.admin.updateUserById(userId, {
+  app_metadata: { trend_radar_role: 'admin' },
+})
+```
+
+Depois do primeiro login, o JWT precisa conter `app_metadata.trend_radar_role`.
 
 ## Desenvolvimento
 
@@ -24,6 +46,12 @@ npm run build
 npm run dev
 ```
 
-Use `.env.example` como referência. A aplicação aceita `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY`.
+Use `.env.example` como referência. O browser usa somente publishable key.
 
-Veja `/docs` para arquitetura, produto, modelo de dados, motor de tendências, API, UI, segurança, roadmap e changelog.
+## Banco
+
+Migration aplicada e versionada:
+
+`supabase/migrations/20260930195835_create_monitored_profiles_foundation.sql`
+
+Veja `/docs` para arquitetura, segurança, modelo de dados e roadmap.
