@@ -1,6 +1,7 @@
 import type { Tables } from '../../lib/database.types'
 
-export type MarketCode = string
+export type CountryCode = string
+export type MarketCode = CountryCode
 export type ProfileGroup = 'own' | 'competitor' | 'reference' | 'trendsetter'
 export type ProfilePriority = 1 | 2 | 3
 export type MonitoringStatus = 'pending' | 'healthy' | 'error'
