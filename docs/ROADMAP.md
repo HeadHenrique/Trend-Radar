@@ -2,99 +2,53 @@
 
 ## Fase 1 — Frontend foundation
 
-- [x] estrutura React/TypeScript/Vite;
-- [x] rotas principais;
-- [x] visual executivo;
-- [x] estados loading/empty/error/success;
-- [x] filtros;
-- [x] Trend Card;
-- [x] Trend Detail;
-- [x] conexão Supabase;
-- [x] documentação;
-- [x] CI para typecheck/build.
+- [x] frontend base;
+- [x] rotas;
+- [x] estados;
+- [x] CI;
+- [x] conexão Supabase.
 
-## Fase 1.5 — Fundação de Perfis Monitorados
+## Fase 1.5 — Arquitetura de Perfis
 
-### Projeto e validação
+- [x] modelo;
+- [x] mercado/grupo;
+- [x] auditoria;
+- [x] RLS;
+- [x] SQL draft.
 
-- [x] reinspecionar Supabase real;
-- [x] projetar `monitored_profiles`;
-- [x] definir normalização de username;
-- [x] separar papel estratégico de geografia;
-- [x] reduzir grupos para `own/competitor/reference/trendsetter`;
-- [x] escolher `TEXT + CHECK` para `profile_group` no MVP;
-- [x] substituir `country_code` por `primary_market_code`;
-- [x] definir estratégia futura para multi-mercado sem implementá-la;
-- [x] alterar proposta de `created_by` para nullable + `ON DELETE SET NULL`;
-- [x] aprovar conceitualmente `updated_by` nullable + `ON DELETE SET NULL`;
-- [x] separar campos humanos de campos operacionais/provider;
-- [x] definir bloqueio de mudança de username após resolução da identidade;
-- [x] manter `active` separado de `monitoring_status`;
-- [x] manter status `pending/healthy/error`;
-- [x] revisar RLS e privilégios por coluna;
-- [x] atualizar SQL draft não aplicado.
+## Fase 2 — Perfis Monitorados
 
-### Gate de aprovação antes da implementação
+- [x] migration versionada;
+- [x] `monitored_profiles`;
+- [x] constraints;
+- [x] índices;
+- [x] triggers;
+- [x] grants de coluna;
+- [x] RLS;
+- [x] Auth e-mail + senha;
+- [x] proteção de rotas;
+- [x] tipos gerados;
+- [x] data access;
+- [x] normalização Instagram;
+- [x] cadastro/listagem/edição/pausa;
+- [x] busca e filtros;
+- [x] sem dados fake.
 
-- [ ] aprovar nome `monitored_profiles`;
-- [ ] aprovar `primary_market_code`;
-- [ ] aprovar `profile_group TEXT + CHECK`;
-- [ ] aprovar valores `own/competitor/reference/trendsetter`;
-- [ ] aprovar `created_by nullable + ON DELETE SET NULL`;
-- [ ] aprovar `updated_by nullable + ON DELETE SET NULL`;
-- [ ] aprovar trigger de auditoria humana;
-- [ ] aprovar proteção de username após resolução;
-- [ ] aprovar status `pending/healthy/error`;
-- [ ] aprovar papéis `viewer/editor/admin`;
-- [ ] aprovar grants de coluna;
-- [ ] autorizar migration;
-- [ ] autorizar RLS/policies/triggers.
+## Próxima etapa — Prova de coleta real
 
-**Bloqueio:** nenhuma implementação de banco começa sem aprovação explícita.
+Ainda não iniciada:
 
-## Fase 2 — Auth e Perfis
+- [ ] escolher provider;
+- [ ] coletar um perfil real;
+- [ ] preencher campos operacionais;
+- [ ] validar rename/external ID;
+- [ ] definir integração n8n.
 
-Somente após autorização:
+## Futuro
 
-- [ ] implementar Supabase Auth interno;
-- [ ] definir política de convite/signup;
-- [ ] aplicar schema aprovado;
-- [ ] aplicar RLS e grants aprovados;
-- [ ] implementar cadastro/listagem de perfis;
-- [ ] conectar `/profiles` ao banco real.
-
-## Fase 3 — Ingestão
-
-- [ ] escolher provider inicial;
-- [ ] definir credencial server-side;
-- [ ] implementar `InstagramProviderAdapter`;
-- [ ] implementar pipeline n8n;
-- [ ] normalização de resposta;
-- [ ] retries;
-- [ ] observabilidade.
-
-## Fase 4 — Posts e snapshots
-
-- [ ] aprovar modelo de posts;
-- [ ] aprovar profile snapshots;
-- [ ] aprovar post snapshots;
-- [ ] armazenar histórico temporal.
-
-## Fase 5 — Intelligence
-
-- [ ] Trend Score;
-- [ ] Adoption Velocity;
-- [ ] Creator Breadth;
-- [ ] Relative Performance;
-- [ ] International Momentum;
-- [ ] Brazil Gap;
-- [ ] oportunidades;
-- [ ] alertas.
-
-## Fase 6 — Operação
-
-- [ ] auditoria avançada;
-- [ ] custos;
-- [ ] SLA;
-- [ ] observabilidade;
-- [ ] otimização de queries.
+- posts;
+- snapshots;
+- Trend Engine;
+- scores;
+- oportunidades;
+- alertas.
