@@ -1,91 +1,76 @@
 # Architecture
 
-## Status
-
-Frontend implementado. Nenhuma alteração foi aplicada ao banco Supabase nesta etapa.
-
 ## Stack
 
-- React
-- TypeScript
-- Vite
-- React Router
-- Supabase JS
-- Vercel
-- CSS próprio
+- React;
+- TypeScript;
+- Vite;
+- React Router;
+- Supabase JS;
+- Supabase Auth;
+- PostgreSQL/RLS;
+- Vercel.
 
-## Camadas atuais
-
-1. **Presentation**
-   - páginas em `src/pages`;
-   - componentes em `src/components`.
-2. **Application**
-   - rotas em `src/App.tsx`;
-   - estados loading, empty, error e success.
-3. **Data access**
-   - cliente Supabase em `src/lib/supabase.ts`;
-   - health check em `src/hooks/useSupabaseHealth.ts`.
-
-## Estado real do Supabase
-
-Inspeção em 30/09/2026:
-
-- projeto `zqwlyqnwcpddmknjnune` ativo;
-- schema `public` sem tabelas de negócio;
-- 0 migrations de projeto;
-- 0 Edge Functions;
-- 0 policies em `public` e `storage`;
-- Auth presente como subsistema, mas com 0 usuários e 0 identidades.
-
-## Fronteira proposta para Perfis Monitorados
-
-A próxima fundação deve separar quatro responsabilidades:
+## Fluxo atual
 
 ```text
-Frontend /profiles
-        |
-        v
+/login
+  ↓
 Supabase Auth
-        |
-        v
-RLS + monitored_profiles
-        |
-        +---- classificação humana
-        |
-        +---- estado operacional atual
-        |
-        v
-Orquestração futura (n8n)
-        |
-        v
-InstagramProviderAdapter
-        |
-        v
-Provider de Instagram
+  ↓
+ProtectedRoute
+  ↓
+React UI
+  ↓
+Profiles Repository
+  ↓
+Supabase Data API
+  ↓
+RLS + column privileges
+  ↓
+public.monitored_profiles
 ```
 
-Nenhuma dessas estruturas de backend foi criada nesta etapa.
+## Auth
 
-## Segurança proposta
+- e-mail + senha;
+- restauração de sessão;
+- logout;
+- rotas internas protegidas;
+- sem tela pública de cadastro;
+- papel lido de `user.app_metadata.trend_radar_role`.
 
-- frontend usa somente publishable key;
-- escrita futura exige usuário autenticado;
-- acesso anônimo a dados de negócio deve ser negado;
-- autorização deve usar `app_metadata`, nunca `user_metadata`;
-- `viewer`, `editor` e `admin` são papéis conceituais para revisão;
-- DELETE físico não faz parte do fluxo normal;
-- n8n usará credencial server-side futura, nunca a publishable key do browser.
+## Data access
 
-## Independência de provider
+Queries de perfis ficam centralizadas em:
 
-O banco canônico não deve depender de Apify, Playwright, Instaloader, API oficial ou outro fornecedor.
+`src/features/profiles/repository.ts`
 
-`monitored_profiles` guarda identidade e estado canônicos.
+Funções:
 
-Identificadores específicos de fornecedor devem ficar em uma entidade futura de bindings.
+- `listProfiles()`;
+- `createProfile()`;
+- `updateProfile()`;
+- `setProfileActive()`.
 
-## Princípio de dados
+## Tipos
 
-O frontend não estima valores ausentes. Quando o backend não fornece uma métrica, a interface mostra `Dados insuficientes`.
+Schema real gerado em:
 
-A especificação detalhada da fundação de perfis está em `docs/PROFILE_FOUNDATION.md`.
+`src/lib/database.types.ts`
+
+Tipos de domínio/UI ficam separados em:
+
+`src/features/profiles/types.ts`
+
+## Segurança
+
+RLS controla linhas e `GRANT` de coluna controla quais campos o frontend pode escrever.
+
+Nenhuma credencial privilegiada está no frontend.
+
+## Próxima fronteira
+
+A próxima etapa poderá provar coleta real de um único perfil.
+
+n8n, provider Instagram e posts permanecem fora desta implementação.
