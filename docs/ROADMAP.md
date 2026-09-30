@@ -18,52 +18,69 @@
 ### Projeto e validação
 
 - [x] reinspecionar Supabase real;
-- [x] confirmar estado de tabelas, migrations, policies, Auth e Edge Functions;
-- [x] revisar segurança do repositório;
-- [x] projetar modelo conceitual de `monitored_profiles`;
+- [x] projetar `monitored_profiles`;
 - [x] definir normalização de username;
-- [x] definir estratégia de grupo;
-- [x] definir estratégia de país;
-- [x] definir estratégia de prioridade;
-- [x] separar `active` de `monitoring_status`;
-- [x] propor Auth/RLS;
-- [x] propor contratos TypeScript;
-- [x] documentar contrato futuro com n8n;
-- [x] propor Provider Adapter;
-- [x] escrever SQL draft não aplicado.
+- [x] separar papel estratégico de geografia;
+- [x] reduzir grupos para `own/competitor/reference/trendsetter`;
+- [x] escolher `TEXT + CHECK` para `profile_group` no MVP;
+- [x] substituir `country_code` por `primary_market_code`;
+- [x] definir estratégia futura para multi-mercado sem implementá-la;
+- [x] alterar proposta de `created_by` para nullable + `ON DELETE SET NULL`;
+- [x] aprovar conceitualmente `updated_by` nullable + `ON DELETE SET NULL`;
+- [x] separar campos humanos de campos operacionais/provider;
+- [x] definir bloqueio de mudança de username após resolução da identidade;
+- [x] manter `active` separado de `monitoring_status`;
+- [x] manter status `pending/healthy/error`;
+- [x] revisar RLS e privilégios por coluna;
+- [x] atualizar SQL draft não aplicado.
 
-### Implementação
+### Gate de aprovação antes da implementação
 
-- [ ] aprovar nome/modelo de `monitored_profiles`;
-- [ ] aprovar `profile_groups`;
-- [ ] aprovar Auth e papéis internos;
+- [ ] aprovar nome `monitored_profiles`;
+- [ ] aprovar `primary_market_code`;
+- [ ] aprovar `profile_group TEXT + CHECK`;
+- [ ] aprovar valores `own/competitor/reference/trendsetter`;
+- [ ] aprovar `created_by nullable + ON DELETE SET NULL`;
+- [ ] aprovar `updated_by nullable + ON DELETE SET NULL`;
+- [ ] aprovar trigger de auditoria humana;
+- [ ] aprovar proteção de username após resolução;
+- [ ] aprovar status `pending/healthy/error`;
+- [ ] aprovar papéis `viewer/editor/admin`;
+- [ ] aprovar grants de coluna;
 - [ ] autorizar migration;
-- [ ] autorizar policies/RLS;
-- [ ] implementar Auth;
-- [ ] implementar tela funcional de cadastro/listagem;
+- [ ] autorizar RLS/policies/triggers.
+
+**Bloqueio:** nenhuma implementação de banco começa sem aprovação explícita.
+
+## Fase 2 — Auth e Perfis
+
+Somente após autorização:
+
+- [ ] implementar Supabase Auth interno;
+- [ ] definir política de convite/signup;
+- [ ] aplicar schema aprovado;
+- [ ] aplicar RLS e grants aprovados;
+- [ ] implementar cadastro/listagem de perfis;
 - [ ] conectar `/profiles` ao banco real.
 
-**Bloqueio:** nenhum item de implementação acima deve começar sem autorização explícita.
-
-## Fase 2 — Ingestão
+## Fase 3 — Ingestão
 
 - [ ] escolher provider inicial;
 - [ ] definir credencial server-side;
 - [ ] implementar `InstagramProviderAdapter`;
 - [ ] implementar pipeline n8n;
 - [ ] normalização de resposta;
-- [ ] deduplicação;
-- [ ] política de retries;
-- [ ] observabilidade de coleta.
+- [ ] retries;
+- [ ] observabilidade.
 
-## Fase 3 — Posts e snapshots
+## Fase 4 — Posts e snapshots
 
 - [ ] aprovar modelo de posts;
 - [ ] aprovar profile snapshots;
 - [ ] aprovar post snapshots;
 - [ ] armazenar histórico temporal.
 
-## Fase 4 — Intelligence
+## Fase 5 — Intelligence
 
 - [ ] Trend Score;
 - [ ] Adoption Velocity;
@@ -74,9 +91,8 @@
 - [ ] oportunidades;
 - [ ] alertas.
 
-## Fase 5 — Operação
+## Fase 6 — Operação
 
-- [ ] monitoramento;
 - [ ] auditoria avançada;
 - [ ] custos;
 - [ ] SLA;
