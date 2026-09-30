@@ -1,18 +1,56 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
-const projectUrl =
-  import.meta.env.VITE_SUPABASE_URL ?? 'https://zqwlyqnwcpddmknjnune.supabase.co'
+function getSupabaseConfig() {
+  const projectUrl = import.meta.env.VITE_SUPABASE_URL?.trim()
+  const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
 
-const publishableKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  'sb_publishable_10_P2uU1Zs12fC1JeaQT0w_wE-WTT1D'
+  if (!projectUrl) {
+    throw new Error(
+      '[Trend Radar] Configuração ausente: defina VITE_SUPABASE_URL no ambiente.',
+    )
+  }
 
-export const supabase = createClient<Database>(projectUrl, publishableKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
+  if (!publishableKey) {
+    throw new Error(
+      '[Trend Radar] Configuração ausente: defina VITE_SUPABASE_PUBLISHABLE_KEY no ambiente.',
+    )
+  }
+
+  if (!publishableKey.startsWith('sb_publishable_')) {
+    throw new Error(
+      '[Trend Radar] VITE_SUPABASE_PUBLISHABLE_KEY precisa ser uma publishable key válida.',
+    )
+  }
+
+  let parsedUrl: URL
+
+  try {
+    parsedUrl = new URL(projectUrl)
+  } catch {
+    throw new Error(
+      '[Trend Radar] VITE_SUPABASE_URL possui um valor inválido.',
+    )
+  }
+
+  return {
+    projectUrl,
+    publishableKey,
+    projectRef: parsedUrl.hostname.split('.')[0] || parsedUrl.hostname,
+  }
+}
+
+const config = getSupabaseConfig()
+
+export const supabase = createClient<Database>(
+  config.projectUrl,
+  config.publishableKey,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
   },
-})
+)
 
-export const supabaseProjectRef = 'zqwlyqnwcpddmknjnune'
+export const supabaseProjectRef = config.projectRef
