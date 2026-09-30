@@ -4,21 +4,29 @@
 
 The application uses Supabase Auth with email + password and has no public signup screen.
 
-At the end of Stage 2 the project had zero Auth users, so no fake user was created.
+A real internal admin user has been created and assigned:
+
+`app_metadata.trend_radar_role = "admin"`
+
+No password, e-mail, UUID, service role, or other credential is stored in this repository.
+
+The real flow was validated with login, session restoration after reload, logout, and a new login.
 
 ## Recommended internal configuration
 
 For an internal product, verify in the Supabase Auth settings that public self-signup is disabled.
 
+The current connector does not expose the administrative self-signup setting, so that item must be confirmed in the Supabase Dashboard.
+
 The frontend must never expose an admin, secret, or service role key.
 
-## Option A — Create the first user in the Supabase Dashboard
+## Creating an internal user
 
 1. Open the Trend Radar project in Supabase.
 2. Go to **Authentication → Users**.
 3. Create the real internal user with their real e-mail and a password.
 4. Copy the generated user UUID.
-5. Assign the role from a trusted server/admin environment using the Admin API.
+5. Assign the role from a trusted server/admin environment using the Admin API or equivalent administrative mechanism.
 6. Sign out and sign back in after changing app metadata so the JWT contains the current role.
 
 ## Assign the role securely
@@ -69,23 +77,6 @@ Security rules for this script:
 - never place the script with real credentials in the repository;
 - remove temporary local credentials after use when appropriate.
 
-## Option B — Create the first admin entirely through the Admin API
-
-A trusted server/admin script may create the real user directly:
-
-```ts
-const { data, error } = await admin.auth.admin.createUser({
-  email: process.env.TREND_RADAR_ADMIN_EMAIL!,
-  password: process.env.TREND_RADAR_ADMIN_PASSWORD!,
-  email_confirm: true,
-  app_metadata: {
-    trend_radar_role: 'admin',
-  },
-})
-```
-
-Do not hardcode the e-mail or password in the repository.
-
 ## Role behavior
 
 ### viewer
@@ -102,7 +93,7 @@ Has the same business-data permissions as editor in Stage 2 and is reserved for 
 
 ### authenticated user without a valid role
 
-RLS returns no access to business rows.
+RLS returns no access to business rows, and the frontend global guard renders an unauthorized-access screen instead of the internal shell.
 
 ## Important
 
