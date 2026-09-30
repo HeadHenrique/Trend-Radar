@@ -1,34 +1,65 @@
 # Security
 
-## Princípios
+## Estado implementado
 
-1. não expor secret key ou `service_role` no frontend;
-2. utilizar publishable key no browser;
-3. manter RLS nas tabelas expostas ao Data API;
-4. tratar GRANT e RLS como camadas separadas;
-5. não usar metadata editável pelo usuário para autorização;
-6. evitar `SECURITY DEFINER` como atalho de permissão;
-7. não armazenar credenciais no repositório.
+### Frontend
 
-## Estado atual
+- somente publishable key;
+- nenhuma service role/secret no bundle;
+- Auth por e-mail + senha;
+- rotas internas protegidas;
+- sem signup público na UI.
 
-O frontend usa somente uma publishable key. Nenhuma secret key foi adicionada.
+### Autorização
 
-O schema `public` estava vazio na inspeção de 30/09/2026; nenhuma política RLS foi criada ou alterada.
+Usa:
 
-## Quando o backend for criado
+`app_metadata.trend_radar_role`
 
-Cada tabela exposta deve passar por revisão de:
+Papéis:
 
-- GRANT;
-- RLS;
-- políticas SELECT/INSERT/UPDATE/DELETE;
-- ownership;
-- exposição de PII;
-- retenção de dados;
-- logs;
-- rate limiting quando aplicável.
+- viewer;
+- editor;
+- admin.
 
-## Dados do Instagram
+Nunca usar `user_metadata` para autorização.
 
-Antes de produção, validar termos do provider utilizado, permissões de coleta, finalidade de tratamento e políticas de armazenamento.
+### monitored_profiles
+
+RLS habilitado.
+
+- anon: sem acesso;
+- viewer: leitura;
+- editor/admin: leitura + criação + update humano;
+- sem DELETE.
+
+Privilégios de coluna impedem UPDATE pelo frontend em:
+
+- instagram_external_id;
+- display_name;
+- profile_picture_url;
+- followers_count;
+- monitoring_status;
+- last_collected_at;
+- next_collection_at;
+- last_collection_error;
+- created_by;
+- updated_by.
+
+### Auditoria
+
+`created_by` e `updated_by` usam `ON DELETE SET NULL`.
+
+`updated_by` preserva o último editor humano quando uma atualização server-side não possui `auth.uid()`.
+
+### Primeiro admin
+
+Crie o usuário real no Supabase Auth e atribua `trend_radar_role = admin` por Admin API/server-side ou mecanismo administrativo equivalente.
+
+Nunca permitir que o próprio frontend atualize `app_metadata`.
+
+### Advisors
+
+Security advisor após a migration: sem findings.
+
+Performance advisor: informou índices ainda não utilizados. Isso é esperado com a tabela vazia e não justifica removê-los antes da operação real.
