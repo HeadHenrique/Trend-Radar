@@ -7,9 +7,13 @@ Frontend executivo de Instagram Social Intelligence.
 - React + TypeScript + Vite.
 - Supabase: `zqwlyqnwcpddmknjnune`.
 - Auth interno por e-mail + senha.
+- Primeiro admin real criado, sem credenciais versionadas.
+- Login, reload de sessão e logout validados no fluxo real.
 - Rotas internas protegidas.
+- Sessão sem papel válido não carrega o shell interno.
 - `public.monitored_profiles` implementada com RLS.
 - `/profiles` conectado a dados reais.
+- Um perfil real cadastrado pelo fluxo da aplicação para validar criação, edição, auditoria e pausa/reativação.
 - Nenhum perfil fake ou seed persistente.
 - n8n, provider Instagram, posts, snapshots e Trend Engine ainda não foram implementados.
 
@@ -17,23 +21,19 @@ Frontend executivo de Instagram Social Intelligence.
 
 `/login`, `/dashboard`, `/trends`, `/trends/:id`, `/competitors`, `/usa`, `/profiles`, `/posts`, `/opportunities`, `/alerts`, `/settings`.
 
-## Primeiro usuário admin
-
-Atualmente o projeto pode estar com zero usuários.
+## Auth interno
 
 O procedimento completo e seguro está em:
 
 `docs/AUTH_SETUP.md`
 
-Resumo:
+Regras:
 
-1. Crie o primeiro usuário real no Supabase Auth usando e-mail e senha.
-2. Em ambiente server-side/admin, atribua `app_metadata.trend_radar_role = "admin"`.
-3. Não use o frontend para alterar `app_metadata`.
-4. Não exponha secret/service role em `VITE_*`, GitHub ou bundle.
-5. Para um produto estritamente interno, verifique no painel do Supabase que self-signup público está desabilitado.
-
-Depois de alterar `app_metadata`, renove a sessão para o JWT refletir o papel.
+1. usuários internos são criados no Supabase Auth;
+2. autorização usa `app_metadata.trend_radar_role`;
+3. o frontend não altera `app_metadata`;
+4. secret/service role nunca entra em `VITE_*`, GitHub ou bundle;
+5. para um produto estritamente interno, o self-signup público deve ser conferido no painel do Supabase.
 
 ## Desenvolvimento
 
@@ -44,11 +44,18 @@ npm run build
 npm run dev
 ```
 
-Use `.env.example` como referência. O browser usa somente publishable key.
+Use `.env.example` como referência.
+
+O browser usa somente:
+
+- `VITE_SUPABASE_URL`;
+- `VITE_SUPABASE_PUBLISHABLE_KEY`.
+
+Não existe fallback hardcoded para URL/chave do Supabase.
 
 ## Banco
 
-Migration aplicada e versionada:
+Migration aplicada e versionada uma única vez:
 
 `supabase/migrations/20260930195835_create_monitored_profiles_foundation.sql`
 
