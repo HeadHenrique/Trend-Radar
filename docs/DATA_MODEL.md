@@ -2,7 +2,7 @@
 
 ## Estado observado
 
-Inspeção renovada em 30/09/2026 no projeto Supabase `zqwlyqnwcpddmknjnune`.
+Inspeção em 30/09/2026 no projeto Supabase `zqwlyqnwcpddmknjnune`:
 
 - schema `public`: 0 tabelas de negócio;
 - migrations de projeto: 0;
@@ -14,41 +14,105 @@ Nenhum schema foi criado ou alterado nesta etapa.
 
 ## Fundação de Perfis Monitorados
 
-A próxima entidade proposta é `monitored_profiles`, ainda **não aprovada e não criada**.
+A entidade proposta continua sendo `monitored_profiles`, ainda **não aprovada e não criada**.
 
-A especificação completa está em:
+Especificação detalhada:
 
 `docs/PROFILE_FOUNDATION.md`
 
-### Decisões propostas
+## Decisões corrigidas
 
-- username do Instagram armazenado em forma canônica e lowercase;
-- `instagram_url` não deve ser persistida, pois é derivável;
-- país representado por `country_code` ISO alpha-2;
-- grupo representado por referência dinâmica a `profile_groups`;
-- prioridade em `smallint` de 1 a 3;
-- `active` representa intenção do usuário;
-- `monitoring_status` representa saúde operacional;
-- delete físico não faz parte do fluxo normal;
-- `created_by` referencia o usuário autenticado;
-- metadados específicos do provider ficam fora da entidade canônica.
+### Papel estratégico
 
-## Contrato lógico futuro
+`profile_group` não contém geografia.
 
-Depois da fundação de perfis, o produto poderá evoluir para conceitos separados de:
+Valores propostos:
 
-- post coletado;
-- snapshot de perfil;
-- snapshot de post;
-- execução de coleta;
-- tendência;
-- observação temporal de tendência;
-- participação de perfil em tendência;
-- oportunidade;
-- alerta.
+- `own`;
+- `competitor`;
+- `reference`;
+- `trendsetter`.
 
-Essas entidades **não estão aprovadas para implementação nesta etapa**.
+No MVP a modelagem recomendada é `TEXT + CHECK`, sem tabela `profile_groups`.
+
+### Mercado
+
+Usar `primary_market_code`, não `country_code`.
+
+O campo representa o mercado principal no Radar, não nacionalidade.
+
+No MVP:
+
+- `BR`;
+- `US`.
+
+A UI pode combinar as dimensões sem redundância:
+
+`reference + BR` → **Referência Brasil**
+
+`reference + US` → **Referência EUA**
+
+Se uma conta passar a atuar em múltiplos mercados no futuro, uma relação própria poderá ser adicionada sem remover `primary_market_code`.
+
+### Auditoria de usuários
+
+`created_by`:
+
+- nullable;
+- FK para `auth.users(id)`;
+- `ON DELETE SET NULL`;
+- preenchido por `auth.uid()` na criação humana;
+- não atualizável pelo frontend.
+
+`updated_by`:
+
+- nullable;
+- FK para `auth.users(id)`;
+- `ON DELETE SET NULL`;
+- representa o último editor humano;
+- preenchido no banco quando campos humanos mudarem;
+- não alterado por atualizações puramente operacionais.
+
+### Campos humanos
+
+- `instagram_username`;
+- `primary_market_code`;
+- `profile_group`;
+- `niche`;
+- `category`;
+- `priority`;
+- `tags`;
+- `active`.
+
+`instagram_username` é humano somente até a identidade ser resolvida. Depois de existir `instagram_external_id`, o frontend comum não pode alterá-lo.
+
+### Campos operacionais/provider
+
+- `instagram_external_id`;
+- `display_name`;
+- `profile_picture_url`;
+- `followers_count`;
+- `monitoring_status`;
+- `last_collected_at`;
+- `next_collection_at`;
+- `last_collection_error`.
+
+Esses campos não recebem privilégio UPDATE para o papel `authenticated` do frontend.
+
+### Status
+
+`active` = intenção do usuário.
+
+`monitoring_status` = saúde operacional.
+
+Estados do MVP:
+
+- `pending`;
+- `healthy`;
+- `error`.
 
 ## Regra
 
-Qualquer implementação futura do banco deve passar por autorização explícita. Este documento não autoriza criação, alteração ou exclusão de tabelas, policies, funções ou migrations.
+Qualquer implementação futura do banco depende de autorização explícita.
+
+Este documento não autoriza criação ou alteração de tabelas, constraints, triggers, policies, grants ou migrations.
