@@ -1,118 +1,46 @@
 # Data Model
 
-## Estado observado
+## Estado real
 
-Inspeção em 30/09/2026 no projeto Supabase `zqwlyqnwcpddmknjnune`:
+Em 30/09/2026 foi aplicada a migration `20260930195835_create_monitored_profiles_foundation`.
 
-- schema `public`: 0 tabelas de negócio;
-- migrations de projeto: 0;
-- Edge Functions: 0;
-- policies em `public` e `storage`: 0;
-- Auth: 0 usuários e 0 identidades.
+Tabela de negócio existente:
 
-Nenhum schema foi criado ou alterado nesta etapa.
+`public.monitored_profiles`
 
-## Fundação de Perfis Monitorados
+## monitored_profiles
 
-A entidade proposta continua sendo `monitored_profiles`, ainda **não aprovada e não criada**.
+Principais constraints:
 
-Especificação detalhada:
+- username lowercase;
+- username com caracteres locais permitidos;
+- username unique;
+- `primary_market_code` com dois caracteres uppercase;
+- `profile_group` limitado a `own/competitor/reference/trendsetter`;
+- prioridade entre 1 e 3;
+- followers não negativo;
+- `monitoring_status` em `pending/healthy/error`;
+- erro de coleta limitado a 2000 caracteres.
 
-`docs/PROFILE_FOUNDATION.md`
+FKs:
 
-## Decisões corrigidas
+- `created_by → auth.users(id) ON DELETE SET NULL`;
+- `updated_by → auth.users(id) ON DELETE SET NULL`.
 
-### Papel estratégico
+Índices:
 
-`profile_group` não contém geografia.
+- external ID unique parcial;
+- mercado;
+- grupo;
+- created_by;
+- updated_by;
+- tags GIN;
+- fila `priority + next_collection_at` para perfis ativos.
 
-Valores propostos:
+## Separação de responsabilidade
 
-- `own`;
-- `competitor`;
-- `reference`;
-- `trendsetter`.
+Campos humanos são editáveis pelo frontend conforme papel.
 
-No MVP a modelagem recomendada é `TEXT + CHECK`, sem tabela `profile_groups`.
+Campos operacionais/provider são somente leitura para o frontend e serão usados por backend futuro.
 
-### Mercado
-
-Usar `primary_market_code`, não `country_code`.
-
-O campo representa o mercado principal no Radar, não nacionalidade.
-
-No MVP:
-
-- `BR`;
-- `US`.
-
-A UI pode combinar as dimensões sem redundância:
-
-`reference + BR` → **Referência Brasil**
-
-`reference + US` → **Referência EUA**
-
-Se uma conta passar a atuar em múltiplos mercados no futuro, uma relação própria poderá ser adicionada sem remover `primary_market_code`.
-
-### Auditoria de usuários
-
-`created_by`:
-
-- nullable;
-- FK para `auth.users(id)`;
-- `ON DELETE SET NULL`;
-- preenchido por `auth.uid()` na criação humana;
-- não atualizável pelo frontend.
-
-`updated_by`:
-
-- nullable;
-- FK para `auth.users(id)`;
-- `ON DELETE SET NULL`;
-- representa o último editor humano;
-- preenchido no banco quando campos humanos mudarem;
-- não alterado por atualizações puramente operacionais.
-
-### Campos humanos
-
-- `instagram_username`;
-- `primary_market_code`;
-- `profile_group`;
-- `niche`;
-- `category`;
-- `priority`;
-- `tags`;
-- `active`.
-
-`instagram_username` é humano somente até a identidade ser resolvida. Depois de existir `instagram_external_id`, o frontend comum não pode alterá-lo.
-
-### Campos operacionais/provider
-
-- `instagram_external_id`;
-- `display_name`;
-- `profile_picture_url`;
-- `followers_count`;
-- `monitoring_status`;
-- `last_collected_at`;
-- `next_collection_at`;
-- `last_collection_error`.
-
-Esses campos não recebem privilégio UPDATE para o papel `authenticated` do frontend.
-
-### Status
-
-`active` = intenção do usuário.
-
-`monitoring_status` = saúde operacional.
-
-Estados do MVP:
-
-- `pending`;
-- `healthy`;
-- `error`.
-
-## Regra
-
-Qualquer implementação futura do banco depende de autorização explícita.
-
-Este documento não autoriza criação ou alteração de tabelas, constraints, triggers, policies, grants ou migrations.
+Nenhuma tabela adicional de negócio foi criada nesta etapa.
