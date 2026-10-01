@@ -238,3 +238,59 @@ Os workflows de Posts e Reels Enrichment não foram alterados.
 Conclusão arquitetural atual:
 
 views/plays permanecem métricas opcionais e não devem bloquear frontend/analytics baseados em likes/comments/followers.
+
+
+## Etapa 4.0 — Profile/Competitor UX
+
+A camada de produto agora reutiliza a mesma infraestrutura para perfis próprios, referências, trendsetters e concorrentes.
+
+```text
+/profiles
+/competitors
+   ↓
+ProfileListTable
+ProfileEditorDrawer
+ProfileDetailDrawer
+   ↓
+profilesRepository
+   ├─ monitored_profiles
+   ├─ monitored_profile_posts
+   └─ instagram_posts
+```
+
+### Profile details
+
+`profilesRepository.getProfileDetails(profileId)`:
+
+1. busca associações em `monitored_profile_posts`;
+2. obtém os post IDs;
+3. busca posts em `instagram_posts`;
+4. calcula, na escala atual:
+   - conteúdos monitorados;
+   - Reels;
+   - collabs;
+5. retorna até 3 conteúdos recentes.
+
+Nenhuma RPC ou migration foi criada.
+
+### Competitors
+
+Concorrente continua sendo:
+
+`monitored_profiles.profile_group = 'competitor'`
+
+Não existe tabela `competitors`.
+
+A tela específica trava o grupo como competitor no create/edit, mas a tela geral de Profiles continua podendo editar o grupo.
+
+### Autorização
+
+- viewer: leitura/detalhes;
+- editor/admin: criação/edição/pausa;
+- DELETE continua inexistente.
+
+### Dados
+
+Followers usa exclusivamente `monitored_profiles.followers_count`.
+
+Dados nulos são apresentados como insuficientes/não informados; nenhuma métrica analítica foi inventada.
