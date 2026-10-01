@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.3.3
+
+### Execução real
+
+- execução n8n `8`;
+- novo collection_run `7eba4bbb-b7b8-4e4b-b2a5-ee59685f2add`;
+- novo provider_run_id `sd_mupzulxc2bedzsf3mn`;
+- perfil selecionado dinamicamente: leonardofroese;
+- run histórico não reutilizado nem alterado.
+
+### Provider
+
+- status `ready`;
+- records = 0;
+- errors = 0;
+- download HTTP 200 com array vazio;
+- provider informou `No records found...`.
+
+### Resultado
+
+Novo run:
+
+- status = error;
+- received = 0;
+- inserted = 0;
+- updated = 0.
+
+Banco permaneceu:
+
+- instagram_posts = 19;
+- monitored_profile_posts = 19;
+- post_metric_snapshots = 19;
+- profile_metric_snapshots = 0.
+
+Associações permaneceram:
+
+- author = 19;
+- collaborator = 0;
+- discovered = 0.
+
+`Dc9H9yExV6q` continua não persistido.
+
+### Escopo
+
+- apenas uma coleta real;
+- nenhuma segunda execução;
+- nenhum Reels enrichment;
+- run histórico não reparado;
+- workflow não publicado;
+- sem Schedule Trigger;
+- sem UI /posts;
+- sem IA/Trend Engine.
+
 ## 2026-10-01 — Etapa 3.3.2
 
 ### Database
