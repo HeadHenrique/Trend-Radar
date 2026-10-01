@@ -1,86 +1,98 @@
 # Data Model
 
-## Estado real
+## Migrations aplicadas
 
-Migrations aplicadas:
+- `20260930195835_create_monitored_profiles_foundation`
+- `20261001041950_create_posts_snapshots_foundation`
+- `20261001201951_create_post_profile_associations`
+- `20261001202104_index_post_snapshot_profile_post_fk`
 
-- `20260930195835_create_monitored_profiles_foundation`;
-- `20261001041950_create_posts_snapshots_foundation`.
+## Estado atual
 
-Estado atual:
+- monitored_profiles = 1
+- collection_runs = 1
+- instagram_posts = 19
+- monitored_profile_posts = 19
+- post_metric_snapshots = 19
+- profile_metric_snapshots = 0
 
-- monitored_profiles = 1;
-- collection_runs = 1;
-- instagram_posts = 19;
-- post_metric_snapshots = 19;
-- profile_metric_snapshots = 0.
-
-## Modelo atual aplicado
+## Relações
 
 ```text
 monitored_profiles
   ├─< collection_runs
-  ├─< instagram_posts
-  │     └─< post_metric_snapshots
+  ├─< monitored_profile_posts >─ instagram_posts
+  │                               └─< post_metric_snapshots
   └─< profile_metric_snapshots
-```
-
-Limitação conhecida:
-
-`instagram_posts.monitored_profile_id` força um post canônico a pertencer a um único perfil monitorado.
-
-## Modelo corretivo proposto — NÃO APLICADO
-
-```text
-monitored_profiles
-  └─< monitored_profile_posts >─ instagram_posts
-                                  └─< post_metric_snapshots
 
 collection_runs
   ├─< post_metric_snapshots
   └─< profile_metric_snapshots
 ```
 
-### instagram_posts
+## instagram_posts
 
-Passa a ser canônico/global.
+Post canônico global.
 
-Sem `monitored_profile_id`.
+Não possui mais `monitored_profile_id`.
 
-Campos novos propostos:
+Novos campos:
 
-- author_instagram_username;
-- author_instagram_external_id;
-- hashtags.
+- author_instagram_username text NULL
+- author_instagram_external_id text NULL
+- hashtags text[] NULL
 
-### monitored_profile_posts
-
-Relação N:N entre perfil monitorado e post.
+## monitored_profile_posts
 
 PK:
 
 `(monitored_profile_id, instagram_post_id)`
 
-association_type:
+Campos:
 
-- author;
-- collaborator;
-- discovered.
+- association_type
+- first_seen_at
+- last_seen_at
+- created_at
 
-### Snapshots
+Tipos:
 
-`post_metric_snapshots` mantém `monitored_profile_id` como contexto da observação.
+- author
+- collaborator
+- discovered
 
-FK proposta:
+## post_metric_snapshots
+
+Continua contendo `monitored_profile_id` como contexto da observação/run.
+
+FK principal:
 
 `(monitored_profile_id, post_id) → monitored_profile_posts(...)`
 
-A FK run/perfil continua garantindo que o run pertence ao mesmo perfil.
+FK de run:
 
-### profile snapshots
+`(collection_run_id, monitored_profile_id) → collection_runs(...)`
 
-Sem mudança estrutural.
+Likes/comments/views/plays/shares/saves são métricas da mídia canônica. Agregações futuras não devem duplicar a mesma mídia só por múltiplas associações.
 
-Documento principal:
+## Backfill
 
-`docs/POST_ASSOCIATIONS_FOUNDATION.md`
+19 posts antigos → 19 associações `author`.
+
+IDs, captions, timestamps e snapshots preservados.
+
+## Run histórico
+
+Não reparado nesta etapa.
+
+Estado persistido:
+
+- received=20
+- inserted=0
+- updated=19
+
+Resultado lógico original documentado:
+
+- received=20
+- inserted=19
+- updated=0
