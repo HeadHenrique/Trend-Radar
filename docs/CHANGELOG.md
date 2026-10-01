@@ -1,5 +1,78 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3
+
+### n8n
+
+- workflow `Trend Radar — Profile Collector POC` criado no projeto pessoal;
+- workflow ID `BijTnAz2cSLTMzva`;
+- permaneceu DRAFT / não publicado;
+- Manual Trigger somente;
+- sem Schedule Trigger recorrente;
+- canvas organizado em grupo visual de ingestão.
+
+### Provider
+
+- Bright Data Instagram Profiles Scraper API integrado por HTTP Request;
+- credential `Trend Radar — Bright Data API` do tipo `httpHeaderAuth`;
+- nenhum token versionado ou impresso em documentação;
+- provider adapter explícito `InstagramProviderProfileResult`.
+
+### Supabase no n8n
+
+- credential `Supabase account` do tipo `supabaseApi`;
+- leitura server-side de `monitored_profiles`;
+- update restrito aos campos operacionais/provider;
+- nenhuma alteração de schema ou migration nova.
+
+### POC real
+
+- perfil real: `leonardofroese`;
+- Bright Data retornou perfil correspondente;
+- external ID real gravado;
+- display name real gravado;
+- profile picture real gravada;
+- followers count real gravado;
+- `monitoring_status = healthy`;
+- `last_collected_at` preenchido;
+- `next_collection_at` definido em +6h para prioridade 2;
+- `last_collection_error = null`.
+
+### Execuções
+
+Foram realizadas 3 execuções manuais:
+
+1. provider iniciou corretamente; falha local em condição booleana do IF;
+2. condição corrigida; provider ainda estava `running` após a janela inicial de ~45s e o fluxo de erro foi validado;
+3. o snapshot existente foi reutilizado para evitar uma terceira coleta, terminou `ready`, foi normalizado e atualizou o Supabase com sucesso.
+
+A coleta observada levou aproximadamente 59 segundos. O draft final passou a usar 3 checagens com 25 segundos de espera.
+
+### Generalização
+
+Após a POC:
+
+- removido username hardcoded do fluxo;
+- workflow passa a buscar o próximo perfil `active=true` e `monitoring_status=pending`;
+- limite 1;
+- ordenação por prioridade;
+- Bright Data voltou ao trigger dinâmico usando o username vindo do Supabase.
+
+### Escopo
+
+Não foram implementados:
+
+- posts em banco;
+- tabela posts;
+- profile snapshots;
+- post snapshots;
+- IA;
+- Trend Score;
+- Brazil Gap;
+- Trend Engine;
+- publicação do workflow;
+- schedule recorrente.
+
 ## 2026-09-30 — Etapa 2.5
 
 ### Hardening
