@@ -381,3 +381,56 @@ Não foram implementados:
 - integração Supabase;
 - documentação técnica;
 - CI.
+
+
+## 2026-10-01 — Etapa 3.3.4
+
+### Reprocessamento controlado
+
+- reutilizado snapshot histórico `sd_muppqcdph8ybzui2r`;
+- nenhuma discovery executada;
+- novo collection_run `a225b1ee-3ae5-42c4-9edc-f5db4389f449`;
+- execution 9 abriu o run e encontrou bug local de pairing;
+- execution 10 concluiu o mesmo run;
+- 3 chamadas Bright Data permitidas: 1 status + 2 downloads.
+
+### Resultado
+
+- received=20;
+- inserted=1;
+- updated=19;
+- status=success;
+- instagram_posts=20;
+- monitored_profile_posts=20;
+- post_metric_snapshots=39.
+
+Associações:
+
+- author=19;
+- collaborator=1;
+- discovered=0.
+
+### Colaboração
+
+`Dc9H9yExV6q` inserido como post canônico global:
+
+- autor `joseantoniodiferenciagro`;
+- external ID `52610638028`;
+- associação Leonardo = collaborator.
+
+### Métricas
+
+Novo run:
+
+- comments 20/20;
+- likes 8/20;
+- views/plays/shares/saves indisponíveis.
+
+### Workflow
+
+- caminho temporário removido;
+- Manual Trigger normal restaurado;
+- IDs históricos removidos do workflow;
+- DRAFT;
+- active=false;
+- sem Schedule Trigger.
