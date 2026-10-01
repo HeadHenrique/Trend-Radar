@@ -183,3 +183,42 @@ Próximos focos possíveis, sob nova autorização:
 - concorrentes;
 - recorrência do Profile Collector;
 - analytics com likes/comments/followers.
+
+
+## Etapa 4.0 — UX de Perfis + Cadastro de Concorrentes
+
+Concluído:
+
+- [x] followers exatos em /profiles;
+- [x] linha de perfil clicável por mouse e teclado;
+- [x] ações editar/pausar isoladas do drawer de detalhes;
+- [x] ProfileDetailDrawer compartilhado;
+- [x] cards reais de seguidores/conteúdos/Reels/collabs;
+- [x] até 3 conteúdos recentes reais;
+- [x] ProfileEditorDrawer compartilhado;
+- [x] ProfileListTable compartilhada;
+- [x] repository de detalhes usando monitored_profile_posts + instagram_posts;
+- [x] /competitors usa monitored_profiles com profile_group=competitor;
+- [x] botão Adicionar concorrente restrito a editor/admin;
+- [x] formulário de concorrente com grupo travado em competitor;
+- [x] lista real de concorrentes;
+- [x] empty state contextual sem analytics inventados;
+- [x] responsividade atualizada;
+- [x] nenhum concorrente fake criado;
+- [x] schema/RLS/n8n/provider inalterados.
+
+Validação com dados reais atuais:
+
+- Leonardo followers_count = 2766 → UI exibe 2.766;
+- conteúdos monitorados = 20;
+- Reels = 16;
+- collabs = 1;
+- concorrentes cadastrados = 0.
+
+Próximas etapas candidatas, sob nova autorização:
+
+- primeira experiência /posts;
+- detalhe de concorrentes com histórico suficiente;
+- recorrência do Profile Collector;
+- analytics confiáveis sobre likes/comments/followers;
+- somente depois Trend Engine.
