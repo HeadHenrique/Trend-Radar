@@ -1,80 +1,69 @@
 # Roadmap
 
-## Fase 1 — Frontend foundation
+## Fases concluídas
 
-- [x] frontend base;
-- [x] rotas;
-- [x] estados;
-- [x] CI;
-- [x] conexão Supabase.
+### Fase 1
 
-## Fase 1.5 — Arquitetura de Perfis
+- [x] frontend foundation.
 
-- [x] modelo;
-- [x] mercado/grupo;
-- [x] auditoria;
-- [x] RLS;
-- [x] SQL draft.
+### Fase 2
 
-## Fase 2 — Perfis Monitorados
+- [x] monitored_profiles;
+- [x] Auth/RLS;
+- [x] data access.
 
-- [x] migration versionada;
-- [x] `monitored_profiles`;
-- [x] constraints;
-- [x] índices;
-- [x] triggers;
-- [x] grants de coluna;
-- [x] RLS;
-- [x] Auth;
-- [x] data access;
-- [x] cadastro/listagem/edição/pausa.
+### Fase 2.5
 
-## Fase 2.5 — Validação e hardening
+- [x] hardening;
+- [x] primeiro admin/perfil real.
 
-- [x] primeiro admin real;
-- [x] smoke test;
-- [x] Vercel;
-- [x] RLS/grants;
-- [x] primeiro perfil real.
+### Fase 3
 
-## Fase 3 — Primeira coleta real de perfil
-
-- [x] n8n;
-- [x] Bright Data;
-- [x] provider adapter;
-- [x] metadata real;
-- [x] frontend validado;
-- [x] workflow permanece DRAFT.
+- [x] Profile Collector POC;
+- [x] primeira coleta real de perfil;
+- [x] frontend validado.
 
 ## Fase 3.1 — Fundação de Posts e Snapshots
 
-Arquitetura concluída, implementação **não autorizada**:
+Arquitetura inicial concluída.
 
-- [x] reinspecionar estado real;
-- [x] definir `instagram_posts`;
-- [x] definir identidade/deduplicação;
-- [x] definir `post_metric_snapshots`;
-- [x] definir `profile_metric_snapshots`;
-- [x] recomendar `collection_runs`;
-- [x] definir idempotência por collection run;
-- [x] definir RLS/grants propostos;
-- [x] definir índices propostos;
-- [x] definir contratos provider-neutral;
-- [x] definir limite inicial de 20 posts;
-- [x] definir frequência conceitual de snapshots;
-- [x] documentar ajuste futuro do Profile Collector;
-- [x] SQL draft documentado;
+## Fase 3.1.1 — Correção arquitetural
+
+Concluído em documentação:
+
+- [x] REVOKE explícito de service_role no SQL draft;
+- [x] grants mínimos por tabela;
+- [x] collection_runs server-side only;
+- [x] provider_key separado de orchestrator;
+- [x] provider_run_id provider-neutral;
+- [x] orchestrator_run_id opcional;
+- [x] collection run criado antes do provider;
+- [x] retry/recovery reutiliza o mesmo run/job;
+- [x] FKs compostas impedem cross-profile snapshots;
+- [x] snapshots imutáveis;
+- [x] NULL versus ZERO preservado;
+- [x] frequência de snapshots marcada como conceitual;
+- [x] limite de 20 posts marcado como configuração, não constraint;
+- [x] função updated_at sem EXECUTE direto inclusive para service_role;
+- [x] SQL DRAFT corrigido;
 - [ ] migration autorizada;
-- [ ] tabelas criadas;
+- [ ] Supabase alterado;
 - [ ] workflow de posts implementado;
-- [ ] primeira ingestão de posts;
-- [ ] snapshots reais.
+- [ ] coleta real de posts.
+
+## Próxima autorização necessária
+
+Antes da implementação:
+
+1. aprovar modelo corrigido;
+2. autorizar migration;
+3. depois autorizar alterações n8n e POC de posts.
 
 ## Futuro
 
+- snapshots reais;
+- baseline;
 - Trend Engine;
 - scores;
 - oportunidades;
-- alertas;
-- relatórios;
 - IA.
