@@ -1,89 +1,84 @@
 # Architecture
 
-## Stack
+## Estado implementado
 
-- React + TypeScript + Vite;
-- Supabase Auth + PostgreSQL/RLS;
-- n8n;
-- Bright Data Instagram scrapers atrás de adapter;
-- Vercel.
+A ingestão real de posts existe e permanece DRAFT no n8n.
 
-## Fluxo implementado
+Banco atual:
 
-### Perfil
+- monitored_profiles;
+- collection_runs;
+- instagram_posts;
+- post_metric_snapshots;
+- profile_metric_snapshots.
 
-```text
-monitored_profiles
-  ↑
-Trend Radar — Profile Collector POC
-  ↑
-Bright Data Instagram Profiles
-```
+## Correção arquitetural proposta — Etapa 3.3.1
 
-### Posts
+A mídia do Instagram deve ser globalmente canônica.
 
 ```text
-monitored_profiles
-  ↓
-Trend Radar — Posts Collector POC
-  ↓
-collection_runs
-  ↓
-Bright Data Instagram Posts discovery
-  ↓
-polling provider_run_id
-  ↓
-InstagramProviderPostsResult
-  ↓
-deduplicação item a item
+provider
   ↓
 instagram_posts
   ↓
-post_metric_snapshots
+monitored_profile_posts
+  ↑
+monitored_profiles
 ```
 
-Workflow de Posts:
+Isso permite:
 
-- ID: `q9XBNlb3PsxsyULl`;
-- DRAFT;
-- active=false;
-- Manual Trigger;
-- sem Schedule Trigger;
-- limite de 20 enviado ao provider;
-- seleção dinâmica de perfil saudável;
-- sem `leonardofroese` hardcoded na versão final.
+```text
+post ABC
+  ↔ Leonardo
+  ↔ José
+  ↔ outro perfil monitorado
+```
 
-## Idempotência
+sem duplicar a mídia.
 
-O collector:
+## Associação e evidência
 
-1. cria collection run antes do provider;
-2. persiste provider_run_id;
-3. reutiliza run/job em recovery;
-4. deduplica por media ID → shortcode → permalink;
-5. processa posts um a um;
-6. verifica snapshot existente antes de inserir;
-7. finaliza run com success/partial/error.
+Tipos:
 
-A Etapa 3.3 provou idempotência reutilizando o mesmo provider snapshot: posts permaneceram em 19 e snapshots em 19.
+- author;
+- collaborator;
+- discovered.
 
-## Segurança
+A evidência deve ser conservadora.
 
-Frontend permanece sem service role.
+No post `Dc9H9yExV6q`, o payload já coletado contém `coauthor_producers` com `leonardofroese`, portanto a associação futura é collaborator.
 
-- collection_runs: server-side only;
-- posts/snapshots: leitura via RLS para roles internas;
-- n8n usa credenciais server-side armazenadas no cofre;
-- nenhum secret foi versionado.
+## Snapshots
 
-## Métricas
+Post snapshots continuam contextualizados por perfil/run:
 
-O primeiro batch real entregou comentários e likes parcialmente.
+```text
+(monitored_profile_id, post_id)
+→ monitored_profile_posts
 
-Não entregou views, plays, shares ou saves.
+(collection_run_id, monitored_profile_id)
+→ collection_runs
+```
 
-Não existe enriquecimento adicional com Reels Scraper nesta etapa.
+## Trend Engine futuro
+
+Creator Breadth, Adoption Velocity e participação de concorrentes/referências deverão usar `monitored_profile_posts`, opcionalmente filtrando por `association_type`.
+
+Não usar `instagram_posts.monitored_profile_id`.
+
+## Collection runs
+
+Counters representam o resultado da coleta lógica original.
+
+Replay técnico de run terminal é no-op para:
+
+- status;
+- finished_at;
+- received_count;
+- inserted_count;
+- updated_count.
 
 Detalhes:
 
-`docs/POSTS_INGESTION_POC.md`
+`docs/POST_ASSOCIATIONS_FOUNDATION.md`
