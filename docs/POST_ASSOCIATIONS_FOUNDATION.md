@@ -351,3 +351,28 @@ Confirmado após a execução:
 A lógica de `author/collaborator/discovered` segue implementada estruturalmente, mas collaborator/discovered ainda aguardam validação runtime com batch não vazio.
 
 O guard de replay terminal também não foi testado nesta etapa, pois o Manual Trigger criou um novo collection_run.
+
+
+## Etapa 3.3.4 — Validação runtime concluída
+
+A arquitetura canônica foi validada com o snapshot real histórico de 20 registros.
+
+Resultado:
+
+- 19 associações antigas permaneceram `author`;
+- nenhuma associação sofreu downgrade;
+- 1 nova associação `collaborator` foi criada para `Dc9H9yExV6q`;
+- nenhuma associação `discovered` apareceu neste batch;
+- total final de associações = 20.
+
+`Dc9H9yExV6q`:
+
+- autor canônico = `joseantoniodiferenciagro`;
+- author external ID = `52610638028`;
+- associação de Leonardo = `collaborator`.
+
+A classificação foi baseada em `coauthor_producers` contendo `leonardofroese`.
+
+A regra de não downgrade foi confirmada em runtime para as 19 associações `author`.
+
+O caminho temporário de recovery foi removido após a validação.
