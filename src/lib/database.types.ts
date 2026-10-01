@@ -79,16 +79,18 @@ export type Database = {
       instagram_posts: {
         Row: {
           audio_name: string | null
+          author_instagram_external_id: string | null
+          author_instagram_username: string | null
           caption: string | null
           content_type: string
           created_at: string
           duration_seconds: number | null
           first_collected_at: string
+          hashtags: string[] | null
           id: string
           instagram_media_id: string | null
           instagram_shortcode: string | null
           last_collected_at: string
-          monitored_profile_id: string
           permalink: string | null
           published_at: string | null
           thumbnail_url: string | null
@@ -96,16 +98,18 @@ export type Database = {
         }
         Insert: {
           audio_name?: string | null
+          author_instagram_external_id?: string | null
+          author_instagram_username?: string | null
           caption?: string | null
           content_type?: string
           created_at?: string
           duration_seconds?: number | null
           first_collected_at?: string
+          hashtags?: string[] | null
           id?: string
           instagram_media_id?: string | null
           instagram_shortcode?: string | null
           last_collected_at?: string
-          monitored_profile_id: string
           permalink?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
@@ -113,24 +117,60 @@ export type Database = {
         }
         Update: {
           audio_name?: string | null
+          author_instagram_external_id?: string | null
+          author_instagram_username?: string | null
           caption?: string | null
           content_type?: string
           created_at?: string
           duration_seconds?: number | null
           first_collected_at?: string
+          hashtags?: string[] | null
           id?: string
           instagram_media_id?: string | null
           instagram_shortcode?: string | null
           last_collected_at?: string
-          monitored_profile_id?: string
           permalink?: string | null
           published_at?: string | null
           thumbnail_url?: string | null
           updated_at?: string
         }
+        Relationships: []
+      }
+      monitored_profile_posts: {
+        Row: {
+          association_type: string
+          created_at: string
+          first_seen_at: string
+          instagram_post_id: string
+          last_seen_at: string
+          monitored_profile_id: string
+        }
+        Insert: {
+          association_type: string
+          created_at?: string
+          first_seen_at?: string
+          instagram_post_id: string
+          last_seen_at?: string
+          monitored_profile_id: string
+        }
+        Update: {
+          association_type?: string
+          created_at?: string
+          first_seen_at?: string
+          instagram_post_id?: string
+          last_seen_at?: string
+          monitored_profile_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "instagram_posts_monitored_profile_id_fkey"
+            foreignKeyName: "monitored_profile_posts_instagram_post_id_fkey"
+            columns: ["instagram_post_id"]
+            isOneToOne: false
+            referencedRelation: "instagram_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitored_profile_posts_monitored_profile_id_fkey"
             columns: ["monitored_profile_id"]
             isOneToOne: false
             referencedRelation: "monitored_profiles"
@@ -255,11 +295,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "post_metric_snapshots_post_profile_fkey"
-            columns: ["post_id", "monitored_profile_id"]
+            foreignKeyName: "post_metric_snapshots_profile_post_fkey"
+            columns: ["monitored_profile_id", "post_id"]
             isOneToOne: false
-            referencedRelation: "instagram_posts"
-            referencedColumns: ["id", "monitored_profile_id"]
+            referencedRelation: "monitored_profile_posts"
+            referencedColumns: ["monitored_profile_id", "instagram_post_id"]
           },
           {
             foreignKeyName: "post_metric_snapshots_run_profile_fkey"
