@@ -1,19 +1,21 @@
-# Posts & Snapshots Foundation — Etapa 3.1.1
+# Posts & Snapshots Foundation — Etapa 3.2
 
-> **DRAFT — NÃO APLICADO**
+> **IMPLEMENTADO — migration `20261001041950_create_posts_snapshots_foundation`**
 >
-> Este documento descreve arquitetura e contrato de dados. Nenhuma migration foi criada/aplicada, nenhuma tabela foi criada, o Supabase não foi alterado e o workflow n8n não foi alterado.
+> A arquitetura aprovada nas Etapas 3.1 e 3.1.1 foi aplicada ao Supabase em 01/10/2026. O n8n e a Bright Data não foram alterados nem executados nesta etapa.
 
 ## 1. Estado da fundação
 
 A Etapa 3.1 definiu a fundação de posts e snapshots. A Etapa 3.1.1 corrige pontos de segurança, integridade e observabilidade antes de qualquer implementação.
 
-Continuam propostos, mas **não criados**:
+Foram criados no Supabase:
 
 - `collection_runs`;
 - `instagram_posts`;
 - `post_metric_snapshots`;
 - `profile_metric_snapshots`.
+
+As quatro tabelas terminaram a etapa com **0 registros**, conforme exigido.
 
 ## 2. Princípio de dados observados
 
@@ -530,13 +532,9 @@ type InstagramProviderPostsResult = {
 }
 ```
 
-## 21. SQL DRAFT — NÃO APLICADO
+## 21. Migration aplicada
 
 ```sql
--- DRAFT — NÃO APLICADO
--- NÃO EXECUTAR.
--- Revisar e autorizar antes de transformar em migration.
-
 create table public.collection_runs (
   id uuid primary key default gen_random_uuid(),
 
@@ -598,7 +596,14 @@ create table public.collection_runs (
     unique (id, monitored_profile_id),
 
   constraint collection_runs_finished_after_started
-    check (finished_at is null or finished_at >= started_at)
+    check (finished_at is null or finished_at >= started_at),
+
+  constraint collection_runs_status_finished_consistency
+    check (
+      (status = 'running' and finished_at is null)
+      or
+      (status in ('success', 'partial', 'error') and finished_at is not null)
+    )
 );
 
 create table public.instagram_posts (
@@ -897,20 +902,43 @@ revoke execute
   from PUBLIC, anon, authenticated, service_role;
 ```
 
-## 22. Decisões que exigem autorização antes da migration
+## 22. Validações da implementação
 
-Antes de qualquer implementação, aprovar explicitamente:
+Validações executadas após a migration:
 
-1. as quatro tabelas;
-2. `instagram_posts` como nome final;
-3. `collection_runs` como unidade lógica de ingestão;
-4. `provider_key` + `orchestrator`;
-5. `provider_run_id` + `orchestrator_run_id`;
-6. integridade por FKs compostas;
-7. `ON DELETE RESTRICT`;
-8. `collection_runs` server-side only;
-9. grants mínimos com REVOKE explícito de `service_role`;
-10. limite inicial configurável de 20 posts;
-11. frequência de snapshots apenas conceitual;
-12. autorização para transformar este draft em migration;
-13. autorização separada para alterar n8n e iniciar coleta real de posts.
+- `collection_runs_status_finished_consistency` bloqueia `running + finished_at` e bloqueia status terminal sem `finished_at`;
+- FKs compostas impediram, em transação com rollback, snapshot de post/perfil usando run de outro perfil;
+- trigger `instagram_posts_set_updated_at` funcionou para `service_role` mesmo com EXECUTE direto da função revogado;
+- `viewer`, `editor` e `admin` leram posts/snapshots em teste RLS transacional;
+- role inválida não leu linhas;
+- `collection_runs` permaneceu inacessível a `authenticated`;
+- snapshots permaneceram sem UPDATE/DELETE para `service_role`;
+- nenhum dado de teste foi persistido.
+
+### Advisors
+
+Security Advisor:
+
+- INFO `rls_enabled_no_policy` em `collection_runs` é **intencional**: a tabela é server-side only, sem GRANT para authenticated e sem policy de frontend;
+- WARN `auth_leaked_password_protection` é anterior e não foi causado por esta migration.
+
+Performance Advisor:
+
+- INFO de 3 FKs compostas sem índice de cobertura exato;
+- não foram adicionados índices extras porque os parent IDs não são fluxo de UPDATE/DELETE no MVP, e os índices aprovados já atendem às consultas previstas;
+- INFO de índices não usados em tabelas recém-criadas/vazias é esperado.
+
+### Arquivo de migration
+
+`supabase/migrations/20261001041950_create_posts_snapshots_foundation.sql`
+
+## 23. Próxima autorização
+
+A camada de banco está pronta. A próxima etapa deve ser autorizada separadamente para:
+
+- alterar/criar workflow n8n de posts;
+- chamar o provider;
+- realizar a primeira ingestão real;
+- inserir os primeiros snapshots reais.
+
+Até essa autorização, as quatro tabelas permanecem vazias.
