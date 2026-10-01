@@ -3,71 +3,87 @@
 ## Stack
 
 - React + TypeScript + Vite;
-- Supabase Auth;
-- PostgreSQL/RLS;
+- Supabase Auth + PostgreSQL/RLS;
 - n8n;
-- provider Instagram desacoplado por adapter;
+- Bright Data Instagram scrapers atrás de adapter;
 - Vercel.
 
-## Estado implementado
+## Fluxo implementado
+
+### Perfil
 
 ```text
-Frontend
-  ↓
-Supabase Auth + RLS
-  ↓
 monitored_profiles
-
-Camada observada
-  ├─ collection_runs        (server-side only)
-  ├─ instagram_posts
-  ├─ post_metric_snapshots
-  └─ profile_metric_snapshots
+  ↑
+Trend Radar — Profile Collector POC
+  ↑
+Bright Data Instagram Profiles
 ```
 
-A fundação de banco foi implementada pela migration:
+### Posts
 
-`20261001041950_create_posts_snapshots_foundation`
+```text
+monitored_profiles
+  ↓
+Trend Radar — Posts Collector POC
+  ↓
+collection_runs
+  ↓
+Bright Data Instagram Posts discovery
+  ↓
+polling provider_run_id
+  ↓
+InstagramProviderPostsResult
+  ↓
+deduplicação item a item
+  ↓
+instagram_posts
+  ↓
+post_metric_snapshots
+```
 
-## Integridade
+Workflow de Posts:
 
-`collection_runs` e `instagram_posts` possuem chave candidata composta:
+- ID: `q9XBNlb3PsxsyULl`;
+- DRAFT;
+- active=false;
+- Manual Trigger;
+- sem Schedule Trigger;
+- limite de 20 enviado ao provider;
+- seleção dinâmica de perfil saudável;
+- sem `leonardofroese` hardcoded na versão final.
 
-`(id, monitored_profile_id)`
+## Idempotência
 
-Snapshots usam FKs compostas para impedir cruzamento entre perfis.
+O collector:
+
+1. cria collection run antes do provider;
+2. persiste provider_run_id;
+3. reutiliza run/job em recovery;
+4. deduplica por media ID → shortcode → permalink;
+5. processa posts um a um;
+6. verifica snapshot existente antes de inserir;
+7. finaliza run com success/partial/error.
+
+A Etapa 3.3 provou idempotência reutilizando o mesmo provider snapshot: posts permaneceram em 19 e snapshots em 19.
 
 ## Segurança
 
-Frontend:
+Frontend permanece sem service role.
 
-- SELECT em posts e snapshots somente com role `viewer|editor|admin`;
-- sem acesso a `collection_runs`;
-- sem escrita nas novas tabelas.
+- collection_runs: server-side only;
+- posts/snapshots: leitura via RLS para roles internas;
+- n8n usa credenciais server-side armazenadas no cofre;
+- nenhum secret foi versionado.
 
-Collector server-side:
+## Métricas
 
-- `collection_runs`: SELECT/INSERT/UPDATE;
-- `instagram_posts`: SELECT/INSERT/UPDATE;
-- snapshots: SELECT/INSERT;
-- sem DELETE;
-- sem UPDATE de snapshots.
+O primeiro batch real entregou comentários e likes parcialmente.
 
-Como `service_role` ignora RLS, os GRANTs mínimos são a principal barreira de escrita do collector.
+Não entregou views, plays, shares ou saves.
 
-## Função/trigger
+Não existe enriquecimento adicional com Reels Scraper nesta etapa.
 
-`set_observed_entity_updated_at()`:
+Detalhes:
 
-- SECURITY INVOKER;
-- EXECUTE direto revogado de PUBLIC/anon/authenticated/service_role;
-- utilizada somente pelo trigger de `instagram_posts.updated_at`;
-- funcionamento validado em transação com rollback.
-
-## n8n
-
-Nenhuma alteração foi feita na Etapa 3.2.
-
-O Profile Collector existente permanece como estava.
-
-A primeira ingestão real de posts requer autorização separada.
+`docs/POSTS_INGESTION_POC.md`
