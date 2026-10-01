@@ -331,3 +331,23 @@ Confirmado após a execução:
 A regra de evidência `author/collaborator/discovered` continua estruturalmente implementada no workflow, mas collaborator/discovered ainda aguardam validação runtime com batch não vazio.
 
 O guard de replay terminal também não foi testado nesta etapa, pois o Manual Trigger criou corretamente um novo collection_run.
+
+
+## Etapa 3.3.3 — Resultado runtime
+
+Foi executada uma única nova coleta lógica após a migration.
+
+O provider retornou `records=0`, portanto o caminho de persistência de posts/associações não foi exercitado.
+
+Confirmado após a execução:
+
+- 19 associações antigas continuam `author`;
+- nenhuma associação foi rebaixada;
+- collaborator = 0;
+- discovered = 0;
+- `Dc9H9yExV6q` continua não persistido;
+- 19 posts e 19 snapshots permanecem intactos.
+
+A lógica de `author/collaborator/discovered` segue implementada estruturalmente, mas collaborator/discovered ainda aguardam validação runtime com batch não vazio.
+
+O guard de replay terminal também não foi testado nesta etapa, pois o Manual Trigger criou um novo collection_run.
