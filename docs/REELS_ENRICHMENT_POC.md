@@ -283,3 +283,40 @@ Próximo passo recomendado antes de escalar:
 - ou validar com a Bright Data por que `views` e `video_play_count` vieram nulos.
 
 Não executar enrichment em massa até haver evidência de ganho.
+
+
+## Etapa 3.4.2 — Teste final via discovery de perfil
+
+Foi executado um único teste adicional usando a modalidade B:
+
+- dataset `gd_lyclm20il4r5helnj`;
+- `type=discover_new`;
+- `discover_by=url`;
+- profile URL;
+- `num_of_posts=1`;
+- sem start_date/end_date.
+
+Resultado:
+
+- 1 record recebido;
+- Reel `DIe1t5bN7oO`;
+- match por instagram_media_id;
+- views = NULL;
+- video_play_count = NULL;
+- likes = 4929;
+- comments = 7;
+- followers = 2767;
+- 1 snapshot novo.
+
+Comparação:
+
+- modalidade A: views NULL em 3/3;
+- modalidade B: views NULL em 1/1.
+
+Decisão:
+
+**ENCERRAR INVESTIGAÇÃO DE VIEWS NESTA FASE.**
+
+Detalhes:
+
+`docs/REELS_VIEWS_DIAGNOSTIC.md`
