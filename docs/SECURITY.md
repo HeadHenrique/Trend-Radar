@@ -128,3 +128,77 @@ Performance advisor em 2026-09-30:
   - monitored_profiles_collection_queue_idx.
 
 Com apenas um perfil real e sem carga de coleta, esse resultado ainda não é evidência para remoção de índices.
+
+
+## Etapa 3.2 — Posts e snapshots
+
+Migration:
+
+`20261001041950_create_posts_snapshots_foundation`
+
+### collection_runs
+
+- RLS habilitado;
+- sem GRANT para anon/authenticated;
+- sem policy para authenticated;
+- service_role: SELECT/INSERT/UPDATE;
+- sem DELETE.
+
+O INFO `rls_enabled_no_policy` do Security Advisor é intencional para esta tabela server-side only.
+
+### instagram_posts
+
+- authenticated: SELECT;
+- RLS permite SELECT somente para viewer/editor/admin;
+- service_role: SELECT/INSERT/UPDATE;
+- sem DELETE.
+
+### snapshots
+
+`post_metric_snapshots` e `profile_metric_snapshots`:
+
+- authenticated: SELECT condicionado por role válida;
+- service_role: SELECT/INSERT;
+- sem UPDATE;
+- sem DELETE.
+
+### service_role
+
+As quatro tabelas executam REVOKE ALL explícito de PUBLIC/anon/authenticated/service_role antes dos grants mínimos.
+
+Como service_role possui BYPASSRLS, a proteção do collector depende principalmente dessa matriz de grants.
+
+### Função
+
+`set_observed_entity_updated_at()`:
+
+- SECURITY INVOKER;
+- EXECUTE direto revogado de PUBLIC, anon, authenticated e service_role;
+- trigger validado com sucesso.
+
+### Testes
+
+Executados em transações com ROLLBACK:
+
+- status/finished_at;
+- cross-profile post snapshot;
+- cross-profile profile snapshot;
+- trigger updated_at;
+- viewer/editor/admin;
+- role inválida;
+- collection_runs inacessível ao authenticated.
+
+Nenhum dado de teste persistiu.
+
+### Advisors 01/10/2026
+
+Security:
+
+- INFO `rls_enabled_no_policy` em collection_runs: intencional;
+- WARN `auth_leaked_password_protection`: pré-existente, fora do escopo desta migration.
+
+Performance:
+
+- 3 INFO `unindexed_foreign_keys` em FKs compostas de snapshots;
+- não corrigidos nesta etapa porque parent IDs não são fluxo de UPDATE/DELETE no MVP e não há necessidade comprovada de novos índices;
+- unused indexes em tabelas novas/vazias são esperados.
