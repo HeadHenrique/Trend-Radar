@@ -7,11 +7,137 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.18"
   }
   public: {
     Tables: {
+      collection_runs: {
+        Row: {
+          collection_type: string
+          created_at: string
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          inserted_count: number
+          monitored_profile_id: string
+          orchestrator: string
+          orchestrator_run_id: string | null
+          provider_key: string
+          provider_run_id: string | null
+          received_count: number
+          started_at: string
+          status: string
+          updated_count: number
+        }
+        Insert: {
+          collection_type: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          inserted_count?: number
+          monitored_profile_id: string
+          orchestrator?: string
+          orchestrator_run_id?: string | null
+          provider_key: string
+          provider_run_id?: string | null
+          received_count?: number
+          started_at?: string
+          status?: string
+          updated_count?: number
+        }
+        Update: {
+          collection_type?: string
+          created_at?: string
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          inserted_count?: number
+          monitored_profile_id?: string
+          orchestrator?: string
+          orchestrator_run_id?: string | null
+          provider_key?: string
+          provider_run_id?: string | null
+          received_count?: number
+          started_at?: string
+          status?: string
+          updated_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_runs_monitored_profile_id_fkey"
+            columns: ["monitored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "monitored_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      instagram_posts: {
+        Row: {
+          audio_name: string | null
+          caption: string | null
+          content_type: string
+          created_at: string
+          duration_seconds: number | null
+          first_collected_at: string
+          id: string
+          instagram_media_id: string | null
+          instagram_shortcode: string | null
+          last_collected_at: string
+          monitored_profile_id: string
+          permalink: string | null
+          published_at: string | null
+          thumbnail_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_name?: string | null
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          first_collected_at?: string
+          id?: string
+          instagram_media_id?: string | null
+          instagram_shortcode?: string | null
+          last_collected_at?: string
+          monitored_profile_id: string
+          permalink?: string | null
+          published_at?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_name?: string | null
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          first_collected_at?: string
+          id?: string
+          instagram_media_id?: string | null
+          instagram_shortcode?: string | null
+          last_collected_at?: string
+          monitored_profile_id?: string
+          permalink?: string | null
+          published_at?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_posts_monitored_profile_id_fkey"
+            columns: ["monitored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "monitored_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monitored_profiles: {
         Row: {
           active: boolean
@@ -84,6 +210,107 @@ export type Database = {
         }
         Relationships: []
       }
+      post_metric_snapshots: {
+        Row: {
+          captured_at: string
+          collection_run_id: string
+          comments_count: number | null
+          created_at: string
+          id: string
+          likes_count: number | null
+          monitored_profile_id: string
+          plays_count: number | null
+          post_id: string
+          saves_count: number | null
+          shares_count: number | null
+          views_count: number | null
+        }
+        Insert: {
+          captured_at: string
+          collection_run_id: string
+          comments_count?: number | null
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          monitored_profile_id: string
+          plays_count?: number | null
+          post_id: string
+          saves_count?: number | null
+          shares_count?: number | null
+          views_count?: number | null
+        }
+        Update: {
+          captured_at?: string
+          collection_run_id?: string
+          comments_count?: number | null
+          created_at?: string
+          id?: string
+          likes_count?: number | null
+          monitored_profile_id?: string
+          plays_count?: number | null
+          post_id?: string
+          saves_count?: number | null
+          shares_count?: number | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_metric_snapshots_post_profile_fkey"
+            columns: ["post_id", "monitored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "instagram_posts"
+            referencedColumns: ["id", "monitored_profile_id"]
+          },
+          {
+            foreignKeyName: "post_metric_snapshots_run_profile_fkey"
+            columns: ["collection_run_id", "monitored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "collection_runs"
+            referencedColumns: ["id", "monitored_profile_id"]
+          },
+        ]
+      }
+      profile_metric_snapshots: {
+        Row: {
+          captured_at: string
+          collection_run_id: string
+          created_at: string
+          followers_count: number | null
+          following_count: number | null
+          id: string
+          monitored_profile_id: string
+          posts_count: number | null
+        }
+        Insert: {
+          captured_at: string
+          collection_run_id: string
+          created_at?: string
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          monitored_profile_id: string
+          posts_count?: number | null
+        }
+        Update: {
+          captured_at?: string
+          collection_run_id?: string
+          created_at?: string
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          monitored_profile_id?: string
+          posts_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_metric_snapshots_run_profile_fkey"
+            columns: ["collection_run_id", "monitored_profile_id"]
+            isOneToOne: false
+            referencedRelation: "collection_runs"
+            referencedColumns: ["id", "monitored_profile_id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -101,6 +328,7 @@ export type Database = {
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
@@ -180,6 +408,40 @@ export type TablesUpdate<
       }
       ? U
       : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
