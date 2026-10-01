@@ -321,9 +321,29 @@ Confirmado:
 
 - o Posts Scraper não entregou views, plays, shares ou saves neste batch;
 - não foi usado Reels Scraper complementar;
-- 1 collaborative/coauthor post foi rejeitado por `user_posted` divergente;
+- 1 post colaborativo foi rejeitado pelo filtro antigo de `user_posted`; inspeção posterior confirmou `coauthor_producers` contendo `leonardofroese`;
 - o collection run final está `partial`;
 - o warning visual `TOP_LEVEL_ITEMS_OVER_CEILING` do n8n permanece; não afeta execução;
 - a UI `/posts` continua não implementada;
 - workflow continua manual e não publicado;
 - nenhuma IA ou Trend Engine foi iniciada.
+
+
+## Correção arquitetural posterior — Etapa 3.3.1
+
+O registro `Dc9H9yExV6q` foi reinspecionado somente a partir do payload já armazenado.
+
+Evidência observada:
+
+- `user_posted = joseantoniodiferenciagro`;
+- `coauthor_producers` contém `leonardofroese`;
+- `tagged_users` contém Leonardo;
+- a discovery input era o perfil de Leonardo.
+
+Conclusão: existe evidência explícita de colaboração. O post foi rejeitado pela regra antiga, mas a futura arquitetura deve persistir o post global e criar associação `collaborator` com Leonardo.
+
+Também foi identificada uma falha semântica nos counters: o replay idempotente do mesmo provider_run_id sobrescreveu o resultado lógico original do run. A regra futura será manter counters/status/finished_at imutáveis em replay de run já terminal.
+
+Detalhes:
+
+`docs/POST_ASSOCIATIONS_FOUNDATION.md`
