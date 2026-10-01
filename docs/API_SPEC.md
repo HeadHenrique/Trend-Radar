@@ -187,3 +187,46 @@ Na POC:
 Nenhum post é criado pelo enrichment.
 
 Snapshots são novas observações históricas vinculadas a um collection_run próprio.
+
+
+## Reels Views Diagnostic
+
+Modalidade B:
+
+`discover_new + discover_by=url`
+
+Input:
+
+`profile URL + num_of_posts=1`
+
+Resultado real:
+
+```ts
+{
+  shortcode: 'DIe1t5bN7oO',
+  views: null,
+  videoPlayCount: null,
+  likes: 4929,
+  comments: 7,
+  followers: 2767
+}
+```
+
+Match:
+
+`post_id → instagram_media_id`
+
+Campos alternativos ausentes:
+
+- view_count;
+- video_views;
+- play_count;
+- plays;
+- clips_play_count;
+- ig_play_count;
+- reach;
+- impressions.
+
+Snapshot criado porque likes/comments foram observados.
+
+Nenhum post canônico foi criado ou atualizado.
