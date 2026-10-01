@@ -7,17 +7,15 @@ Migrations aplicadas:
 - `20260930195835_create_monitored_profiles_foundation`;
 - `20261001041950_create_posts_snapshots_foundation`.
 
-Tabelas de negócio/observação existentes:
+Estado atual:
 
-- `public.monitored_profiles`;
-- `public.collection_runs`;
-- `public.instagram_posts`;
-- `public.post_metric_snapshots`;
-- `public.profile_metric_snapshots`.
+- monitored_profiles = 1;
+- collection_runs = 1;
+- instagram_posts = 19;
+- post_metric_snapshots = 19;
+- profile_metric_snapshots = 0.
 
-Após a Etapa 3.2, as quatro novas tabelas permanecem vazias.
-
-## Relações
+## Modelo atual aplicado
 
 ```text
 monitored_profiles
@@ -25,84 +23,64 @@ monitored_profiles
   ├─< instagram_posts
   │     └─< post_metric_snapshots
   └─< profile_metric_snapshots
+```
+
+Limitação conhecida:
+
+`instagram_posts.monitored_profile_id` força um post canônico a pertencer a um único perfil monitorado.
+
+## Modelo corretivo proposto — NÃO APLICADO
+
+```text
+monitored_profiles
+  └─< monitored_profile_posts >─ instagram_posts
+                                  └─< post_metric_snapshots
 
 collection_runs
   ├─< post_metric_snapshots
   └─< profile_metric_snapshots
 ```
 
-### collection_runs
-
-Entidade operacional server-side.
-
-Campos principais:
-
-- `monitored_profile_id`;
-- `collection_type`;
-- `provider_key`;
-- `orchestrator`;
-- `provider_run_id`;
-- `orchestrator_run_id`;
-- `started_at` / `finished_at`;
-- `status`;
-- contadores;
-- `error_message`.
-
-Constraint temporal:
-
-- `running` exige `finished_at IS NULL`;
-- `success|partial|error` exige `finished_at IS NOT NULL`.
-
 ### instagram_posts
 
-Entidade canônica de conteúdo observado do Instagram.
+Passa a ser canônico/global.
 
-Identidade por prioridade:
+Sem `monitored_profile_id`.
 
-1. `instagram_media_id`;
-2. `instagram_shortcode`;
-3. `permalink`.
+Campos novos propostos:
 
-Pelo menos uma identidade é obrigatória.
+- author_instagram_username;
+- author_instagram_external_id;
+- hashtags.
 
-### post_metric_snapshots
+### monitored_profile_posts
 
-Histórico temporal de métricas do post.
+Relação N:N entre perfil monitorado e post.
 
-Inclui `monitored_profile_id` redundante propositalmente para integridade e consulta.
+PK:
 
-FKs compostas garantem que:
+`(monitored_profile_id, instagram_post_id)`
 
-- post e snapshot pertencem ao mesmo perfil;
-- run e snapshot pertencem ao mesmo perfil.
+association_type:
 
-### profile_metric_snapshots
+- author;
+- collaborator;
+- discovered.
 
-Histórico temporal do perfil.
+### Snapshots
 
-FK composta garante que o run pertence ao mesmo perfil do snapshot.
+`post_metric_snapshots` mantém `monitored_profile_id` como contexto da observação.
 
-### NULL vs ZERO
+FK proposta:
 
-- `0` = zero observado;
-- `NULL` = indisponível / não observado.
+`(monitored_profile_id, post_id) → monitored_profile_posts(...)`
 
-## Imutabilidade
+A FK run/perfil continua garantindo que o run pertence ao mesmo perfil.
 
-Para o collector:
+### profile snapshots
 
-- post snapshots: SELECT + INSERT;
-- profile snapshots: SELECT + INSERT;
-- sem UPDATE;
-- sem DELETE.
+Sem mudança estrutural.
 
-## Segurança
+Documento principal:
 
-- `collection_runs`: server-side only;
-- posts e snapshots: SELECT para `viewer|editor|admin` via RLS;
-- frontend não escreve posts/snapshots;
-- `service_role` teve grants automáticos revogados e recebeu apenas a matriz mínima aprovada.
-
-Detalhes completos:
-
-`docs/POSTS_SNAPSHOTS_FOUNDATION.md`
+`docs/POST_ASSOCIATIONS_FOUNDATION.md`
