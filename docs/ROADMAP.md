@@ -1,52 +1,48 @@
 # Roadmap
 
-## Fase 1–3
+## Fase 1–3.2
 
 - [x] frontend foundation;
 - [x] monitored_profiles;
 - [x] Auth/RLS;
-- [x] primeiro admin e perfil real;
+- [x] primeiro perfil real;
 - [x] Profile Collector POC;
-- [x] primeira coleta real de perfil.
+- [x] fundação real de posts/snapshots.
 
-## Fase 3.1
+## Fase 3.3 — Primeira ingestão real de posts
 
-- [x] arquitetura de posts/snapshots;
-- [x] correção arquitetural 3.1.1.
+- [x] reinspecionar Supabase/GitHub/n8n;
+- [x] validar credenciais existentes;
+- [x] pesquisar Posts Scraper atual;
+- [x] confirmar limite no provider;
+- [x] criar `Trend Radar — Posts Collector POC`;
+- [x] collection_run antes do provider;
+- [x] salvar provider_run_id real;
+- [x] polling limitado;
+- [x] coletar exatamente 20 registros do provider;
+- [x] normalizar batch;
+- [x] validar proprietário;
+- [x] ordenar por published_at;
+- [x] deduplicar;
+- [x] persistir 19 posts válidos;
+- [x] persistir snapshots somente de métricas observadas;
+- [x] preservar NULL vs ZERO;
+- [x] provar idempotência reutilizando o mesmo provider job;
+- [x] 0 posts duplicados;
+- [x] 0 snapshots duplicados;
+- [x] workflow restaurado genérico;
+- [x] workflow permanece DRAFT/não publicado;
+- [x] sem Schedule Trigger;
+- [x] sem UI de Posts;
+- [x] sem IA/Trend Engine.
 
-## Fase 3.2 — Fundação real de Posts e Snapshots
+## Próxima etapa
 
-- [x] migration versionada criada;
-- [x] migration aplicada;
-- [x] collection_runs;
-- [x] instagram_posts;
-- [x] post_metric_snapshots;
-- [x] profile_metric_snapshots;
-- [x] constraint status/finished_at;
-- [x] FKs simples e compostas;
-- [x] unique indexes de identidade;
-- [x] índices temporais aprovados;
-- [x] trigger updated_at;
-- [x] REVOKE explícito de service_role;
-- [x] grants mínimos;
-- [x] RLS/policies;
-- [x] collection_runs server-side only;
-- [x] teste cross-profile com rollback;
-- [x] teste RLS com rollback;
-- [x] snapshots imutáveis pelo collector;
-- [x] database.types.ts regenerado;
-- [x] Security Advisor;
-- [x] Performance Advisor;
-- [x] typecheck/build;
-- [x] novas tabelas terminam vazias.
+A próxima etapa deve ser definida após revisar estes dados reais.
 
-## Próxima etapa — 3.3
+Pendências candidatas, ainda não autorizadas:
 
-Ainda não autorizada:
-
-- [ ] workflow de posts;
-- [ ] chamada ao provider de posts;
-- [ ] primeira ingestão real de até 20 posts;
-- [ ] primeiros snapshots reais.
-
-Não iniciar sem autorização explícita.
+- decidir tratamento de collaborative/coauthor posts;
+- avaliar se Reels Scraper é necessário para views/plays;
+- desenhar a primeira UI de biblioteca de posts;
+- definir recorrência/scheduler apenas após medir consumo.
