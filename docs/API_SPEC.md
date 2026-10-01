@@ -1,101 +1,73 @@
 # API Spec
 
-## Estado
+## Estado atual
 
-Nenhuma API de posts foi implementada.
+A fundação de banco de posts/snapshots existe, mas **não há repository de posts nem UI de Posts implementados ainda**.
 
-Etapa 3.1.1 apenas corrige o contrato e a persistência proposta.
+`src/lib/database.types.ts` foi regenerado do schema real.
 
-## Contrato provider-neutral
+## Tabelas disponíveis
 
-```ts
-type InstagramObservedContentType =
-  | 'reel'
-  | 'carousel'
-  | 'image'
-  | 'video'
-  | 'unknown'
+- `collection_runs`;
+- `instagram_posts`;
+- `post_metric_snapshots`;
+- `profile_metric_snapshots`.
 
-type InstagramProviderPostMetrics = {
-  views: number | null
-  plays: number | null
-  likes: number | null
-  comments: number | null
-  shares: number | null
-  saves: number | null
-}
+## Acesso frontend
 
-type InstagramProviderPostResult = {
-  instagramMediaId: string | null
-  shortcode: string | null
-  permalink: string | null
-  publishedAt: string | null
-  caption: string | null
-  contentType: InstagramObservedContentType
-  durationSeconds: number | null
-  audioName: string | null
-  thumbnailUrl: string | null
-  metrics: InstagramProviderPostMetrics
-}
+### collection_runs
 
-type InstagramProviderPostsResult = {
-  profileUsername: string
-  fetchedAt: string
-  posts: InstagramProviderPostResult[]
-  nextCursor?: string | null
-  hasMore?: boolean | null
-}
-```
+Sem acesso para `authenticated`.
 
-## Persistência futura
+### instagram_posts
 
-Ordem lógica:
+SELECT somente para roles:
 
-1. criar `collection_runs`;
-2. chamar provider;
-3. salvar `provider_run_id` quando disponível;
-4. normalizar batch;
-5. deduplicar/upsert em `instagram_posts`;
-6. inserir snapshots usando o mesmo `collection_run_id`;
-7. fechar run.
+- viewer;
+- editor;
+- admin.
 
-Retries do mesmo job reutilizam run e provider_run_id.
+### snapshots
 
-## Segurança futura
+SELECT somente para roles válidas.
 
-### authenticated
+Frontend não possui INSERT/UPDATE/DELETE nessas entidades.
 
-- SELECT em `instagram_posts`;
-- SELECT em `post_metric_snapshots`;
-- SELECT em `profile_metric_snapshots`;
-- nenhum acesso a `collection_runs`;
-- nenhuma escrita nas quatro tabelas.
+## Escrita server-side
 
-### service_role
+Matriz efetiva:
 
-Após REVOKE ALL explícito:
-
-- `collection_runs`: SELECT, INSERT, UPDATE;
-- `instagram_posts`: SELECT, INSERT, UPDATE;
-- `post_metric_snapshots`: SELECT, INSERT;
-- `profile_metric_snapshots`: SELECT, INSERT.
+- collection_runs: SELECT, INSERT, UPDATE;
+- instagram_posts: SELECT, INSERT, UPDATE;
+- post_metric_snapshots: SELECT, INSERT;
+- profile_metric_snapshots: SELECT, INSERT.
 
 Sem DELETE.
 
 Snapshots sem UPDATE.
 
-## Integridade
+## Contrato provider-neutral futuro
 
-`post_metric_snapshots` inclui `monitored_profile_id` e usa FKs compostas para impedir combinação entre post e run de perfis diferentes.
+O contrato arquitetural permanece:
 
-`profile_metric_snapshots` também usa FK composta com collection run.
+`InstagramProviderPostResult`
 
-## Configuração de ingestão
+e:
 
-Limite inicial recomendado:
+`InstagramProviderPostsResult`
 
-`20 posts`.
+A implementação do adapter/workflow de posts ainda não foi iniciada.
 
-É configuração do adapter/workflow, não do banco.
+## Idempotência futura
 
-A frequência de snapshots permanece conceitual e não deve virar scheduler antes da prova real do dataset de posts.
+O fluxo aprovado deverá:
+
+1. criar `collection_run`;
+2. chamar provider;
+3. salvar `provider_run_id`;
+4. reutilizar o mesmo run/job em retries;
+5. upsert do post;
+6. inserir snapshot;
+7. finalizar run.
+
+Nenhum desses passos foi implementado em n8n nesta etapa.
