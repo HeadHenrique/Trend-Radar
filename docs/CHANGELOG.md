@@ -1,5 +1,55 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.4.2
+
+### Diagnóstico final de views
+
+- criado workflow `Trend Radar — Reels Views Discovery Diagnostic`;
+- workflow ID `0dnlSxCbcENJR4E4`;
+- execução manual única `12`;
+- dataset `gd_lyclm20il4r5helnj`;
+- modalidade `discover_new / discover_by=url`;
+- input profile URL + `num_of_posts=1`;
+- sem filtros de data;
+- 1 provider job.
+
+### Resultado
+
+Reel:
+
+- shortcode `DIe1t5bN7oO`;
+- post_id `3611560201699179022`;
+- match por instagram_media_id.
+
+Métricas:
+
+- views = NULL;
+- video_play_count = NULL;
+- likes = 4929;
+- comments = 7;
+- followers = 2767.
+
+Campos alternativos view/play/reach/impressions não estavam presentes.
+
+### Persistência
+
+- collection_run `9f3cfbf2-ce7c-45bd-a7ce-d5a14eeece84`;
+- received=1;
+- inserted=0;
+- updated=0;
+- status=success;
+- post_metric_snapshots 42 → 43;
+- 1 snapshot novo;
+- nenhum post/associação criado ou atualizado.
+
+### Decisão
+
+Modalidade A falhou em views 3/3.
+
+Modalidade B falhou em views 1/1.
+
+**ENCERRAR INVESTIGAÇÃO DE VIEWS NESTA FASE.**
+
 ## 2026-10-01 — Etapa 3.4
 
 ### Reels Enrichment POC
