@@ -1,5 +1,56 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.3.2
+
+### Database
+
+- migration `20261001201951_create_post_profile_associations`;
+- criada `monitored_profile_posts`;
+- `instagram_posts` convertido para modelo canônico global;
+- removido `instagram_posts.monitored_profile_id`;
+- adicionados author username, author external ID e hashtags;
+- 19 posts legados backfilled como author;
+- 19 posts preservados;
+- 19 snapshots preservados;
+- nova FK snapshot → associação;
+- IDs preservados.
+
+### Performance
+
+- advisor detectou falta de índice de cobertura na nova FK;
+- aplicada `20261001202104_index_post_snapshot_profile_post_fk`;
+- finding novo removido.
+
+### Security
+
+- RLS/grants de monitored_profile_posts validados;
+- authenticated apenas SELECT;
+- service_role SELECT/INSERT/UPDATE;
+- sem DELETE;
+- role inválida sem leitura.
+
+### n8n
+
+- Posts Collector adaptado sem execução;
+- post upsert agora é global;
+- author/collaborator/discovered implementados;
+- coauthor_producers usado como evidência explícita;
+- associação obrigatória antes do snapshot;
+- evidence type não sofre downgrade;
+- terminal replay bloqueado antes de upsert;
+- finalizadores só alteram runs running;
+- orchestrator_run_id original permanece preservado.
+
+### Escopo respeitado
+
+- workflow não executado;
+- Bright Data não chamada;
+- Dc9H9yExV6q não inserido;
+- counters históricos não reparados;
+- nenhuma UI /posts;
+- nenhum Reels enrichment;
+- nenhuma IA/Trend Engine.
+
 ## 2026-10-01 — Etapa 3.3
 
 ### n8n
