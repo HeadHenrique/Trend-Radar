@@ -165,3 +165,41 @@ Resultado:
 - 20 snapshots novos.
 
 O caminho temporário foi removido ao final e o fluxo operacional normal foi restaurado.
+
+
+## Etapa 3.4 — Reels Enrichment POC
+
+Foi criado workflow separado:
+
+`Trend Radar — Reels Enrichment POC`
+
+ID:
+
+`CWMacm8bwxDXue4w`
+
+Fluxo:
+
+```text
+3 Reels existentes
+→ novo collection_run
+→ um job Bright Data Instagram Reels
+→ polling
+→ inspeção/match
+→ snapshots novos
+→ atualização opcional de audio_name
+```
+
+O Posts Collector não foi alterado.
+
+Resultado real:
+
+- 3 URLs enviadas;
+- 3 resultados matched;
+- 3 snapshots;
+- views NULL em 3/3;
+- video_play_count NULL em 3/3;
+- likes/comments disponíveis;
+- nenhum audio_name utilizável;
+- 0 posts canônicos atualizados.
+
+O workflow permanece DRAFT/active=false/sem Schedule.
