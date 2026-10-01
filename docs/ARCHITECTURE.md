@@ -9,6 +9,8 @@
 - Supabase JS;
 - Supabase Auth;
 - PostgreSQL/RLS;
+- n8n;
+- Bright Data Instagram Profiles Scraper API;
 - Vercel.
 
 ## Fluxo atual
@@ -29,7 +31,13 @@ Supabase Data API
 RLS + column privileges
   ↓
 public.monitored_profiles
+  ↑
+n8n — Trend Radar — Profile Collector POC
+  ↑
+Bright Data Instagram Profiles Scraper API
 ```
+
+O frontend continua sem credencial privilegiada. O n8n possui credenciais server-side separadas e é responsável pelos campos operacionais/provider.
 
 ## Auth
 
@@ -40,7 +48,7 @@ public.monitored_profiles
 - sem tela pública de cadastro;
 - papel lido de `user.app_metadata.trend_radar_role`.
 
-## Data access
+## Data access do frontend
 
 Queries de perfis ficam centralizadas em:
 
@@ -53,24 +61,102 @@ Funções:
 - `updateProfile()`;
 - `setProfileActive()`.
 
-## Tipos
+## Ingestão de perfil
 
-Schema real gerado em:
+Workflow n8n:
 
-`src/lib/database.types.ts`
+- nome: `Trend Radar — Profile Collector POC`;
+- ID: `BijTnAz2cSLTMzva`;
+- estado: DRAFT / não publicado;
+- trigger: Manual Trigger;
+- provider: Bright Data Instagram Profiles Scraper API.
 
-Tipos de domínio/UI ficam separados em:
+Fluxo do POC:
 
-`src/features/profiles/types.ts`
+```text
+Manual Trigger
+  ↓
+Buscar próximo monitored_profile active + pending
+  ↓
+Bright Data — disparar coleta
+  ↓
+polling limitado (máximo 3 checagens)
+  ↓
+baixar snapshot
+  ↓
+normalizar InstagramProviderProfileResult
+  ↓
+validar identidade
+  ↓
+Supabase: sucesso ou erro
+```
 
-## Segurança
+O workflow seleciona o próximo perfil `active=true` e `monitoring_status=pending`, limitado a um registro e ordenado por prioridade. O username não fica hardcoded na versão final do draft.
 
-RLS controla linhas e `GRANT` de coluna controla quais campos o frontend pode escrever.
+## Provider adapter
 
-Nenhuma credencial privilegiada está no frontend.
+A automação converte o payload do provider para:
 
-## Próxima fronteira
+```ts
+type InstagramProviderProfileResult = {
+  instagramUsername: string
+  instagramExternalId: string | null
+  displayName: string | null
+  profilePictureUrl: string | null
+  followersCount: number | null
+  fetchedAt: string
+}
+```
 
-A próxima etapa poderá provar coleta real de um único perfil.
+Somente esse formato normalizado segue para a atualização de `monitored_profiles`.
 
-n8n, provider Instagram e posts permanecem fora desta implementação.
+## Retry / polling
+
+- requests externos com retry limitado;
+- máximo configurado: 3 tentativas nos nodes Bright Data;
+- polling do snapshot: 3 checagens com 25 segundos entre elas;
+- sem loops infinitos;
+- timeout do workflow: 180 segundos.
+
+A POC observou uma coleta real de aproximadamente 59 segundos, motivo pelo qual a janela inicial de 45 segundos foi ampliada.
+
+## Sucesso
+
+Atualiza apenas:
+
+- `instagram_external_id`;
+- `display_name`;
+- `profile_picture_url`;
+- `followers_count`;
+- `monitoring_status`;
+- `last_collected_at`;
+- `next_collection_at`;
+- `last_collection_error`.
+
+Para prioridade 2, a POC definiu `next_collection_at = last collection + 6 horas`.
+
+## Erro
+
+Uma falha:
+
+- define `monitoring_status = error`;
+- grava mensagem curta e sanitizada em `last_collection_error`;
+- não apaga dados provider válidos anteriores;
+- não altera campos humanos.
+
+## Escopo atual
+
+Etapa 3 validou somente metadados do perfil.
+
+Não foram criados:
+
+- tabela de posts;
+- snapshots de posts/perfis;
+- Trend Engine;
+- IA;
+- scores;
+- schedule recorrente.
+
+Detalhes da prova real:
+
+`docs/INGESTION_POC.md`
