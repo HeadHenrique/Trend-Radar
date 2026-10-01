@@ -95,3 +95,30 @@ Ainda pendente por ausência de dados no batch:
 - [ ] validar novos snapshots.
 
 Nova coleta real requer nova autorização.
+
+
+## Etapa 3.3.4 — Reprocessamento controlado
+
+Concluído:
+
+- [x] snapshot histórico ainda acessível;
+- [x] 0 chamadas de discovery;
+- [x] novo collection_run exclusivo do reprocessamento;
+- [x] 20 registros reais processados;
+- [x] 19 posts existentes atualizados;
+- [x] 1 post colaborativo inserido;
+- [x] 19 author preservados;
+- [x] 1 collaborator validado em runtime;
+- [x] 0 discovered neste batch;
+- [x] hashtags persistidas;
+- [x] 20 snapshots novos;
+- [x] 0 duplicações;
+- [x] runs históricos preservados;
+- [x] caminho temporário removido;
+- [x] workflow restaurado DRAFT/active=false/sem Schedule.
+
+Antes de Reels enrichment:
+
+- avaliar necessidade real de views/plays;
+- decidir data repair do run histórico separadamente;
+- definir próxima etapa da UI /posts somente com autorização.
