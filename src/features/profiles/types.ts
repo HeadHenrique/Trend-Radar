@@ -6,6 +6,7 @@ export type ProfileGroup = 'own' | 'competitor' | 'reference' | 'trendsetter'
 export type ProfilePriority = 1 | 2 | 3
 export type MonitoringStatus = 'pending' | 'healthy' | 'error'
 export type UserRole = 'viewer' | 'editor' | 'admin'
+export type PostAssociationType = 'author' | 'collaborator' | 'discovered'
 
 export type MonitoredProfileRow = Tables<'monitored_profiles'>
 
@@ -31,6 +32,23 @@ export interface MonitoredProfile {
   updatedAt: string
   createdBy: string | null
   updatedBy: string | null
+}
+
+export interface ProfileRecentPost {
+  id: string
+  thumbnailUrl: string | null
+  contentType: string
+  publishedAt: string | null
+  caption: string | null
+  permalink: string | null
+  associationType: PostAssociationType
+}
+
+export interface ProfileDetails {
+  monitoredContentCount: number
+  reelCount: number
+  collabCount: number
+  recentPosts: ProfileRecentPost[]
 }
 
 export interface ListProfilesParams {
@@ -65,6 +83,7 @@ export interface UpdateProfileInput {
 
 export interface ProfilesRepository {
   listProfiles(params?: ListProfilesParams): Promise<MonitoredProfile[]>
+  getProfileDetails(profileId: string): Promise<ProfileDetails>
   createProfile(input: CreateProfileInput): Promise<MonitoredProfile>
   updateProfile(id: string, input: UpdateProfileInput): Promise<MonitoredProfile>
   setProfileActive(id: string, active: boolean): Promise<MonitoredProfile>
