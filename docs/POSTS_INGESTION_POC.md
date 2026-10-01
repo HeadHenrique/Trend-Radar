@@ -554,3 +554,115 @@ Não foi chamado Reels Scraper.
 Esta etapa validou criação de novo run/provider_run_id e tratamento seguro de batch vazio.
 
 Não validou em runtime author/collaborator/discovered nem novos snapshots. Uma nova coleta futura exige autorização separada.
+
+
+## Etapa 3.3.4 — Reprocessamento controlado do snapshot existente
+
+Snapshot reutilizado:
+
+`sd_muppqcdph8ybzui2r`
+
+Nenhuma discovery foi executada.
+
+### Execuções técnicas
+
+A operação lógica usou um único collection_run:
+
+`a225b1ee-3ae5-42c4-9edc-f5db4389f449`
+
+Execução 9:
+
+- confirmou perfil saudável;
+- consultou status do snapshot histórico;
+- baixou 20 registros;
+- criou o novo collection_run;
+- falhou localmente no INSERT do primeiro snapshot por perda do item corrente após lookup de snapshot.
+
+O run permaneceu `running`.
+
+Execução 10:
+
+- reutilizou o mesmo collection_run;
+- reutilizou o mesmo provider_run_id;
+- fez somente novo download do mesmo snapshot;
+- concluiu o processamento dos 20 registros.
+
+Não houve novo collection_run nem novo provider job.
+
+### Chamadas Bright Data permitidas
+
+Total: 3.
+
+- execution 9: 1 status + 1 download;
+- execution 10: 1 download;
+- discovery: 0.
+
+### Resultado final
+
+- received = 20;
+- inserted = 1;
+- updated = 19;
+- status = success;
+- instagram_posts: 19 → 20;
+- monitored_profile_posts: 19 → 20;
+- post_metric_snapshots: 19 → 39.
+
+Associações finais:
+
+- author = 19;
+- collaborator = 1;
+- discovered = 0.
+
+### Post colaborativo
+
+`Dc9H9yExV6q` foi persistido corretamente.
+
+- canonical id: `f75b03ca-7704-4ff1-9a42-ba16f79019d7`;
+- media ID: `3980372677646180010`;
+- author username: `joseantoniodiferenciagro`;
+- author external ID: `52610638028`;
+- associação Leonardo: `collaborator`;
+- hashtags: `#Protagon`, `#Empreendedorismo`, `#Network`, `#Ambiência`, `#Prosperidade`.
+
+### Hashtags
+
+Cobertura final em instagram_posts:
+
+- 12 posts com array não vazio;
+- 0 arrays vazios;
+- 8 NULL.
+
+Nenhuma hashtag foi inferida da caption.
+
+### Métricas do novo run
+
+20 snapshots novos.
+
+Disponibilidade:
+
+- comments: 20/20;
+- likes: 8/20;
+- views: 0/20;
+- plays: 0/20;
+- shares: 0/20;
+- saves: 0/20.
+
+12 snapshots possuem `comments_count=0`.
+
+### Duplicação
+
+- media ID duplicado: 0;
+- shortcode duplicado: 0;
+- permalink duplicado: 0;
+- association PK duplicada: 0;
+- snapshot duplicado no mesmo run: 0.
+
+### Workflow após validação
+
+O caminho temporário foi removido.
+
+O Manual Trigger normal voltou a apontar para `Selecionar Perfil Saudável`.
+
+O workflow não contém o provider_run_id histórico nem o collection_run_id do recovery.
+
+Permanece DRAFT, active=false e sem Schedule Trigger.
