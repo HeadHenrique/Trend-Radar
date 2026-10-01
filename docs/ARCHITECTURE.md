@@ -1,84 +1,90 @@
 # Architecture
 
-## Estado implementado
+## Stack
 
-A ingestão real de posts existe e permanece DRAFT no n8n.
+- React + TypeScript + Vite
+- Supabase Auth/PostgreSQL/RLS
+- n8n
+- Bright Data atrás de adapter
+- Vercel
 
-Banco atual:
-
-- monitored_profiles;
-- collection_runs;
-- instagram_posts;
-- post_metric_snapshots;
-- profile_metric_snapshots.
-
-## Correção arquitetural proposta — Etapa 3.3.1
-
-A mídia do Instagram deve ser globalmente canônica.
+## Modelo de posts
 
 ```text
-provider
-  ↓
-instagram_posts
-  ↓
-monitored_profile_posts
-  ↑
 monitored_profiles
+        │
+        └─ monitored_profile_posts
+              │
+              └─ instagram_posts (canônico global)
+                       │
+                       └─ post_metric_snapshots
 ```
 
-Isso permite:
+## Posts Collector
+
+Workflow:
+
+`Trend Radar — Posts Collector POC`
+
+ID:
+
+`q9XBNlb3PsxsyULl`
+
+Estado:
+
+- DRAFT
+- active=false
+- sem Schedule Trigger
+- não executado na Etapa 3.3.2
+
+Fluxo adaptado:
 
 ```text
-post ABC
-  ↔ Leonardo
-  ↔ José
-  ↔ outro perfil monitorado
+perfil saudável
+→ abrir collection_run
+→ provider
+→ normalizar post + autor + hashtags + coauthors
+→ deduplicar post global
+→ upsert instagram_posts
+→ resolver monitored_profile_posts
+→ snapshot somente após associação
+→ finalizar run
 ```
 
-sem duplicar a mídia.
+## Association evidence
 
-## Associação e evidência
+Ordem de força:
 
-Tipos:
+`discovered < collaborator < author`
 
-- author;
-- collaborator;
-- discovered.
+O collector não rebaixa evidência anterior.
 
-A evidência deve ser conservadora.
+## Replay
 
-No post `Dc9H9yExV6q`, o payload já coletado contém `coauthor_producers` com `leonardofroese`, portanto a associação futura é collaborator.
+Run terminal não entra na persistência.
 
-## Snapshots
+Guard:
 
-Post snapshots continuam contextualizados por perfil/run:
+`Run processável?`
 
-```text
-(monitored_profile_id, post_id)
-→ monitored_profile_posts
+Somente `running` continua.
 
-(collection_run_id, monitored_profile_id)
-→ collection_runs
-```
+Finalizadores também filtram por `status=running`.
 
-## Trend Engine futuro
+## Recovery
 
-Creator Breadth, Adoption Velocity e participação de concorrentes/referências deverão usar `monitored_profile_posts`, opcionalmente filtrando por `association_type`.
+Recovery de erro permanece explícito e deve reutilizar:
 
-Não usar `instagram_posts.monitored_profile_id`.
+- mesmo collection_run;
+- mesmo provider_run_id.
 
-## Collection runs
+`orchestrator_run_id` permanece o ID da execução original.
 
-Counters representam o resultado da coleta lógica original.
+## Segurança
 
-Replay técnico de run terminal é no-op para:
+Nenhuma credencial foi movida para código/GitHub.
 
-- status;
-- finished_at;
-- received_count;
-- inserted_count;
-- updated_count.
+Workflow preserva:
 
-Detalhes:
-
-`docs/POST_ASSOCIATIONS_FOUNDATION.md`
+- `Supabase account`;
+- `Trend Radar — Bright Data API`.
