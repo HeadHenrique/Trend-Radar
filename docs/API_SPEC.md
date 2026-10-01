@@ -2,106 +2,66 @@
 
 ## Estado atual
 
-A fundação de posts está persistindo dados reais via n8n.
+Nenhuma API/frontend novo foi implementado na Etapa 3.3.1.
 
-Ainda não existe repository/UI frontend de Posts nesta etapa.
+## Contrato conceitual futuro de associação
 
-## Workflow de ingestão
+```ts
+type PostAssociationType =
+  | 'author'
+  | 'collaborator'
+  | 'discovered'
 
-`Trend Radar — Posts Collector POC`
+type MonitoredProfilePostAssociation = {
+  monitoredProfileId: string
+  instagramPostId: string
+  associationType: PostAssociationType
+  firstSeenAt: string
+  lastSeenAt: string
+}
+```
 
-ID:
+### Evidência
 
-`q9XBNlb3PsxsyULl`
+- author: autoria direta observada;
+- collaborator: coauthor/collaboration explícito;
+- discovered: devolvido pela discovery do perfil, sem autoria/coautoria comprovada.
 
-Estado:
+Não classificar collaborator apenas por username divergente.
 
-- DRAFT;
-- active=false;
-- Manual Trigger;
-- sem Schedule Trigger.
+## Post canônico
 
-## Entrada
+Campos de autoria propostos:
 
-Seleciona dinamicamente um perfil:
+```ts
+authorInstagramUsername: string | null
+authorInstagramExternalId: string | null
+hashtags: string[] | null
+```
 
-- active=true;
-- monitoring_status=healthy;
-- limite 1;
-- prioridade ascendente.
-
-O perfil não fica hardcoded na versão final.
-
-## Collection run
-
-Antes do provider:
-
-- collection_type=posts;
-- provider_key=bright_data;
-- orchestrator=n8n;
-- orchestrator_run_id real quando disponível;
-- status=running.
-
-Após o trigger, `provider_run_id` recebe o ID real do job.
-
-## Provider contract observado
-
-Mapping:
-
-- post_id → instagram_media_id;
-- shortcode → instagram_shortcode;
-- url → permalink;
-- date_posted → published_at;
-- description → caption;
-- content_type → content_type;
-- thumbnail → thumbnail_url;
-- videos_duration[0].video_duration → duration_seconds;
-- likes → likes_count;
-- num_comments → comments_count.
-
-Ausentes no primeiro batch:
-
-- views;
-- plays;
-- shares;
-- saves;
-- áudio utilizável.
-
-Ausência permanece NULL.
+Autor não precisa ser monitored profile.
 
 ## Deduplicação
 
-Lookup na ordem:
+Global:
 
-1. instagram_media_id;
-2. instagram_shortcode;
+1. instagramMediaId;
+2. shortcode;
 3. permalink.
 
-Post existente preserva valor anterior quando o novo payload retorna NULL.
+Associação adicional não cria novo post.
 
-Posts são processados um por vez para manter item pairing correto no n8n.
+## Replay
 
-## Snapshots
+Para run terminal com o mesmo provider_run_id:
 
-Snapshot só é criado quando ao menos uma métrica é observada.
+- não sobrescrever counters;
+- não alterar finished_at/status;
+- não criar snapshots duplicados;
+- validar idempotência e sair.
 
-Antes do INSERT é verificado se já existe `post_id + collection_run_id`, permitindo recovery/replay idempotente.
+## Recovery
 
-## Resultado da primeira POC
+Erro recuperável pode voltar a running e terminar success/partial se o mesmo provider job ainda for utilizável.
 
-Provider:
-
-- solicitado: 20;
-- retornado: 20.
-
-Persistido:
-
-- 19 posts;
-- 19 snapshots de post;
-- 0 snapshots de perfil.
-
-Um registro foi rejeitado porque `user_posted` não correspondia ao perfil solicitado.
-
-Detalhes completos:
-
-`docs/POSTS_INGESTION_POC.md`
+Nenhum workflow foi alterado nesta etapa.
