@@ -202,3 +202,50 @@ Performance:
 - 3 INFO `unindexed_foreign_keys` em FKs compostas de snapshots;
 - não corrigidos nesta etapa porque parent IDs não são fluxo de UPDATE/DELETE no MVP e não há necessidade comprovada de novos índices;
 - unused indexes em tabelas novas/vazias são esperados.
+
+
+## Etapa 3.3.2 — monitored_profile_posts
+
+Migration:
+
+`20261001201951_create_post_profile_associations`
+
+RLS:
+
+- habilitado.
+
+Grants:
+
+- anon: nenhum;
+- authenticated: SELECT;
+- authenticated: sem INSERT/UPDATE/DELETE;
+- service_role: SELECT/INSERT/UPDATE;
+- service_role: sem DELETE.
+
+Policy:
+
+- SELECT somente para viewer/editor/admin.
+
+Testes reais em transação com ROLLBACK:
+
+- viewer leu as 19 associações;
+- role inválida leu 0;
+- authenticated não conseguiu INSERT.
+
+Integridade:
+
+- snapshot sem associação perfil↔post falhou;
+- após associação temporária válida, snapshot passou;
+- rollback removeu todos os dados temporários.
+
+Advisor:
+
+- nenhum finding de segurança novo causado pela migration;
+- collection_runs sem policy continua intencional/server-side only;
+- leaked password protection continua fora do escopo.
+
+Performance:
+
+- a nova FK de snapshots gerou INFO de falta de índice;
+- corrigido por `20261001202104_index_post_snapshot_profile_post_fk`;
+- o finding novo desapareceu após reexecutar o advisor.
