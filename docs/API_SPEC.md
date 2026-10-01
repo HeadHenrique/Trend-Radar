@@ -1,67 +1,102 @@
 # API Spec
 
-## Estado atual
+## Post canônico
 
-Nenhuma API/frontend novo foi implementado na Etapa 3.3.1.
+Contrato persistido:
 
-## Contrato conceitual futuro de associação
+```ts
+type InstagramPost = {
+  id: string
+  instagramMediaId: string | null
+  shortcode: string | null
+  permalink: string | null
+  publishedAt: string | null
+  caption: string | null
+  contentType: 'reel' | 'carousel' | 'image' | 'video' | 'unknown'
+  durationSeconds: number | null
+  audioName: string | null
+  thumbnailUrl: string | null
+  authorInstagramUsername: string | null
+  authorInstagramExternalId: string | null
+  hashtags: string[] | null
+}
+```
+
+## Associação
 
 ```ts
 type PostAssociationType =
   | 'author'
   | 'collaborator'
   | 'discovered'
-
-type MonitoredProfilePostAssociation = {
-  monitoredProfileId: string
-  instagramPostId: string
-  associationType: PostAssociationType
-  firstSeenAt: string
-  lastSeenAt: string
-}
 ```
 
-### Evidência
+`monitored_profile_posts` relaciona:
 
-- author: autoria direta observada;
-- collaborator: coauthor/collaboration explícito;
-- discovered: devolvido pela discovery do perfil, sem autoria/coautoria comprovada.
+- monitoredProfileId
+- instagramPostId
+- associationType
+- firstSeenAt
+- lastSeenAt
 
-Não classificar collaborator apenas por username divergente.
+## Normalização no n8n
 
-## Post canônico
+### author
 
-Campos de autoria propostos:
+author username/external ID coincide com perfil monitorado.
 
-```ts
-authorInstagramUsername: string | null
-authorInstagramExternalId: string | null
-hashtags: string[] | null
-```
+### collaborator
 
-Autor não precisa ser monitored profile.
+coauthor field explícito contém o perfil.
 
-## Deduplicação
+### discovered
 
-Global:
+post apareceu na discovery sem evidência suficiente de autoria/coautoria.
 
-1. instagramMediaId;
-2. shortcode;
-3. permalink.
+## Upsert
 
-Associação adicional não cria novo post.
+Post:
 
-## Replay
+1. media ID
+2. shortcode
+3. permalink
 
-Para run terminal com o mesmo provider_run_id:
+Associação:
 
-- não sobrescrever counters;
-- não alterar finished_at/status;
-- não criar snapshots duplicados;
-- validar idempotência e sair.
+`monitored_profile_id + instagram_post_id`
 
-## Recovery
+NULL novo não apaga valor canônico válido anterior.
 
-Erro recuperável pode voltar a running e terminar success/partial se o mesmo provider job ainda for utilizável.
+Hashtags:
 
-Nenhum workflow foi alterado nesta etapa.
+- NULL preserva valor anterior;
+- [] é observação válida de zero hashtags.
+
+## Snapshots
+
+Associação deve existir antes do snapshot.
+
+Snapshot continua usando:
+
+- post_id
+- monitored_profile_id
+- collection_run_id
+
+## Counters
+
+Contam somente posts canônicos novos/atualizados da coleta lógica.
+
+Associações e snapshots não entram em inserted_count/updated_count.
+
+## Replay terminal
+
+success/partial não é reprocessado pela etapa de persistência.
+
+## Dc9H9yExV6q
+
+Ainda não persistido.
+
+Pela nova normalização:
+
+- author = joseantoniodiferenciagro
+- associação Leonardo = collaborator
