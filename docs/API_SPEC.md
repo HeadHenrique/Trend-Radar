@@ -1,144 +1,108 @@
 # API Spec
 
-## Supabase client
+## Estado atual
 
-O frontend usa o Data API via `@supabase/supabase-js` com publishable key e JWT do usuário autenticado.
+O frontend continua usando Supabase Data API com publishable key + JWT.
 
-## Auth
+O n8n utiliza credencial server-side somente para as operações operacionais já implementadas.
 
-Implementado:
+Nenhuma API de posts foi implementada na Etapa 3.1.
 
-- `signInWithPassword`;
-- `signOut`;
-- restauração de sessão;
-- listener de mudança de sessão.
-
-Não existe signup público na UI.
-
-## Profiles Repository
-
-Implementado em `src/features/profiles/repository.ts`:
+## Contrato proposto de post
 
 ```ts
-listProfiles(params?)
-createProfile(input)
-updateProfile(id, input)
-setProfileActive(id, active)
-```
+type InstagramObservedContentType =
+  | 'reel'
+  | 'carousel'
+  | 'image'
+  | 'video'
+  | 'unknown'
 
-### Escrita humana
+type InstagramProviderPostMetrics = {
+  views: number | null
+  plays: number | null
+  likes: number | null
+  comments: number | null
+  shares: number | null
+  saves: number | null
+}
 
-O cliente envia somente:
-
-- instagram username;
-- mercado;
-- grupo;
-- nicho;
-- categoria;
-- prioridade;
-- tags;
-- active.
-
-Não envia campos operacionais/provider nem auditoria.
-
-### Username
-
-É normalizado em `normalizeInstagram.ts`.
-
-Depois de existir `instagram_external_id`, o banco protege o username contra mudança pelo frontend.
-
-### Estados
-
-A página trata:
-
-- loading;
-- empty;
-- error;
-- success.
-
-## Ingestão server-side via n8n
-
-Workflow:
-
-`Trend Radar — Profile Collector POC`
-
-ID:
-
-`BijTnAz2cSLTMzva`
-
-Estado:
-
-`DRAFT / NÃO PUBLICADO`
-
-### Entrada
-
-O workflow consulta `public.monitored_profiles` e seleciona um registro:
-
-- `active = true`;
-- `monitoring_status = pending`;
-- limite 1;
-- prioridade ascendente.
-
-### Provider
-
-Bright Data Instagram Profiles Scraper API.
-
-A requisição usa o username vindo do registro real do Supabase para formar a URL pública do perfil. Nenhum username fica hardcoded na versão final do workflow.
-
-### Formato normalizado
-
-```ts
-type InstagramProviderProfileResult = {
-  instagramUsername: string
-  instagramExternalId: string | null
-  displayName: string | null
-  profilePictureUrl: string | null
-  followersCount: number | null
-  fetchedAt: string
+type InstagramProviderPostResult = {
+  instagramMediaId: string | null
+  shortcode: string | null
+  permalink: string | null
+  publishedAt: string | null
+  caption: string | null
+  contentType: InstagramObservedContentType
+  durationSeconds: number | null
+  audioName: string | null
+  thumbnailUrl: string | null
+  metrics: InstagramProviderPostMetrics
 }
 ```
 
-Campos ausentes permanecem `null`.
+Regras:
 
-### Validação de identidade
+- campos ausentes → `null`;
+- não inferir métricas;
+- não converter ausência para zero;
+- não transformar todo vídeo em Reel;
+- pelo menos uma identidade de post deve existir.
 
-Antes do update, o username retornado pelo provider precisa corresponder ao `instagram_username` solicitado.
+## Contrato proposto de batch
 
-`instagram_external_id` é preenchido somente com ID real retornado pelo provider.
+```ts
+type InstagramProviderPostsResult = {
+  profileUsername: string
+  fetchedAt: string
+  posts: InstagramProviderPostResult[]
+  nextCursor?: string | null
+  hasMore?: boolean | null
+}
+```
 
-### Update de sucesso
+Paginação fica opcional para não acoplar domínio ao provider atual.
 
-Somente:
+## Estratégia futura de persistência
 
-- `instagram_external_id`;
-- `display_name`;
-- `profile_picture_url`;
-- `followers_count`;
-- `monitoring_status = healthy`;
-- `last_collected_at`;
-- `next_collection_at`;
-- `last_collection_error = null`.
+Para cada post normalizado:
 
-### Update de erro
+1. buscar por media ID;
+2. fallback shortcode;
+3. fallback permalink canônico;
+4. inserir ou atualizar a entidade canônica;
+5. inserir snapshot de métricas com o mesmo `collection_run_id`.
 
-Somente:
+Snapshot só existe quando ao menos uma métrica foi observada.
 
-- `monitoring_status = error`;
-- `last_collection_error`.
+## Estado observado do provider atual
 
-Dados provider válidos anteriores não são limpos em erro.
+Sem executar nova coleta, a execução já armazenada da Etapa 3 foi revisada.
 
-### Credenciais
+Os objetos de post observados não continham métricas de:
 
-Somente nomes/tipos são documentados:
+- views;
+- plays;
+- likes;
+- comments;
+- shares;
+- saves.
 
-- `Supabase account` — `supabaseApi`;
-- `Trend Radar — Bright Data API` — `httpHeaderAuth`.
+Logo essas métricas continuam nullable até a prova real do endpoint/dataset de posts.
 
-Valores de credenciais não ficam no GitHub, frontend, documentação ou parâmetros visíveis dos nodes.
+## Segurança proposta
 
-## Posts
+Frontend autenticado com role válida:
 
-A Etapa 3 não persiste posts, não cria tabela de posts e não envia posts para IA.
+- SELECT em posts/runs/snapshots;
+- sem INSERT;
+- sem UPDATE;
+- sem DELETE.
 
-O provider de perfil pode devolver campos adicionais no payload bruto, mas apenas os metadados definidos no adapter acima são normalizados e gravados no Supabase.
+Backend/n8n:
+
+- upsert em posts;
+- criação/fechamento de collection runs;
+- INSERT de snapshots.
+
+Nenhuma alteração foi aplicada nesta etapa.
