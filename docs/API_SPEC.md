@@ -1,14 +1,12 @@
 # API Spec
 
-## Estado atual
+## Estado
 
-O frontend continua usando Supabase Data API com publishable key + JWT.
+Nenhuma API de posts foi implementada.
 
-O n8n utiliza credencial server-side somente para as operações operacionais já implementadas.
+Etapa 3.1.1 apenas corrige o contrato e a persistência proposta.
 
-Nenhuma API de posts foi implementada na Etapa 3.1.
-
-## Contrato proposto de post
+## Contrato provider-neutral
 
 ```ts
 type InstagramObservedContentType =
@@ -39,19 +37,7 @@ type InstagramProviderPostResult = {
   thumbnailUrl: string | null
   metrics: InstagramProviderPostMetrics
 }
-```
 
-Regras:
-
-- campos ausentes → `null`;
-- não inferir métricas;
-- não converter ausência para zero;
-- não transformar todo vídeo em Reel;
-- pelo menos uma identidade de post deve existir.
-
-## Contrato proposto de batch
-
-```ts
 type InstagramProviderPostsResult = {
   profileUsername: string
   fetchedAt: string
@@ -61,48 +47,55 @@ type InstagramProviderPostsResult = {
 }
 ```
 
-Paginação fica opcional para não acoplar domínio ao provider atual.
+## Persistência futura
 
-## Estratégia futura de persistência
+Ordem lógica:
 
-Para cada post normalizado:
+1. criar `collection_runs`;
+2. chamar provider;
+3. salvar `provider_run_id` quando disponível;
+4. normalizar batch;
+5. deduplicar/upsert em `instagram_posts`;
+6. inserir snapshots usando o mesmo `collection_run_id`;
+7. fechar run.
 
-1. buscar por media ID;
-2. fallback shortcode;
-3. fallback permalink canônico;
-4. inserir ou atualizar a entidade canônica;
-5. inserir snapshot de métricas com o mesmo `collection_run_id`.
+Retries do mesmo job reutilizam run e provider_run_id.
 
-Snapshot só existe quando ao menos uma métrica foi observada.
+## Segurança futura
 
-## Estado observado do provider atual
+### authenticated
 
-Sem executar nova coleta, a execução já armazenada da Etapa 3 foi revisada.
+- SELECT em `instagram_posts`;
+- SELECT em `post_metric_snapshots`;
+- SELECT em `profile_metric_snapshots`;
+- nenhum acesso a `collection_runs`;
+- nenhuma escrita nas quatro tabelas.
 
-Os objetos de post observados não continham métricas de:
+### service_role
 
-- views;
-- plays;
-- likes;
-- comments;
-- shares;
-- saves.
+Após REVOKE ALL explícito:
 
-Logo essas métricas continuam nullable até a prova real do endpoint/dataset de posts.
+- `collection_runs`: SELECT, INSERT, UPDATE;
+- `instagram_posts`: SELECT, INSERT, UPDATE;
+- `post_metric_snapshots`: SELECT, INSERT;
+- `profile_metric_snapshots`: SELECT, INSERT.
 
-## Segurança proposta
+Sem DELETE.
 
-Frontend autenticado com role válida:
+Snapshots sem UPDATE.
 
-- SELECT em posts/runs/snapshots;
-- sem INSERT;
-- sem UPDATE;
-- sem DELETE.
+## Integridade
 
-Backend/n8n:
+`post_metric_snapshots` inclui `monitored_profile_id` e usa FKs compostas para impedir combinação entre post e run de perfis diferentes.
 
-- upsert em posts;
-- criação/fechamento de collection runs;
-- INSERT de snapshots.
+`profile_metric_snapshots` também usa FK composta com collection run.
 
-Nenhuma alteração foi aplicada nesta etapa.
+## Configuração de ingestão
+
+Limite inicial recomendado:
+
+`20 posts`.
+
+É configuração do adapter/workflow, não do banco.
+
+A frequência de snapshots permanece conceitual e não deve virar scheduler antes da prova real do dataset de posts.
