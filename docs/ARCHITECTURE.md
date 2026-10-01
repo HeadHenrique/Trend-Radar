@@ -117,3 +117,24 @@ O workflow permanece:
 - sem Schedule Trigger.
 
 Não houve segunda coleta.
+
+
+## Etapa 3.3.3 — validação real
+
+Uma nova execução manual criou novo collection_run e novo provider_run_id normalmente.
+
+Fluxo observado:
+
+```text
+perfil saudável
+→ novo collection_run
+→ novo provider_run_id
+→ provider ready
+→ records=0
+→ download []
+→ run error tratado
+```
+
+Nenhum upsert de post/associação/snapshot alterou o banco.
+
+O workflow permanece DRAFT, active=false e sem Schedule Trigger. Não houve segunda coleta.
