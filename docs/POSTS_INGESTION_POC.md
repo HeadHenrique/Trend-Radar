@@ -483,3 +483,74 @@ Não validou em runtime:
 - novos snapshots.
 
 Uma nova coleta futura exige autorização separada.
+
+
+## Etapa 3.3.3 — Validação real do collector canônico
+
+Foi executada exatamente uma nova coleta lógica pelo Manual Trigger.
+
+### Execução
+
+- n8n execution ID: `8`;
+- novo collection_run: `7eba4bbb-b7b8-4e4b-b2a5-ee59685f2add`;
+- novo provider_run_id: `sd_mupzulxc2bedzsf3mn`;
+- orchestrator_run_id: `8`.
+
+O run histórico anterior não foi reutilizado nem alterado.
+
+### Resultado do provider
+
+O Bright Data Instagram Posts Scraper confirmou o job como `ready`, mas retornou:
+
+- records = 0;
+- errors = 0;
+- collection_duration ≈ 23,606 segundos;
+- error_message = `No records found. The data may not be available or has changed. Please try again later or adjust your search criteria.`
+
+O download retornou HTTP 200 com array vazio.
+
+O novo run terminou:
+
+- status = error;
+- received_count = 0;
+- inserted_count = 0;
+- updated_count = 0.
+
+### Persistência
+
+Nenhuma linha de conteúdo foi alterada:
+
+- instagram_posts = 19;
+- monitored_profile_posts = 19;
+- post_metric_snapshots = 19;
+- profile_metric_snapshots = 0.
+
+Associações:
+
+- author = 19;
+- collaborator = 0;
+- discovered = 0.
+
+Nenhuma associação antiga foi rebaixada.
+
+### Dc9H9yExV6q
+
+O post não apareceu porque o provider retornou zero registros no batch inteiro.
+
+Ele continua ausente do banco. Portanto esta execução não validou em runtime a regra collaborator.
+
+### Métricas e hashtags
+
+Como nenhum post foi retornado:
+
+- nenhuma métrica nova foi observada;
+- nenhum snapshot novo foi criado;
+- nenhuma hashtag nova foi observada/persistida.
+
+Não foi chamado Reels Scraper.
+
+### Conclusão
+
+Esta etapa validou criação de novo run/provider_run_id e tratamento seguro de batch vazio.
+
+Não validou em runtime author/collaborator/discovered nem novos snapshots. Uma nova coleta futura exige autorização separada.
