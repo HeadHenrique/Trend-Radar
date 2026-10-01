@@ -13,7 +13,9 @@
 - Bright Data Instagram Profiles Scraper API;
 - Vercel.
 
-## Fluxo atual
+## Estado implementado
+
+Hoje o produto possui:
 
 ```text
 /login
@@ -34,129 +36,72 @@ public.monitored_profiles
   ↑
 n8n — Trend Radar — Profile Collector POC
   ↑
-Bright Data Instagram Profiles Scraper API
+Instagram Provider
 ```
 
-O frontend continua sem credencial privilegiada. O n8n possui credenciais server-side separadas e é responsável pelos campos operacionais/provider.
+O workflow de perfil segue DRAFT/não publicado.
 
-## Auth
-
-- e-mail + senha;
-- restauração de sessão;
-- logout;
-- rotas internas protegidas;
-- sem tela pública de cadastro;
-- papel lido de `user.app_metadata.trend_radar_role`.
-
-## Data access do frontend
-
-Queries de perfis ficam centralizadas em:
-
-`src/features/profiles/repository.ts`
-
-Funções:
-
-- `listProfiles()`;
-- `createProfile()`;
-- `updateProfile()`;
-- `setProfileActive()`.
-
-## Ingestão de perfil
-
-Workflow n8n:
-
-- nome: `Trend Radar — Profile Collector POC`;
-- ID: `BijTnAz2cSLTMzva`;
-- estado: DRAFT / não publicado;
-- trigger: Manual Trigger;
-- provider: Bright Data Instagram Profiles Scraper API.
-
-Fluxo do POC:
+## Fundação proposta da Etapa 3.1 — não implementada
 
 ```text
-Manual Trigger
+monitored_profiles
   ↓
-Buscar próximo monitored_profile active + pending
+collection_runs
   ↓
-Bright Data — disparar coleta
+Instagram Provider Adapter
   ↓
-polling limitado (máximo 3 checagens)
+InstagramProviderPostsResult
   ↓
-baixar snapshot
+identity resolver / upsert
   ↓
-normalizar InstagramProviderProfileResult
+instagram_posts
   ↓
-validar identidade
+post_metric_snapshots
+
+profile collection
   ↓
-Supabase: sucesso ou erro
+profile_metric_snapshots
 ```
 
-O workflow seleciona o próximo perfil `active=true` e `monitoring_status=pending`, limitado a um registro e ordenado por prioridade. O username não fica hardcoded na versão final do draft.
+Princípios:
 
-## Provider adapter
+- entidades canônicas contêm dados observados;
+- provider fica atrás de adapter;
+- métricas históricas vivem em snapshots;
+- `collection_run_id` dá idempotência aos snapshots;
+- frontend faz somente SELECT nas futuras entidades observadas;
+- escrita fica server-side/n8n;
+- nenhum raw payload grande é persistido por padrão.
 
-A automação converte o payload do provider para:
+## Contratos propostos
 
-```ts
-type InstagramProviderProfileResult = {
-  instagramUsername: string
-  instagramExternalId: string | null
-  displayName: string | null
-  profilePictureUrl: string | null
-  followersCount: number | null
-  fetchedAt: string
-}
-```
+### Post
 
-Somente esse formato normalizado segue para a atualização de `monitored_profiles`.
+`InstagramProviderPostResult`
 
-## Retry / polling
+Contém identidade, permalink, publicação, caption, tipo observável, duração/áudio/thumbnail quando disponíveis e métricas nullable.
 
-- requests externos com retry limitado;
-- máximo configurado: 3 tentativas nos nodes Bright Data;
-- polling do snapshot: 3 checagens com 25 segundos entre elas;
-- sem loops infinitos;
-- timeout do workflow: 180 segundos.
+### Batch
 
-A POC observou uma coleta real de aproximadamente 59 segundos, motivo pelo qual a janela inicial de 45 segundos foi ampliada.
+`InstagramProviderPostsResult`
 
-## Sucesso
+Contém:
 
-Atualiza apenas:
+- profileUsername;
+- fetchedAt;
+- posts[];
+- paginação opcional e provider-neutral.
 
-- `instagram_external_id`;
-- `display_name`;
-- `profile_picture_url`;
-- `followers_count`;
-- `monitoring_status`;
-- `last_collected_at`;
-- `next_collection_at`;
-- `last_collection_error`.
+## Recorrência futura
 
-Para prioridade 2, a POC definiu `next_collection_at = last collection + 6 horas`.
+O Profile Collector atual usa:
 
-## Erro
+`active=true AND monitoring_status=pending`
 
-Uma falha:
+Para recorrência deverá evoluir para elegibilidade por `next_collection_at`, incluindo `pending`, `healthy` e `error` com backoff apropriado.
 
-- define `monitoring_status = error`;
-- grava mensagem curta e sanitizada em `last_collection_error`;
-- não apaga dados provider válidos anteriores;
-- não altera campos humanos.
+Nada disso foi aplicado nesta etapa.
 
-## Escopo atual
+Documento de arquitetura:
 
-Etapa 3 validou somente metadados do perfil.
-
-Não foram criados:
-
-- tabela de posts;
-- snapshots de posts/perfis;
-- Trend Engine;
-- IA;
-- scores;
-- schedule recorrente.
-
-Detalhes da prova real:
-
-`docs/INGESTION_POC.md`
+`docs/POSTS_SNAPSHOTS_FOUNDATION.md`
