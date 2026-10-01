@@ -2,72 +2,106 @@
 
 ## Estado atual
 
-A fundação de banco de posts/snapshots existe, mas **não há repository de posts nem UI de Posts implementados ainda**.
+A fundação de posts está persistindo dados reais via n8n.
 
-`src/lib/database.types.ts` foi regenerado do schema real.
+Ainda não existe repository/UI frontend de Posts nesta etapa.
 
-## Tabelas disponíveis
+## Workflow de ingestão
 
-- `collection_runs`;
-- `instagram_posts`;
-- `post_metric_snapshots`;
-- `profile_metric_snapshots`.
+`Trend Radar — Posts Collector POC`
 
-## Acesso frontend
+ID:
 
-### collection_runs
+`q9XBNlb3PsxsyULl`
 
-Sem acesso para `authenticated`.
+Estado:
 
-### instagram_posts
+- DRAFT;
+- active=false;
+- Manual Trigger;
+- sem Schedule Trigger.
 
-SELECT somente para roles:
+## Entrada
 
-- viewer;
-- editor;
-- admin.
+Seleciona dinamicamente um perfil:
 
-### snapshots
+- active=true;
+- monitoring_status=healthy;
+- limite 1;
+- prioridade ascendente.
 
-SELECT somente para roles válidas.
+O perfil não fica hardcoded na versão final.
 
-Frontend não possui INSERT/UPDATE/DELETE nessas entidades.
+## Collection run
 
-## Escrita server-side
+Antes do provider:
 
-Matriz efetiva:
+- collection_type=posts;
+- provider_key=bright_data;
+- orchestrator=n8n;
+- orchestrator_run_id real quando disponível;
+- status=running.
 
-- collection_runs: SELECT, INSERT, UPDATE;
-- instagram_posts: SELECT, INSERT, UPDATE;
-- post_metric_snapshots: SELECT, INSERT;
-- profile_metric_snapshots: SELECT, INSERT.
+Após o trigger, `provider_run_id` recebe o ID real do job.
 
-Sem DELETE.
+## Provider contract observado
 
-Snapshots sem UPDATE.
+Mapping:
 
-## Contrato provider-neutral futuro
+- post_id → instagram_media_id;
+- shortcode → instagram_shortcode;
+- url → permalink;
+- date_posted → published_at;
+- description → caption;
+- content_type → content_type;
+- thumbnail → thumbnail_url;
+- videos_duration[0].video_duration → duration_seconds;
+- likes → likes_count;
+- num_comments → comments_count.
 
-O contrato arquitetural permanece:
+Ausentes no primeiro batch:
 
-`InstagramProviderPostResult`
+- views;
+- plays;
+- shares;
+- saves;
+- áudio utilizável.
 
-e:
+Ausência permanece NULL.
 
-`InstagramProviderPostsResult`
+## Deduplicação
 
-A implementação do adapter/workflow de posts ainda não foi iniciada.
+Lookup na ordem:
 
-## Idempotência futura
+1. instagram_media_id;
+2. instagram_shortcode;
+3. permalink.
 
-O fluxo aprovado deverá:
+Post existente preserva valor anterior quando o novo payload retorna NULL.
 
-1. criar `collection_run`;
-2. chamar provider;
-3. salvar `provider_run_id`;
-4. reutilizar o mesmo run/job em retries;
-5. upsert do post;
-6. inserir snapshot;
-7. finalizar run.
+Posts são processados um por vez para manter item pairing correto no n8n.
 
-Nenhum desses passos foi implementado em n8n nesta etapa.
+## Snapshots
+
+Snapshot só é criado quando ao menos uma métrica é observada.
+
+Antes do INSERT é verificado se já existe `post_id + collection_run_id`, permitindo recovery/replay idempotente.
+
+## Resultado da primeira POC
+
+Provider:
+
+- solicitado: 20;
+- retornado: 20.
+
+Persistido:
+
+- 19 posts;
+- 19 snapshots de post;
+- 0 snapshots de perfil.
+
+Um registro foi rejeitado porque `user_posted` não correspondia ao perfil solicitado.
+
+Detalhes completos:
+
+`docs/POSTS_INGESTION_POC.md`
