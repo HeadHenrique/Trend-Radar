@@ -1,5 +1,73 @@
 # Changelog
 
+## 2026-10-01 — Etapa 4.0
+
+### Profiles
+
+- removida formatação compacta de seguidores;
+- followers_count agora é exibido exatamente em pt-BR;
+- linha inteira do perfil abre detalhes;
+- suporte a teclado Enter/Espaço;
+- editar/pausar usam stopPropagation e não abrem detalhes;
+- criado ProfileDetailDrawer compartilhado;
+- criado ProfileEditorDrawer compartilhado;
+- criado ProfileListTable compartilhado.
+
+### Profile details
+
+Repository consulta:
+
+- monitored_profile_posts;
+- instagram_posts.
+
+Drawer mostra dados reais:
+
+- seguidores;
+- conteúdos monitorados;
+- Reels;
+- collabs;
+- mercado;
+- grupo;
+- nicho;
+- categoria;
+- prioridade;
+- tags;
+- última/próxima coleta;
+- status;
+- até 3 conteúdos recentes.
+
+Validação real de leonardofroese:
+
+- followers = 2766;
+- conteúdos = 20;
+- Reels = 16;
+- collabs = 1.
+
+### Competitors
+
+- /competitors passou a usar monitored_profiles com profile_group=competitor;
+- botão Adicionar concorrente para editor/admin;
+- formulário compartilhado com grupo travado em competitor;
+- lista real de concorrentes;
+- ações editar/pausar reutilizadas;
+- mesmo ProfileDetailDrawer;
+- empty state contextual enquanto não existem concorrentes.
+
+Estado atual:
+
+- competitors = 0;
+- nenhum registro fake criado.
+
+### Escopo preservado
+
+- nenhum schema/migration;
+- nenhum RLS/grant;
+- nenhum n8n;
+- nenhuma Bright Data;
+- nenhum Schedule;
+- nenhuma IA;
+- nenhum Trend Engine.
+
 ## 2026-10-01 — Etapa 3.4.2
 
 ### Diagnóstico final de views
