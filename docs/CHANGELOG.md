@@ -38,6 +38,16 @@
 - `next_collection_at` definido em +6h para prioridade 2;
 - `last_collection_error = null`.
 
+### Frontend
+
+- `/profiles` validado após a coleta real;
+- avatar real exibido;
+- nome e username reais exibidos;
+- seguidores exibidos como `2,8 mil`;
+- status exibido como `Saudável`;
+- última coleta exibida como `01/10/2026, 00:44`;
+- grupo `Próprio`, mercado `Brasil` e prioridade `Média` preservados.
+
 ### Execuções
 
 Foram realizadas 3 execuções manuais:
