@@ -122,3 +122,31 @@ Antes de Reels enrichment:
 - avaliar necessidade real de views/plays;
 - decidir data repair do run histórico separadamente;
 - definir próxima etapa da UI /posts somente com autorização.
+
+
+## Etapa 3.4 — Reels Enrichment POC
+
+Concluído:
+
+- [x] workflow separado DRAFT;
+- [x] dataset Reels atual confirmado;
+- [x] 3 Reels selecionados dinamicamente;
+- [x] um único provider job;
+- [x] output real inspecionado;
+- [x] mapping campo a campo documentado;
+- [x] 3 snapshots novos;
+- [x] Posts Collector preservado;
+- [x] sem Schedule/publicação/schema change.
+
+Resultado:
+
+- [ ] views úteis disponíveis — **não**;
+- [ ] plays úteis disponíveis — **não**;
+- [x] likes/comments disponíveis;
+- [ ] audio_name disponível — **não**.
+
+Decisão atual:
+
+**não escalar enrichment para os demais Reels.**
+
+Reavaliar somente após confirmar uma fonte/configuração que entregue views de forma real.
