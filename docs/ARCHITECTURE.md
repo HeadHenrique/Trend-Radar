@@ -88,3 +88,32 @@ Workflow preserva:
 
 - `Supabase account`;
 - `Trend Radar — Bright Data API`.
+
+
+## Validação real 3.3.3
+
+Uma nova execução manual foi feita após a adaptação canônica.
+
+Novo run/provider job foram criados normalmente, mas o provider retornou 0 registros.
+
+Fluxo observado:
+
+```text
+perfil saudável
+→ novo collection_run
+→ novo provider_run_id
+→ provider ready
+→ records=0
+→ download []
+→ Finalizar Run — Erro
+```
+
+Nenhum node de upsert de posts/associações/snapshots executou efeito persistente.
+
+O workflow permanece:
+
+- DRAFT;
+- active=false;
+- sem Schedule Trigger.
+
+Não houve segunda coleta.
