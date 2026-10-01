@@ -150,3 +150,36 @@ Decisão atual:
 **não escalar enrichment para os demais Reels.**
 
 Reavaliar somente após confirmar uma fonte/configuração que entregue views de forma real.
+
+
+## Etapa 3.4.2 — Último diagnóstico de views
+
+Concluído:
+
+- [x] workflow diagnóstico separado;
+- [x] 1 profile discovery;
+- [x] num_of_posts=1;
+- [x] 1 provider job;
+- [x] 1 record recebido;
+- [x] match com post existente;
+- [x] 1 snapshot novo;
+- [x] views NULL;
+- [x] video_play_count NULL;
+- [x] likes/comments presentes;
+- [x] followers observado sem atualizar perfil;
+- [x] nenhuma segunda execução;
+- [x] modalidade A não executada;
+- [x] modalidade C não executada;
+- [x] workflows existentes preservados.
+
+Decisão final:
+
+**ENCERRAR INVESTIGAÇÃO DE VIEWS NESTA FASE.**
+
+Próximos focos possíveis, sob nova autorização:
+
+- frontend /posts;
+- detalhe de perfis;
+- concorrentes;
+- recorrência do Profile Collector;
+- analytics com likes/comments/followers.
