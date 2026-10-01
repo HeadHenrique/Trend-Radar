@@ -179,6 +179,24 @@ priority = 2
 
 Campos humanos não foram alterados pelo collector.
 
+## Validação no frontend
+
+Após a atualização do Supabase, a página autenticada `/profiles` foi validada visualmente.
+
+A interface exibiu:
+
+- avatar real;
+- `Leonardo Froese | Lucro e Gestão Empresarial`;
+- `@leonardofroese`;
+- seguidores formatados como `2,8 mil`;
+- grupo `Próprio`;
+- mercado `Brasil`;
+- status `Saudável`;
+- última coleta `01/10/2026, 00:44`;
+- prioridade `Média`.
+
+Isso confirma a ponta final `Supabase → frontend` da POC.
+
 ## Política de next_collection_at
 
 Para a POC:
