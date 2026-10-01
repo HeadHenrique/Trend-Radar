@@ -1,5 +1,53 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.4
+
+### Reels Enrichment POC
+
+- criado workflow `Trend Radar — Reels Enrichment POC`;
+- workflow ID `CWMacm8bwxDXue4w`;
+- dataset Bright Data `gd_lyclm20il4r5helnj`;
+- 3 Reels recentes selecionados dinamicamente;
+- 1 execution manual;
+- 1 provider job;
+- 3 resultados recebidos/matched.
+
+### Mapping real
+
+Campos observados incluem:
+
+- views;
+- video_play_count;
+- likes;
+- num_comments;
+- audio_url.
+
+Resultado:
+
+- views NULL em 3/3;
+- video_play_count NULL em 3/3;
+- likes 108 / 3 / 62;
+- comments 6 / 0 / 1;
+- shares/saves não observados;
+- audio_url presente, mas nenhum audio_name/título confiável.
+
+### Persistência
+
+- novo collection_run `ed974031-71de-4e75-89e6-3c5dbf32cb41`;
+- provider_run_id `sd_muq13pi7261wn2p4gs`;
+- received=3;
+- inserted=0;
+- updated=0;
+- status=success;
+- post_metric_snapshots 39 → 42;
+- 3 snapshots novos;
+- instagram_posts permaneceu 20;
+- monitored_profile_posts permaneceu 20.
+
+### Decisão
+
+Não escalar o enrichment para todos os Reels neste momento: a POC não entregou views/plays e só repetiu likes/comments já disponíveis no pipeline de Posts.
+
 ## 2026-10-01 — Etapa 3.3.3
 
 ### Execução real
