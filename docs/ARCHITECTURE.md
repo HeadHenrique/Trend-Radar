@@ -1,115 +1,73 @@
 # Architecture
 
+## Stack
+
+- React + TypeScript + Vite;
+- Supabase Auth;
+- PostgreSQL/RLS;
+- n8n;
+- provider Instagram desacoplado por adapter;
+- Vercel.
+
 ## Estado implementado
 
-A arquitetura em produção continua inalterada:
-
-- React/TypeScript/Vite;
-- Supabase Auth;
-- `public.monitored_profiles`;
-- n8n Profile Collector DRAFT;
-- provider de perfil validado.
-
-Etapa 3.1.1 é somente documentação.
-
-## Fundação proposta de conteúdo/histórico
-
 ```text
+Frontend
+  ↓
+Supabase Auth + RLS
+  ↓
 monitored_profiles
-  ↓
-collection_runs
-  ├── provider_key
-  ├── orchestrator
-  ├── provider_run_id
-  └── orchestrator_run_id
-  ↓
-provider adapter
-  ↓
-InstagramProviderPostsResult
-  ↓
-instagram_posts
-  ↓
-post_metric_snapshots
 
-collection_runs
-  ↓
-profile_metric_snapshots
+Camada observada
+  ├─ collection_runs        (server-side only)
+  ├─ instagram_posts
+  ├─ post_metric_snapshots
+  └─ profile_metric_snapshots
 ```
 
-## Separação provider/orquestrador
+A fundação de banco foi implementada pela migration:
 
-Provider:
+`20261001041950_create_posts_snapshots_foundation`
 
-`provider_key`
+## Integridade
 
-Exemplo conceitual:
+`collection_runs` e `instagram_posts` possuem chave candidata composta:
 
-`bright_data`
+`(id, monitored_profile_id)`
 
-Orquestrador:
-
-`orchestrator`
-
-Default conceitual atual:
-
-`n8n`
-
-IDs externos opcionais:
-
-- `provider_run_id`;
-- `orchestrator_run_id`.
-
-Nenhum campo Bright Data específico entra nas entidades canônicas.
-
-## Idempotência e recovery
-
-Cada coleta lógica:
-
-1. cria collection run antes do provider;
-2. chama provider;
-3. persiste provider_run_id quando disponível;
-4. reutiliza o mesmo run e provider job em retries;
-5. grava snapshots com o mesmo collection_run_id;
-6. finaliza o run uma única vez.
-
-Polling não cria runs novos.
-
-## Integridade de perfil
-
-FKs compostas garantem que:
-
-- post;
-- collection run;
-- post snapshot;
-
-sempre pertençam ao mesmo `monitored_profile_id`.
-
-A mesma regra associa profile snapshots ao run do perfil correto.
+Snapshots usam FKs compostas para impedir cruzamento entre perfis.
 
 ## Segurança
 
 Frontend:
 
-- SELECT em posts e snapshots observados, conforme role;
-- nenhum acesso a collection_runs no MVP.
+- SELECT em posts e snapshots somente com role `viewer|editor|admin`;
+- sem acesso a `collection_runs`;
+- sem escrita nas novas tabelas.
 
 Collector server-side:
 
-- posts/runs: SELECT + INSERT + UPDATE;
-- snapshots: SELECT + INSERT;
+- `collection_runs`: SELECT/INSERT/UPDATE;
+- `instagram_posts`: SELECT/INSERT/UPDATE;
+- snapshots: SELECT/INSERT;
 - sem DELETE;
 - sem UPDATE de snapshots.
 
-RLS protege usuários normais.
+Como `service_role` ignora RLS, os GRANTs mínimos são a principal barreira de escrita do collector.
 
-Como `service_role` ignora RLS, grants mínimos explícitos são a barreira principal do collector.
+## Função/trigger
 
-## Frequência e volume
+`set_observed_entity_updated_at()`:
 
-20 posts é apenas limite configurável da primeira POC.
+- SECURITY INVOKER;
+- EXECUTE direto revogado de PUBLIC/anon/authenticated/service_role;
+- utilizada somente pelo trigger de `instagram_posts.updated_at`;
+- funcionamento validado em transação com rollback.
 
-As faixas de frequência de snapshots permanecem conceituais até validar o dataset real de posts e consumo do provider.
+## n8n
 
-Documento principal:
+Nenhuma alteração foi feita na Etapa 3.2.
 
-`docs/POSTS_SNAPSHOTS_FOUNDATION.md`
+O Profile Collector existente permanece como estava.
+
+A primeira ingestão real de posts requer autorização separada.
