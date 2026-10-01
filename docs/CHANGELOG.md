@@ -1,5 +1,70 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.3
+
+### n8n
+
+- criado `Trend Radar — Posts Collector POC`;
+- workflow ID `q9XBNlb3PsxsyULl`;
+- Manual Trigger;
+- permanece DRAFT / active=false;
+- sem Schedule Trigger;
+- perfil selecionado dinamicamente do Supabase.
+
+### Bright Data
+
+- Instagram Posts dataset `gd_lk5ns7kz21pck8jpis`;
+- discovery por URL de perfil;
+- `num_of_posts=20` aplicado na origem;
+- uma única chamada de discovery;
+- provider_run_id real persistido;
+- job retornou 20 registros, 0 errors reportados pelo provider;
+- duração observada ~104s.
+
+### Ingestão
+
+- 20 registros considerados;
+- 1 registro de outro `user_posted` rejeitado;
+- 19 posts reais persistidos;
+- 19 post metric snapshots;
+- 0 profile metric snapshots;
+- content types: 15 reel, 2 image, 2 carousel.
+
+### Métricas
+
+- comments observados nos 19 posts persistidos;
+- likes observados em 7;
+- views/plays/shares/saves indisponíveis neste batch;
+- NULL não convertido em zero;
+- zeros reais de comments preservados.
+
+### Idempotência
+
+- recovery reutilizou o mesmo collection_run/provider_run_id;
+- adicionado processamento item-a-item;
+- adicionado lookup de snapshot antes do INSERT;
+- replay final: 0 inserts, 19 updates;
+- total final permaneceu 19 posts / 19 snapshots;
+- duplicatas por media ID, shortcode e snapshot/run: 0.
+
+### Falhas/correções
+
+- polling inicial de 80s foi insuficiente para job de ~104s; workflow final ajustado para 4x30s;
+- lookup em batch perdeu item pairing; corrigido com Loop Over Items batchSize=1;
+- URL() não funcionou como esperado no sandbox do Code; permalink passou a ser canonicalizado por string/regex;
+- duração passou a usar `videos_duration[0].video_duration`;
+- idempotência de snapshot passou a consultar `post_id + collection_run_id` antes do INSERT.
+
+### Escopo
+
+- nenhum schema/migration novo;
+- Profile Collector não alterado;
+- nenhuma UI de Posts;
+- nenhum Reels Scraper complementar;
+- nenhuma IA;
+- nenhum Trend Engine;
+- workflow não publicado.
+
 ## 2026-10-01 — Etapa 3.2
 
 ### Database
