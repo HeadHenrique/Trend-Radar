@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-10-01 — Etapa 3.2
+
+### Database
+
+- migration `20261001041950_create_posts_snapshots_foundation` aplicada;
+- criadas `collection_runs`, `instagram_posts`, `post_metric_snapshots`, `profile_metric_snapshots`;
+- adicionada consistência `status ↔ finished_at` em collection_runs;
+- FKs compostas impedem snapshots cross-profile;
+- snapshots exigem ao menos uma métrica observada;
+- NULL e zero permanecem semanticamente distintos;
+- quatro novas tabelas encerraram a etapa vazias.
+
+### Segurança
+
+- RLS habilitado nas quatro tabelas;
+- collection_runs permanece server-side only;
+- REVOKE ALL explícito antes dos grants mínimos;
+- service_role sem DELETE;
+- service_role sem UPDATE nos snapshots;
+- frontend com SELECT apenas em posts/snapshots via role válida;
+- função de updated_at sem EXECUTE direto para clientes/service_role.
+
+### Validação
+
+- status/finished_at testado com rollback;
+- cross-profile testado com rollback;
+- trigger updated_at testado;
+- RLS testado para viewer/editor/admin e role inválida;
+- database.types.ts regenerado;
+- advisors executados.
+
+### Escopo
+
+- n8n não alterado;
+- Bright Data não chamada;
+- nenhum post coletado;
+- nenhum snapshot real inserido;
+- IA/Trend Engine não iniciados.
+
 ## 2026-10-01 — Etapa 3
 
 ### n8n
