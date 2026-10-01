@@ -138,3 +138,30 @@ perfil saudável
 Nenhum upsert de post/associação/snapshot alterou o banco.
 
 O workflow permanece DRAFT, active=false e sem Schedule Trigger. Não houve segunda coleta.
+
+
+## Etapa 3.3.4 — Runtime do modelo canônico
+
+O snapshot histórico `sd_muppqcdph8ybzui2r` foi reprocessado sem nova discovery.
+
+Fluxo validado:
+
+```text
+snapshot existente
+→ normalização canônica
+→ upsert instagram_posts
+→ upsert monitored_profile_posts
+→ post_metric_snapshots
+→ collection_run success
+```
+
+Resultado:
+
+- 20 registros processados;
+- 1 post canônico novo;
+- 19 posts canônicos atualizados;
+- 1 collaborator;
+- 19 author;
+- 20 snapshots novos.
+
+O caminho temporário foi removido ao final e o fluxo operacional normal foi restaurado.
