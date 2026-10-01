@@ -1,107 +1,115 @@
 # Architecture
 
-## Stack
-
-- React;
-- TypeScript;
-- Vite;
-- React Router;
-- Supabase JS;
-- Supabase Auth;
-- PostgreSQL/RLS;
-- n8n;
-- Bright Data Instagram Profiles Scraper API;
-- Vercel.
-
 ## Estado implementado
 
-Hoje o produto possui:
+A arquitetura em produção continua inalterada:
 
-```text
-/login
-  ↓
-Supabase Auth
-  ↓
-ProtectedRoute
-  ↓
-React UI
-  ↓
-Profiles Repository
-  ↓
-Supabase Data API
-  ↓
-RLS + column privileges
-  ↓
-public.monitored_profiles
-  ↑
-n8n — Trend Radar — Profile Collector POC
-  ↑
-Instagram Provider
-```
+- React/TypeScript/Vite;
+- Supabase Auth;
+- `public.monitored_profiles`;
+- n8n Profile Collector DRAFT;
+- provider de perfil validado.
 
-O workflow de perfil segue DRAFT/não publicado.
+Etapa 3.1.1 é somente documentação.
 
-## Fundação proposta da Etapa 3.1 — não implementada
+## Fundação proposta de conteúdo/histórico
 
 ```text
 monitored_profiles
   ↓
 collection_runs
+  ├── provider_key
+  ├── orchestrator
+  ├── provider_run_id
+  └── orchestrator_run_id
   ↓
-Instagram Provider Adapter
+provider adapter
   ↓
 InstagramProviderPostsResult
-  ↓
-identity resolver / upsert
   ↓
 instagram_posts
   ↓
 post_metric_snapshots
 
-profile collection
+collection_runs
   ↓
 profile_metric_snapshots
 ```
 
-Princípios:
+## Separação provider/orquestrador
 
-- entidades canônicas contêm dados observados;
-- provider fica atrás de adapter;
-- métricas históricas vivem em snapshots;
-- `collection_run_id` dá idempotência aos snapshots;
-- frontend faz somente SELECT nas futuras entidades observadas;
-- escrita fica server-side/n8n;
-- nenhum raw payload grande é persistido por padrão.
+Provider:
 
-## Contratos propostos
+`provider_key`
 
-### Post
+Exemplo conceitual:
 
-`InstagramProviderPostResult`
+`bright_data`
 
-Contém identidade, permalink, publicação, caption, tipo observável, duração/áudio/thumbnail quando disponíveis e métricas nullable.
+Orquestrador:
 
-### Batch
+`orchestrator`
 
-`InstagramProviderPostsResult`
+Default conceitual atual:
 
-Contém:
+`n8n`
 
-- profileUsername;
-- fetchedAt;
-- posts[];
-- paginação opcional e provider-neutral.
+IDs externos opcionais:
 
-## Recorrência futura
+- `provider_run_id`;
+- `orchestrator_run_id`.
 
-O Profile Collector atual usa:
+Nenhum campo Bright Data específico entra nas entidades canônicas.
 
-`active=true AND monitoring_status=pending`
+## Idempotência e recovery
 
-Para recorrência deverá evoluir para elegibilidade por `next_collection_at`, incluindo `pending`, `healthy` e `error` com backoff apropriado.
+Cada coleta lógica:
 
-Nada disso foi aplicado nesta etapa.
+1. cria collection run antes do provider;
+2. chama provider;
+3. persiste provider_run_id quando disponível;
+4. reutiliza o mesmo run e provider job em retries;
+5. grava snapshots com o mesmo collection_run_id;
+6. finaliza o run uma única vez.
 
-Documento de arquitetura:
+Polling não cria runs novos.
+
+## Integridade de perfil
+
+FKs compostas garantem que:
+
+- post;
+- collection run;
+- post snapshot;
+
+sempre pertençam ao mesmo `monitored_profile_id`.
+
+A mesma regra associa profile snapshots ao run do perfil correto.
+
+## Segurança
+
+Frontend:
+
+- SELECT em posts e snapshots observados, conforme role;
+- nenhum acesso a collection_runs no MVP.
+
+Collector server-side:
+
+- posts/runs: SELECT + INSERT + UPDATE;
+- snapshots: SELECT + INSERT;
+- sem DELETE;
+- sem UPDATE de snapshots.
+
+RLS protege usuários normais.
+
+Como `service_role` ignora RLS, grants mínimos explícitos são a barreira principal do collector.
+
+## Frequência e volume
+
+20 posts é apenas limite configurável da primeira POC.
+
+As faixas de frequência de snapshots permanecem conceituais até validar o dataset real de posts e consumo do provider.
+
+Documento principal:
 
 `docs/POSTS_SNAPSHOTS_FOUNDATION.md`
