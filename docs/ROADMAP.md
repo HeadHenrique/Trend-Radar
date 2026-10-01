@@ -70,3 +70,28 @@ Inconclusivo por ausência de dados no batch:
 - [ ] validar snapshots da nova coleta.
 
 Próxima coleta real requer nova autorização. Não executar automaticamente.
+
+
+## Etapa 3.3.3 — Validação real
+
+Concluído:
+
+- [x] reinspecionar estado real;
+- [x] confirmar perfil saudável = leonardofroese;
+- [x] executar uma única nova coleta lógica;
+- [x] criar novo collection_run/provider_run_id;
+- [x] tratar provider `records=0` sem alterar conteúdo existente;
+- [x] confirmar 19 posts / 19 associações / 19 snapshots;
+- [x] confirmar nenhuma associação rebaixada;
+- [x] rodar Security Advisor e Performance Advisor;
+- [x] workflow permanece DRAFT/active=false/sem Schedule.
+
+Ainda pendente por ausência de dados no batch:
+
+- [ ] validar author em novo payload;
+- [ ] validar collaborator em runtime;
+- [ ] validar discovered em runtime;
+- [ ] validar `Dc9H9yExV6q` na nova lógica;
+- [ ] validar novos snapshots.
+
+Nova coleta real requer nova autorização.
