@@ -1,38 +1,23 @@
-# Posts & Snapshots Foundation — Etapa 3.1
+# Posts & Snapshots Foundation — Etapa 3.1.1
 
 > **DRAFT — NÃO APLICADO**
 >
-> Este documento descreve arquitetura e contrato de dados. Nenhuma migration foi criada/aplicada, nenhuma tabela foi criada e o workflow n8n não foi alterado.
+> Este documento descreve arquitetura e contrato de dados. Nenhuma migration foi criada/aplicada, nenhuma tabela foi criada, o Supabase não foi alterado e o workflow n8n não foi alterado.
 
-## 1. Estado real reinspecionado
+## 1. Estado da fundação
 
-Em 01/10/2026:
+A Etapa 3.1 definiu a fundação de posts e snapshots. A Etapa 3.1.1 corrige pontos de segurança, integridade e observabilidade antes de qualquer implementação.
 
-- o schema `public` possui somente `monitored_profiles`;
-- existe uma única migration aplicada: `20260930195835_create_monitored_profiles_foundation`;
-- não existem tabelas de posts;
-- não existem snapshots de posts;
-- não existem snapshots de perfil;
-- não existe `collection_runs`;
-- `Trend Radar — Profile Collector POC` continua DRAFT, sem versão ativa;
-- o workflow atual seleciona `active=true` + `monitoring_status=pending`;
-- nenhuma chamada nova ao provider foi realizada nesta etapa.
+Continuam propostos, mas **não criados**:
 
-A execução real já existente da Etapa 3 foi apenas inspecionada. O payload observado continha 12 posts no objeto de perfil. Os campos observados no primeiro post foram:
+- `collection_runs`;
+- `instagram_posts`;
+- `post_metric_snapshots`;
+- `profile_metric_snapshots`.
 
-- `caption`;
-- `datetime`;
-- `id`;
-- `image_url`;
-- `post_hashtags`;
-- `content_type`;
-- `url`.
+## 2. Princípio de dados observados
 
-Nesse payload não foram observados campos de views, plays, likes, comments, shares ou saves.
-
-## 2. Princípio: dados observados
-
-Posts e snapshots armazenam somente fatos observáveis.
+As entidades canônicas armazenam somente fatos observáveis.
 
 Não pertencem a esta fundação:
 
@@ -46,71 +31,50 @@ Não pertencem a esta fundação:
 - Opportunity Score;
 - Brazil Gap.
 
-Esses campos deverão ficar em entidades analíticas futuras, sem contaminar a camada canônica observada.
+## 3. instagram_posts
 
-## 3. Nome da tabela de posts
-
-### Opção: `monitored_posts`
-
-Prós:
-
-- combina semanticamente com `monitored_profiles`;
-- poderia sugerir abstração futura para outras plataformas.
-
-Contras:
-
-- a entidade proposta possui identidade e semântica específicas do Instagram;
-- nomes como `instagram_media_id`, `instagram_shortcode` e permalink do Instagram tornam o nome genérico artificial.
-
-### Opção: `instagram_posts`
-
-Prós:
-
-- deixa a plataforma explícita;
-- evita fingir uma abstração cross-platform que ainda não existe;
-- continua independente do provider: Instagram é domínio/plataforma, Bright Data é fornecedor.
-
-### Decisão recomendada
+Nome recomendado:
 
 `instagram_posts`.
 
-Provider independence não exige platform independence.
+A entidade é específica da plataforma Instagram, mas independente do provider.
 
-## 4. Schema proposto: instagram_posts
+### Schema final proposto
 
 | Campo | Tipo | Null | Default | Regra / justificativa |
 |---|---|---:|---|---|
-| id | uuid | não | gen_random_uuid() | PK interna estável |
-| monitored_profile_id | uuid | não | — | FK para monitored_profiles |
-| instagram_media_id | text | sim | — | melhor identidade quando provider entrega ID real |
-| instagram_shortcode | text | sim | — | fallback forte e útil para URLs |
-| permalink | text | sim | — | fallback final, armazenado de forma canônica |
-| published_at | timestamptz | sim | — | horário observado; NULL se provider não entregar |
+| id | uuid | não | gen_random_uuid() | PK interna |
+| monitored_profile_id | uuid | não | — | perfil proprietário |
+| instagram_media_id | text | sim | — | identidade preferencial real |
+| instagram_shortcode | text | sim | — | fallback de identidade |
+| permalink | text | sim | — | fallback final canônico |
+| published_at | timestamptz | sim | — | horário observado |
 | caption | text | sim | — | conteúdo observado |
-| content_type | text | não | 'unknown' | CHECK canônico |
-| duration_seconds | numeric(10,3) | sim | — | somente quando realmente observável |
-| audio_name | text | sim | — | somente quando provider entregar áudio/nome real |
-| thumbnail_url | text | sim | — | preview observado; URL pode expirar |
-| first_collected_at | timestamptz | não | now() | primeira observação pelo sistema |
-| last_collected_at | timestamptz | não | now() | última vez que o post foi observado |
+| content_type | text | não | 'unknown' | CHECK observável |
+| duration_seconds | numeric(10,3) | sim | — | somente quando disponível |
+| audio_name | text | sim | — | somente quando disponível |
+| thumbnail_url | text | sim | — | preview observado |
+| first_collected_at | timestamptz | não | now() | primeira observação |
+| last_collected_at | timestamptz | não | now() | última observação |
 | created_at | timestamptz | não | now() | auditoria técnica |
-| updated_at | timestamptz | não | now() | atualização da linha canônica |
+| updated_at | timestamptz | não | now() | auditoria técnica |
 
-### Decisões adicionais
+Constraints de identidade:
 
-- não armazenar followers no post;
-- não armazenar métricas de performance diretamente como única verdade da linha canônica;
-- não criar cache de métricas mais recentes no post nesta fase;
-- se a UI precisar de latest metrics, inicialmente buscar o snapshot mais recente;
-- somente considerar cache depois de medir necessidade real.
+- pelo menos um entre media ID, shortcode e permalink deve existir;
+- unique parcial em media ID;
+- unique parcial em shortcode;
+- unique parcial em permalink.
 
-## 5. Content type
+Para permitir integridade declarativa dos snapshots:
 
-Recomendação:
+`UNIQUE(id, monitored_profile_id)`.
 
-`TEXT + CHECK`
+Esse unique composto é intencional mesmo com `id` já sendo PK: ele fornece uma chave candidata para FK composta e impede que um snapshot associe um post ao perfil errado.
 
-Valores canônicos:
+## 4. content_type
+
+`TEXT + CHECK`:
 
 - `reel`;
 - `carousel`;
@@ -118,350 +82,414 @@ Valores canônicos:
 - `video`;
 - `unknown`.
 
-Justificativa:
+Não transformar automaticamente `video` em `reel`.
 
-- conjunto pequeno;
-- fácil de versionar;
-- não precisa de tabela de referência no MVP;
-- evita enum PostgreSQL prematuro.
+## 5. collection_runs
 
-### Mapeamento conservador observado
+### Objetivo
 
-Na execução da Etapa 3 o provider retornou valores como:
+Representar uma **coleta lógica**, criada antes de chamar o provider.
 
-- `Video` → `video`;
-- `Carousel` → `carousel`;
-- `Image` → `image`.
+O run é a unidade para:
 
-`reel` só deve ser usado quando a origem fornecer informação observável suficiente para afirmar Reel. Não transformar todo `Video` em `reel`.
+- idempotência;
+- recovery;
+- observabilidade;
+- contadores;
+- associação de snapshots ao perfil correto.
 
-## 6. Identidade e deduplicação
+### Modelo final
 
-Ordem de identidade:
+| Campo | Tipo | Null | Default | Finalidade |
+|---|---|---:|---|---|
+| id | uuid | não | gen_random_uuid() | PK |
+| monitored_profile_id | uuid | não | — | perfil coletado |
+| collection_type | text | não | — | profile/posts/profile_and_posts |
+| provider_key | text | não | — | provider operacional, ex. bright_data |
+| orchestrator | text | não | 'n8n' | executor/orquestrador |
+| provider_run_id | text | sim | — | job/snapshot/run no provider |
+| orchestrator_run_id | text | sim | — | execution ID do orquestrador |
+| started_at | timestamptz | não | now() | início lógico |
+| finished_at | timestamptz | sim | — | término |
+| status | text | não | 'running' | running/success/partial/error |
+| received_count | integer | não | 0 | recebidos |
+| inserted_count | integer | não | 0 | inseridos |
+| updated_count | integer | não | 0 | atualizados |
+| error_message | text | sim | — | erro curto e sanitizado |
+| created_at | timestamptz | não | now() | auditoria |
 
-1. `instagram_media_id` real;
-2. `instagram_shortcode` real;
-3. `permalink` canônico.
+### provider_key
 
-Nunca:
+**Aprovado arquiteturalmente.**
 
-- gerar media ID artificial;
-- usar caption como identidade;
-- usar título/nome como identidade;
-- usar username como identidade do post.
+Exemplo:
 
-### Constraints/uniques
+`bright_data`.
 
-Recomendação:
+É correto registrar provider em `collection_runs` porque essa é uma entidade operacional. Isso não acopla `instagram_posts` ou snapshots a Bright Data.
 
-- unique parcial em `instagram_media_id` quando não NULL;
-- unique parcial em `instagram_shortcode` quando não NULL;
-- unique parcial em `permalink` quando não NULL;
-- CHECK exigindo pelo menos uma das três identidades.
+### orchestrator
 
-Shortcode não deve ser lowercased: é tratado como identidade case-sensitive.
+**Aprovado arquiteturalmente.**
 
-### Canonical permalink
+`orchestrator text not null default 'n8n'`.
 
-Antes do upsert:
+Motivo: provider e orquestrador são responsabilidades diferentes. O banco deve conseguir responder:
 
-- remover query string e fragment;
-- normalizar host para Instagram;
-- manter rota/shortcode;
-- não depender de parâmetros de tracking.
+- quem forneceu os dados;
+- quem executou a coleta.
 
-## 7. Relação com monitored_profiles
+### provider_run_id
 
-`instagram_posts.monitored_profile_id → monitored_profiles.id`
+**Aprovado arquiteturalmente.**
 
-Recomendação:
+Campo provider-neutral para armazenar o ID real do job/snapshot/execução externa.
 
-`ON DELETE RESTRICT`.
+Benefício principal: recovery. Se o provider já criou um job, retries devem reutilizar esse ID e continuar polling/download, evitando nova cobrança/coleta desnecessária.
 
-Motivo:
+Não criar unique global nesse campo: um provider futuro pode usar um único job para mais de um perfil ou batch.
 
-- perfis não usam DELETE físico como fluxo normal;
-- posts e snapshots representam histórico;
-- CASCADE apagaria histórico por uma ação administrativa acidental.
+### orchestrator_run_id
 
-## 8. Schema proposto: post_metric_snapshots
+**Aprovado arquiteturalmente como nullable.**
 
-Objetivo: guardar evolução temporal de métricas sem sobrescrever a verdade anterior.
+Ajuda a correlacionar `collection_runs` com uma execução do n8n e facilita debugging.
+
+Não é chave de idempotência e não recebe unique global, porque uma execução de orquestrador pode futuramente administrar mais de um collection run.
+
+### Integridade auxiliar
+
+Adicionar:
+
+`UNIQUE(id, monitored_profile_id)`.
+
+Isso habilita FKs compostas nos snapshots.
+
+## 6. Integridade forte perfil/run/post
+
+Problema que deve ser impossível:
+
+```text
+collection_run → perfil A
+post → perfil B
+snapshot → referencia os dois
+```
+
+A solução final usa **constraints declarativas**, sem trigger customizada.
+
+### post_metric_snapshots
+
+Adicionar:
+
+`monitored_profile_id uuid not null`.
+
+FKs compostas:
+
+```text
+(post_id, monitored_profile_id)
+→ instagram_posts(id, monitored_profile_id)
+
+(collection_run_id, monitored_profile_id)
+→ collection_runs(id, monitored_profile_id)
+```
+
+Assim, o mesmo `monitored_profile_id` precisa ser verdadeiro simultaneamente para o post e para o run.
+
+### profile_metric_snapshots
+
+FK composta:
+
+```text
+(collection_run_id, monitored_profile_id)
+→ collection_runs(id, monitored_profile_id)
+```
+
+Assim, um snapshot de perfil B não pode apontar para um run do perfil A.
+
+Essa solução é preferida a trigger porque:
+
+- é declarativa;
+- é validada pelo PostgreSQL;
+- não depende de lógica procedural;
+- reduz superfície de erro;
+- permanece simples no MVP.
+
+## 7. post_metric_snapshots
+
+### Schema final
 
 | Campo | Tipo | Null | Default | Regra |
 |---|---|---:|---|---|
 | id | uuid | não | gen_random_uuid() | PK |
-| post_id | uuid | não | — | FK instagram_posts |
-| collection_run_id | uuid | não | — | idempotência/observabilidade |
-| captured_at | timestamptz | não | — | horário observado explícito |
+| post_id | uuid | não | — | post observado |
+| monitored_profile_id | uuid | não | — | integridade cross-profile |
+| collection_run_id | uuid | não | — | idempotência/run |
+| captured_at | timestamptz | não | — | horário observado |
 | views_count | bigint | sim | — | >= 0 |
 | plays_count | bigint | sim | — | >= 0 |
 | likes_count | bigint | sim | — | >= 0 |
 | comments_count | bigint | sim | — | >= 0 |
 | shares_count | bigint | sim | — | >= 0 |
 | saves_count | bigint | sim | — | >= 0 |
-| created_at | timestamptz | não | now() | auditoria técnica |
+| created_at | timestamptz | não | now() | auditoria |
 
-Recomendação adicional:
+Regras:
 
-- snapshots são imutáveis;
-- não conceder UPDATE ao collector;
-- inserir snapshot somente se pelo menos uma métrica tiver sido realmente observada.
+- imutável;
+- collector recebe SELECT + INSERT;
+- sem UPDATE;
+- sem DELETE;
+- snapshot só existe se pelo menos uma métrica for não-NULL;
+- `UNIQUE(post_id, collection_run_id)`.
 
-## 9. NULL versus ZERO
+## 8. profile_metric_snapshots
 
-Regra obrigatória:
-
-- `0` = provider informou zero;
-- `NULL` = métrica indisponível, não entregue ou não observada.
-
-Nunca converter ausência para zero.
-
-Isso evita interpretar "provider não fornece saves" como "o post teve zero saves".
-
-## 10. Views versus plays
-
-Manter campos separados.
-
-Não assumir:
-
-- `views = plays`;
-- `video_views = reel_plays`;
-- qualquer equivalência não documentada.
-
-### Estado observado do provider atual
-
-Na execução já existente do Profile Collector:
-
-- os objetos de post não continham `views`;
-- não continham `plays`;
-- não continham `likes`;
-- não continham `comments`;
-- não continham `shares`;
-- não continham `saves`.
-
-Portanto, a arquitetura deixa todas essas métricas nullable.
-
-A próxima implementação deve testar o endpoint/dataset específico de posts e criar um mapping documentado campo a campo. Se o provider retornar uma métrica ambígua, não preencher nenhuma coluna por aproximação.
-
-## 11. Schema proposto: profile_metric_snapshots
-
-Objetivo: preservar evolução do perfil enquanto `monitored_profiles.followers_count` continua funcionando como cache do valor mais recente.
+### Schema final
 
 | Campo | Tipo | Null | Default | Regra |
 |---|---|---:|---|---|
 | id | uuid | não | gen_random_uuid() | PK |
-| monitored_profile_id | uuid | não | — | FK |
-| collection_run_id | uuid | não | — | idempotência |
+| monitored_profile_id | uuid | não | — | perfil |
+| collection_run_id | uuid | não | — | run do mesmo perfil |
 | captured_at | timestamptz | não | — | horário observado |
 | followers_count | bigint | sim | — | >= 0 |
 | following_count | bigint | sim | — | >= 0 |
 | posts_count | bigint | sim | — | >= 0 |
 | created_at | timestamptz | não | now() | auditoria |
 
-A execução observada da Etapa 3 mostrou que o provider atual entrega:
+Regras:
 
-- `followers`;
-- `following`;
-- `posts_count`.
+- imutável;
+- collector recebe SELECT + INSERT;
+- sem UPDATE;
+- sem DELETE;
+- snapshot só existe se pelo menos uma métrica for não-NULL;
+- `UNIQUE(monitored_profile_id, collection_run_id)`;
+- FK composta garante que o run pertence ao mesmo perfil.
 
-Mesmo assim, todos permanecem nullable no contrato canônico para não acoplar schema a um único provider.
+## 9. NULL versus ZERO
 
-## 12. Idempotência de snapshots
+Regra obrigatória:
 
-### A) unique(post_id, captured_at)
+- `0` = zero realmente observado;
+- `NULL` = não disponível / não observado.
 
-Simples, mas depende de igualdade exata de timestamp e pode falhar em retries que recalculam o horário.
+Nunca converter ausência em zero.
 
-### B) collection_run_id
+## 10. Views versus plays
 
-Mais robusto: todos os efeitos de uma mesma execução lógica compartilham um ID.
+Continuam métricas diferentes.
 
-### C) time bucket
+Não assumir equivalência entre:
 
-Útil para agregação, mas transforma política de frequência em identidade e pode colidir com coletas legítimas.
+- views;
+- plays;
+- video views;
+- reel plays.
 
-### Decisão recomendada
+A prova real do dataset de posts será necessária antes do mapping definitivo.
 
-Usar `collection_run_id`:
+## 11. Idempotência final
 
-- `UNIQUE(post_id, collection_run_id)`;
-- `UNIQUE(monitored_profile_id, collection_run_id)`.
+Fluxo lógico obrigatório:
 
-O collector deve criar o run uma vez e reutilizar o mesmo ID durante retries internos.
+1. criar `collection_run` **antes** da chamada ao provider;
+2. chamar provider;
+3. assim que houver ID externo, salvar `provider_run_id`;
+4. retries/polling da mesma coleta reutilizam o mesmo `collection_run_id`;
+5. se já existir `provider_run_id`, recovery deve continuar o job existente em vez de disparar outro;
+6. snapshots usam o mesmo `collection_run_id`;
+7. finalizar o run apenas no término lógico.
 
-Uma execução nova deliberada cria um run novo e representa uma nova observação.
+Não criar um novo collection run:
 
-## 13. Collection runs
+- para cada polling;
+- para cada retry HTTP;
+- para retomar o mesmo provider job.
 
-### Sem collection_runs
+Uma nova coleta deliberada cria um novo run.
 
-Prós:
+## 12. Provider independence
 
-- uma tabela a menos.
-
-Contras:
-
-- retries ficam mais frágeis;
-- debugging depende apenas do n8n;
-- difícil explicar quantos posts foram recebidos/inseridos/atualizados;
-- snapshots perdem uma chave natural de idempotência.
-
-### Com collection_runs agora
-
-Prós:
-
-- idempotência simples;
-- observabilidade;
-- auditoria de ingestão;
-- base para debugging;
-- contadores de batch;
-- associa profile snapshot e post snapshots à mesma coleta lógica.
-
-Custo:
-
-- uma tabela pequena;
-- workflow precisa abrir/finalizar o run.
-
-### Decisão recomendada
-
-Criar `collection_runs` na futura implementação.
-
-Campos:
-
-| Campo | Tipo | Null | Default |
-|---|---|---:|---|
-| id | uuid | não | gen_random_uuid() |
-| monitored_profile_id | uuid | não | — |
-| collection_type | text | não | — |
-| source | text | não | — |
-| started_at | timestamptz | não | now() |
-| finished_at | timestamptz | sim | — |
-| status | text | não | 'running' |
-| received_count | integer | não | 0 |
-| inserted_count | integer | não | 0 |
-| updated_count | integer | não | 0 |
-| error_message | text | sim | — |
-| created_at | timestamptz | não | now() |
-
-`collection_type`:
-
-- `profile`;
-- `posts`;
-- `profile_and_posts`.
-
-`status`:
-
-- `running`;
-- `success`;
-- `partial`;
-- `error`.
-
-`source` é origem operacional genérica, por exemplo `n8n`, e não nome de provider.
-
-## 14. Provider independence
-
-As entidades canônicas não terão:
+Entidades canônicas não terão:
 
 - `brightdata_id`;
 - `brightdata_post`;
-- `brightdata_payload`.
+- `brightdata_payload`;
+- `brightdata_snapshot_id`.
 
-O adapter é responsável por traduzir provider → contrato canônico.
+`provider_key` e `provider_run_id` vivem apenas em `collection_runs`, que é operacional e provider-neutral.
 
-### Raw payload
+## 13. Segurança: RLS versus service_role
 
-Não armazenar payload completo por padrão.
+Ponto crítico:
+
+- RLS protege usuários normais;
+- `service_role` possui BYPASSRLS e ignora policies;
+- portanto a limitação do collector server-side depende principalmente de **GRANTs mínimos**.
+
+Por isso o SQL draft deve revogar explicitamente privilégios de:
+
+- PUBLIC;
+- anon;
+- authenticated;
+- service_role;
+
+antes de conceder apenas o necessário.
+
+Não alterar default privileges globais do projeto nesta etapa.
+
+## 14. Exposição ao frontend
+
+### collection_runs
+
+**Server-side only no MVP.**
+
+Não conceder SELECT a `authenticated`.
 
 Motivos:
 
-- volume;
-- dados desnecessários;
-- acoplamento;
-- maior superfície de privacidade/segurança.
+- não existe tela de observabilidade de runs;
+- contém erros operacionais;
+- contém IDs de execução;
+- contém provider/orchestrator;
+- não é dado de produto necessário à UI atual.
 
-Se no futuro for necessária auditoria de raw payload, criar armazenamento separado com retenção explícita e escopo bem definido.
-
-## 15. Segurança, RLS e grants
-
-Todas as quatro tabelas propostas terão RLS habilitado.
-
-### anon
-
-Sem acesso.
-
-### authenticated com role viewer/editor/admin
-
-Somente SELECT.
-
-### authenticated
-
-Sem:
-
-- INSERT de posts;
-- UPDATE de posts;
-- DELETE;
-- INSERT/UPDATE de snapshots;
-- alteração de métricas;
-- criação de collection runs.
-
-### backend/n8n
-
-Escrita via credencial server-side.
-
-Princípio de menor privilégio proposto:
-
-- `instagram_posts`: SELECT, INSERT, UPDATE;
-- `collection_runs`: SELECT, INSERT, UPDATE;
-- `post_metric_snapshots`: SELECT, INSERT;
-- `profile_metric_snapshots`: SELECT, INSERT;
-- DELETE não é necessário para o collector.
-
-## 16. Índices
+RLS continua habilitado, mas sem policy para authenticated.
 
 ### instagram_posts
 
-1. unique parcial em `instagram_media_id`;
-2. unique parcial em `instagram_shortcode`;
-3. unique parcial em `permalink`;
-4. `(monitored_profile_id, published_at desc)`;
-5. `(published_at desc)` para biblioteca global de recentes.
+`viewer/editor/admin → SELECT`.
 
-Não criar índice isolado de `content_type` inicialmente: baixa cardinalidade + escala pequena. Reavaliar se a biblioteca passar a filtrar intensamente por tipo.
+### post_metric_snapshots
+
+`viewer/editor/admin → SELECT`.
+
+### profile_metric_snapshots
+
+`viewer/editor/admin → SELECT`.
+
+Nenhuma dessas três recebe escrita pelo frontend.
+
+## 15. Grants finais
+
+### collection_runs
+
+`service_role → SELECT, INSERT, UPDATE`
+
+Sem:
+
+- DELETE;
+- acesso authenticated.
+
+### instagram_posts
+
+`authenticated → SELECT`, condicionado por RLS/role.
+
+`service_role → SELECT, INSERT, UPDATE`.
+
+Sem DELETE.
+
+### post_metric_snapshots
+
+`authenticated → SELECT`, condicionado por RLS/role.
+
+`service_role → SELECT, INSERT`.
+
+Sem UPDATE e DELETE.
+
+### profile_metric_snapshots
+
+`authenticated → SELECT`, condicionado por RLS/role.
+
+`service_role → SELECT, INSERT`.
+
+Sem UPDATE e DELETE.
+
+## 16. Índices finais
+
+### collection_runs
+
+- unique auxiliar `(id, monitored_profile_id)` para FK composta;
+- `(monitored_profile_id, started_at desc)`.
+
+Não criar índice/unique global em `provider_run_id` ou `orchestrator_run_id` neste MVP.
+
+### instagram_posts
+
+- unique auxiliar `(id, monitored_profile_id)`;
+- unique parcial em `instagram_media_id`;
+- unique parcial em `instagram_shortcode`;
+- unique parcial em `permalink`;
+- `(monitored_profile_id, published_at desc)`;
+- `(published_at desc)`.
 
 ### post_metric_snapshots
 
 - unique `(post_id, collection_run_id)`;
-- `(post_id, captured_at desc)`.
+- `(post_id, captured_at desc)`;
+- `(monitored_profile_id, captured_at desc)`.
+
+A nova coluna redundante é útil para consultas temporais por perfil sem depender de join.
 
 ### profile_metric_snapshots
 
 - unique `(monitored_profile_id, collection_run_id)`;
 - `(monitored_profile_id, captured_at desc)`.
 
-### collection_runs
+## 17. Função updated_at
 
-- `(monitored_profile_id, started_at desc)`.
+`set_observed_entity_updated_at()` permanece:
 
-## 17. Escala e retenção
+- `SECURITY INVOKER`;
+- usada apenas por trigger em `instagram_posts`;
+- sem necessidade de RPC direta.
 
-Escala inicial prevista:
+Revogar EXECUTE de:
 
-- dezenas de perfis;
-- centenas ou poucos milhares de posts;
-- múltiplos snapshots por post.
+- PUBLIC;
+- anon;
+- authenticated;
+- service_role.
 
-Não particionar agora.
+O trigger continua sendo o mecanismo de uso da função; ela não deve ficar exposta para chamada direta.
 
-Com 100 perfis e 20 posts por perfil, a base canônica ainda é pequena. O crescimento relevante vem dos snapshots: manter 4 snapshots por dia para todos os posts indefinidamente faria a tabela crescer muito mais rápido que `instagram_posts`.
+## 18. Primeira ingestão
 
-Por isso a frequência deve cair conforme o post envelhece.
+Manter recomendação:
 
-Não apagar histórico automaticamente nesta fase.
+`20 posts recentes por perfil`.
 
-Particionamento só deve ser reavaliado quando snapshots chegarem a dezenas de milhões de linhas, ou quando manutenção/consultas temporais demonstrarem necessidade real.
+Esse número é **configuração do workflow/provider adapter**, não constraint do banco.
 
-## 18. Contrato: InstagramProviderPostResult
+O banco não deve conhecer o limite 20.
+
+## 19. Frequência de snapshots
+
+A proposta:
+
+- 0–24h → 2h;
+- 24–72h → 6h;
+- 3–7 dias → 24h;
+- >7 dias → sob demanda/sem recorrência padrão;
+
+continua **exclusivamente conceitual**.
+
+Não transformar esses intervalos em:
+
+- scheduler;
+- constraint;
+- coluna default;
+- regra permanente.
+
+Antes disso é necessário:
+
+1. confirmar quais métricas o dataset real de posts entrega;
+2. medir latência;
+3. medir consumo do provider;
+4. observar utilidade real para detectar aceleração.
+
+## 20. Contratos provider-neutral
 
 ```ts
 type InstagramObservedContentType =
@@ -492,24 +520,7 @@ type InstagramProviderPostResult = {
   thumbnailUrl: string | null
   metrics: InstagramProviderPostMetrics
 }
-```
 
-### Justificativas
-
-- `instagramMediaId`: identidade preferencial;
-- `shortcode`: fallback forte;
-- `permalink`: fallback final e navegação;
-- `publishedAt`: ordenação temporal;
-- `caption`: conteúdo observado;
-- `contentType`: provider/URL observável, não IA;
-- `durationSeconds`: útil para vídeo/reel quando disponível;
-- `audioName`: útil para tendências somente quando observado;
-- `thumbnailUrl`: UI;
-- `metrics`: valores observados nullable.
-
-## 19. Contrato de batch
-
-```ts
 type InstagramProviderPostsResult = {
   profileUsername: string
   fetchedAt: string
@@ -519,170 +530,165 @@ type InstagramProviderPostsResult = {
 }
 ```
 
-`nextCursor` e `hasMore` são opcionais.
-
-Regra:
-
-- expor paginação no contrato somente quando o adapter/provider realmente precisar;
-- não colocar parâmetros específicos de Bright Data no domínio.
-
-## 20. Limite inicial recomendado
-
-Recomendação para primeira ingestão:
-
-`20 posts recentes por perfil`.
-
-Motivos:
-
-- suficiente para criar baseline inicial;
-- baixo volume para validar deduplicação;
-- permite testar carrossel/imagem/vídeo/reel quando presentes;
-- reduz consumo de provider enquanto o pipeline ainda está sendo validado.
-
-Não aumentar para 30 antes de medir cobertura real dos primeiros perfis.
-
-## 21. Frequência futura de snapshots
-
-Estratégia inicial recomendada por idade:
-
-- 0–24h: a cada 2 horas;
-- 24–72h: a cada 6 horas;
-- 3–7 dias: a cada 24 horas;
-- >7 dias: sem snapshot recorrente por padrão; reavaliar apenas posts selecionados/ativos em análises futuras.
-
-Justificativa:
-
-- a aceleração mais útil acontece nas primeiras horas/dias;
-- reduzir frequência evita crescimento desnecessário;
-- a política pode ser calibrada depois com dados reais de velocidade.
-
-Não implementar scheduler nesta etapa.
-
-## 22. Correção futura do Profile Collector
-
-Estado atual:
-
-```text
-active = true
-AND monitoring_status = pending
-```
-
-Isso funciona para primeira resolução, mas não para recorrência.
-
-Estratégia futura:
-
-```text
-active = true
-AND (
-  next_collection_at IS NULL
-  OR next_collection_at <= now()
-)
-```
-
-Tratamento por status:
-
-- `pending`: primeira resolução;
-- `healthy`: recolher quando `next_collection_at` vencer;
-- `error`: retry controlado/backoff, também orientado por `next_collection_at`.
-
-Não alterar o workflow nesta etapa.
-
-## 23. Fluxo futuro de ingestão
-
-### Posts
-
-```text
-monitored_profiles
-→ selecionar perfil elegível
-→ abrir collection_run
-→ provider de posts
-→ normalizar InstagramProviderPostsResult
-→ resolver identidade/deduplicar
-→ upsert instagram_posts
-→ inserir post_metric_snapshots
-→ finalizar collection_run
-```
-
-### Perfil
-
-```text
-coleta de perfil
-→ abrir/reusar collection_run
-→ atualizar cache monitored_profiles
-→ inserir profile_metric_snapshot
-→ finalizar collection_run
-```
-
-## 24. SQL DRAFT — NÃO APLICADO
+## 21. SQL DRAFT — NÃO APLICADO
 
 ```sql
 -- DRAFT — NÃO APLICADO
+-- NÃO EXECUTAR.
 -- Revisar e autorizar antes de transformar em migration.
 
 create table public.collection_runs (
   id uuid primary key default gen_random_uuid(),
+
   monitored_profile_id uuid not null
     references public.monitored_profiles(id)
     on delete restrict,
+
   collection_type text not null
     check (collection_type in ('profile', 'posts', 'profile_and_posts')),
-  source text not null,
+
+  provider_key text not null
+    check (
+      char_length(provider_key) between 1 and 64
+      and provider_key ~ '^[a-z0-9_]+$'
+    ),
+
+  orchestrator text not null default 'n8n'
+    check (
+      char_length(orchestrator) between 1 and 64
+      and orchestrator ~ '^[a-z0-9_]+$'
+    ),
+
+  provider_run_id text null
+    check (
+      provider_run_id is null
+      or char_length(provider_run_id) between 1 and 255
+    ),
+
+  orchestrator_run_id text null
+    check (
+      orchestrator_run_id is null
+      or char_length(orchestrator_run_id) between 1 and 255
+    ),
+
   started_at timestamptz not null default now(),
   finished_at timestamptz null,
+
   status text not null default 'running'
     check (status in ('running', 'success', 'partial', 'error')),
-  received_count integer not null default 0 check (received_count >= 0),
-  inserted_count integer not null default 0 check (inserted_count >= 0),
-  updated_count integer not null default 0 check (updated_count >= 0),
+
+  received_count integer not null default 0
+    check (received_count >= 0),
+
+  inserted_count integer not null default 0
+    check (inserted_count >= 0),
+
+  updated_count integer not null default 0
+    check (updated_count >= 0),
+
   error_message text null
-    check (error_message is null or char_length(error_message) <= 2000),
+    check (
+      error_message is null
+      or char_length(error_message) <= 2000
+    ),
+
   created_at timestamptz not null default now(),
+
+  constraint collection_runs_profile_identity_uq
+    unique (id, monitored_profile_id),
+
   constraint collection_runs_finished_after_started
     check (finished_at is null or finished_at >= started_at)
 );
 
 create table public.instagram_posts (
   id uuid primary key default gen_random_uuid(),
+
   monitored_profile_id uuid not null
     references public.monitored_profiles(id)
     on delete restrict,
+
   instagram_media_id text null,
   instagram_shortcode text null,
   permalink text null,
   published_at timestamptz null,
   caption text null,
+
   content_type text not null default 'unknown'
-    check (content_type in ('reel', 'carousel', 'image', 'video', 'unknown')),
+    check (
+      content_type in ('reel', 'carousel', 'image', 'video', 'unknown')
+    ),
+
   duration_seconds numeric(10,3) null
-    check (duration_seconds is null or duration_seconds >= 0),
+    check (
+      duration_seconds is null
+      or duration_seconds >= 0
+    ),
+
   audio_name text null,
   thumbnail_url text null,
+
   first_collected_at timestamptz not null default now(),
   last_collected_at timestamptz not null default now(),
+
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
+
+  constraint instagram_posts_profile_identity_uq
+    unique (id, monitored_profile_id),
+
   constraint instagram_posts_has_identity
-    check (num_nonnulls(instagram_media_id, instagram_shortcode, permalink) >= 1),
+    check (
+      num_nonnulls(
+        instagram_media_id,
+        instagram_shortcode,
+        permalink
+      ) >= 1
+    ),
+
   constraint instagram_posts_collection_order
     check (last_collected_at >= first_collected_at)
 );
 
 create table public.post_metric_snapshots (
   id uuid primary key default gen_random_uuid(),
-  post_id uuid not null
-    references public.instagram_posts(id)
-    on delete restrict,
-  collection_run_id uuid not null
-    references public.collection_runs(id)
-    on delete restrict,
+
+  post_id uuid not null,
+  monitored_profile_id uuid not null,
+  collection_run_id uuid not null,
+
   captured_at timestamptz not null,
-  views_count bigint null check (views_count is null or views_count >= 0),
-  plays_count bigint null check (plays_count is null or plays_count >= 0),
-  likes_count bigint null check (likes_count is null or likes_count >= 0),
-  comments_count bigint null check (comments_count is null or comments_count >= 0),
-  shares_count bigint null check (shares_count is null or shares_count >= 0),
-  saves_count bigint null check (saves_count is null or saves_count >= 0),
+
+  views_count bigint null
+    check (views_count is null or views_count >= 0),
+
+  plays_count bigint null
+    check (plays_count is null or plays_count >= 0),
+
+  likes_count bigint null
+    check (likes_count is null or likes_count >= 0),
+
+  comments_count bigint null
+    check (comments_count is null or comments_count >= 0),
+
+  shares_count bigint null
+    check (shares_count is null or shares_count >= 0),
+
+  saves_count bigint null
+    check (saves_count is null or saves_count >= 0),
+
   created_at timestamptz not null default now(),
+
+  constraint post_metric_snapshots_post_profile_fkey
+    foreign key (post_id, monitored_profile_id)
+    references public.instagram_posts(id, monitored_profile_id)
+    on delete restrict,
+
+  constraint post_metric_snapshots_run_profile_fkey
+    foreign key (collection_run_id, monitored_profile_id)
+    references public.collection_runs(id, monitored_profile_id)
+    on delete restrict,
+
   constraint post_metric_snapshots_has_observation
     check (
       num_nonnulls(
@@ -694,27 +700,53 @@ create table public.post_metric_snapshots (
         saves_count
       ) >= 1
     ),
+
   constraint post_metric_snapshots_run_unique
     unique (post_id, collection_run_id)
 );
 
 create table public.profile_metric_snapshots (
   id uuid primary key default gen_random_uuid(),
-  monitored_profile_id uuid not null
-    references public.monitored_profiles(id)
-    on delete restrict,
-  collection_run_id uuid not null
-    references public.collection_runs(id)
-    on delete restrict,
+
+  monitored_profile_id uuid not null,
+  collection_run_id uuid not null,
+
   captured_at timestamptz not null,
-  followers_count bigint null check (followers_count is null or followers_count >= 0),
-  following_count bigint null check (following_count is null or following_count >= 0),
-  posts_count bigint null check (posts_count is null or posts_count >= 0),
+
+  followers_count bigint null
+    check (
+      followers_count is null
+      or followers_count >= 0
+    ),
+
+  following_count bigint null
+    check (
+      following_count is null
+      or following_count >= 0
+    ),
+
+  posts_count bigint null
+    check (
+      posts_count is null
+      or posts_count >= 0
+    ),
+
   created_at timestamptz not null default now(),
+
+  constraint profile_metric_snapshots_run_profile_fkey
+    foreign key (collection_run_id, monitored_profile_id)
+    references public.collection_runs(id, monitored_profile_id)
+    on delete restrict,
+
   constraint profile_metric_snapshots_has_observation
     check (
-      num_nonnulls(followers_count, following_count, posts_count) >= 1
+      num_nonnulls(
+        followers_count,
+        following_count,
+        posts_count
+      ) >= 1
     ),
+
   constraint profile_metric_snapshots_run_unique
     unique (monitored_profile_id, collection_run_id)
 );
@@ -732,19 +764,37 @@ create unique index instagram_posts_permalink_uq
   where permalink is not null;
 
 create index instagram_posts_profile_published_idx
-  on public.instagram_posts (monitored_profile_id, published_at desc);
+  on public.instagram_posts (
+    monitored_profile_id,
+    published_at desc
+  );
 
 create index instagram_posts_published_idx
   on public.instagram_posts (published_at desc);
 
+create index collection_runs_profile_started_idx
+  on public.collection_runs (
+    monitored_profile_id,
+    started_at desc
+  );
+
 create index post_metric_snapshots_post_captured_idx
-  on public.post_metric_snapshots (post_id, captured_at desc);
+  on public.post_metric_snapshots (
+    post_id,
+    captured_at desc
+  );
+
+create index post_metric_snapshots_profile_captured_idx
+  on public.post_metric_snapshots (
+    monitored_profile_id,
+    captured_at desc
+  );
 
 create index profile_metric_snapshots_profile_captured_idx
-  on public.profile_metric_snapshots (monitored_profile_id, captured_at desc);
-
-create index collection_runs_profile_started_idx
-  on public.collection_runs (monitored_profile_id, started_at desc);
+  on public.profile_metric_snapshots (
+    monitored_profile_id,
+    captured_at desc
+  );
 
 create or replace function public.set_observed_entity_updated_at()
 returns trigger
@@ -768,29 +818,50 @@ alter table public.instagram_posts enable row level security;
 alter table public.post_metric_snapshots enable row level security;
 alter table public.profile_metric_snapshots enable row level security;
 
-revoke all on table public.collection_runs from public, anon, authenticated;
-revoke all on table public.instagram_posts from public, anon, authenticated;
-revoke all on table public.post_metric_snapshots from public, anon, authenticated;
-revoke all on table public.profile_metric_snapshots from public, anon, authenticated;
+-- Remover qualquer grant automático/preexistente antes de aplicar
+-- a matriz mínima. Não alterar default privileges globais do projeto.
+revoke all on table public.collection_runs
+  from PUBLIC, anon, authenticated, service_role;
 
-grant select on table public.collection_runs to authenticated;
-grant select on table public.instagram_posts to authenticated;
-grant select on table public.post_metric_snapshots to authenticated;
-grant select on table public.profile_metric_snapshots to authenticated;
+revoke all on table public.instagram_posts
+  from PUBLIC, anon, authenticated, service_role;
 
-grant select, insert, update on table public.collection_runs to service_role;
-grant select, insert, update on table public.instagram_posts to service_role;
-grant select, insert on table public.post_metric_snapshots to service_role;
-grant select, insert on table public.profile_metric_snapshots to service_role;
+revoke all on table public.post_metric_snapshots
+  from PUBLIC, anon, authenticated, service_role;
 
-create policy "collection_runs_select_internal"
-on public.collection_runs
-for select
-to authenticated
-using (
-  ((select auth.jwt()) -> 'app_metadata' ->> 'trend_radar_role')
-    in ('viewer', 'editor', 'admin')
-);
+revoke all on table public.profile_metric_snapshots
+  from PUBLIC, anon, authenticated, service_role;
+
+-- Frontend: somente dados de produto observados.
+-- collection_runs permanece server-side only.
+grant select on table public.instagram_posts
+  to authenticated;
+
+grant select on table public.post_metric_snapshots
+  to authenticated;
+
+grant select on table public.profile_metric_snapshots
+  to authenticated;
+
+-- Collector server-side: privilégio mínimo.
+grant select, insert, update
+  on table public.collection_runs
+  to service_role;
+
+grant select, insert, update
+  on table public.instagram_posts
+  to service_role;
+
+grant select, insert
+  on table public.post_metric_snapshots
+  to service_role;
+
+grant select, insert
+  on table public.profile_metric_snapshots
+  to service_role;
+
+-- Sem policy de collection_runs para authenticated.
+-- service_role ignora RLS; seus limites vêm dos GRANTs acima.
 
 create policy "instagram_posts_select_internal"
 on public.instagram_posts
@@ -819,20 +890,27 @@ using (
     in ('viewer', 'editor', 'admin')
 );
 
-revoke execute on function public.set_observed_entity_updated_at()
-from public, anon, authenticated;
+-- A função é usada apenas pelo trigger.
+-- Não expor RPC direta para nenhum cliente/collector.
+revoke execute
+  on function public.set_observed_entity_updated_at()
+  from PUBLIC, anon, authenticated, service_role;
 ```
 
-## 25. Decisões que exigem autorização antes da implementação
+## 22. Decisões que exigem autorização antes da migration
 
-Antes de criar migration:
+Antes de qualquer implementação, aprovar explicitamente:
 
-1. aprovar o nome `instagram_posts`;
-2. aprovar a inclusão de `collection_runs`;
-3. aprovar `ON DELETE RESTRICT`;
-4. aprovar as quatro tabelas propostas;
-5. aprovar `collection_run_id` como chave de idempotência;
-6. aprovar limite inicial de 20 posts;
-7. aprovar política conceitual de snapshots por idade;
-8. autorizar explicitamente a migration da Etapa 3.1;
-9. autorizar separadamente qualquer alteração no n8n para coleta de posts.
+1. as quatro tabelas;
+2. `instagram_posts` como nome final;
+3. `collection_runs` como unidade lógica de ingestão;
+4. `provider_key` + `orchestrator`;
+5. `provider_run_id` + `orchestrator_run_id`;
+6. integridade por FKs compostas;
+7. `ON DELETE RESTRICT`;
+8. `collection_runs` server-side only;
+9. grants mínimos com REVOKE explícito de `service_role`;
+10. limite inicial configurável de 20 posts;
+11. frequência de snapshots apenas conceitual;
+12. autorização para transformar este draft em migration;
+13. autorização separada para alterar n8n e iniciar coleta real de posts.
