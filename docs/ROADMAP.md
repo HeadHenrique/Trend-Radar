@@ -25,54 +25,50 @@
 - [x] triggers;
 - [x] grants de coluna;
 - [x] RLS;
-- [x] Auth e-mail + senha;
-- [x] proteção de rotas;
-- [x] tipos gerados;
+- [x] Auth;
 - [x] data access;
-- [x] normalização Instagram;
-- [x] cadastro/listagem/edição/pausa;
-- [x] busca e filtros;
-- [x] sem dados fake.
+- [x] cadastro/listagem/edição/pausa.
 
 ## Fase 2.5 — Validação e hardening
 
 - [x] primeiro admin real;
-- [x] smoke test de Auth;
-- [x] variáveis Vercel;
-- [x] guard global de role;
-- [x] primeiro perfil real;
-- [x] edição/auditoria;
-- [x] pausa/reativação;
-- [x] advisors.
+- [x] smoke test;
+- [x] Vercel;
+- [x] RLS/grants;
+- [x] primeiro perfil real.
 
 ## Fase 3 — Primeira coleta real de perfil
 
-- [x] inspecionar n8n;
-- [x] configurar credenciais server-side;
-- [x] criar `Trend Radar — Profile Collector POC`;
-- [x] integrar Supabase;
-- [x] integrar Bright Data Instagram Profiles;
-- [x] coletar `leonardofroese` de forma real;
-- [x] normalizar provider adapter;
-- [x] validar identidade;
-- [x] preencher provider fields reais;
-- [x] marcar `monitoring_status = healthy`;
-- [x] preencher `last_collected_at`;
-- [x] definir `next_collection_at`;
-- [x] tratamento de erro sanitizado;
-- [x] polling/retry limitado;
-- [x] generalizar draft sem username hardcoded;
-- [x] manter workflow não publicado;
-- [x] não persistir posts em tabelas de negócio.
+- [x] n8n;
+- [x] Bright Data;
+- [x] provider adapter;
+- [x] metadata real;
+- [x] frontend validado;
+- [x] workflow permanece DRAFT.
 
-## Próxima etapa — Etapa 3.1
+## Fase 3.1 — Fundação de Posts e Snapshots
 
-Ainda não iniciada:
+Arquitetura concluída, implementação **não autorizada**:
 
-- [ ] modelar posts;
-- [ ] criar snapshots iniciais;
-- [ ] definir estratégia de ingestão de posts;
-- [ ] validar primeira carga real de posts.
+- [x] reinspecionar estado real;
+- [x] definir `instagram_posts`;
+- [x] definir identidade/deduplicação;
+- [x] definir `post_metric_snapshots`;
+- [x] definir `profile_metric_snapshots`;
+- [x] recomendar `collection_runs`;
+- [x] definir idempotência por collection run;
+- [x] definir RLS/grants propostos;
+- [x] definir índices propostos;
+- [x] definir contratos provider-neutral;
+- [x] definir limite inicial de 20 posts;
+- [x] definir frequência conceitual de snapshots;
+- [x] documentar ajuste futuro do Profile Collector;
+- [x] SQL draft documentado;
+- [ ] migration autorizada;
+- [ ] tabelas criadas;
+- [ ] workflow de posts implementado;
+- [ ] primeira ingestão de posts;
+- [ ] snapshots reais.
 
 ## Futuro
 
