@@ -29,6 +29,7 @@ export function ProfileListTable({
   onToggleActive,
 }: ProfileListTableProps) {
   function handleKeyDown(event: KeyboardEvent<HTMLTableRowElement>, profile: MonitoredProfile) {
+    if (event.target !== event.currentTarget) return
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault()
     onOpenDetails(profile)
