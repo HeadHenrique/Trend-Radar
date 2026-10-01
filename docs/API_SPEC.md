@@ -159,3 +159,31 @@ Caso colaborativo validado:
 - authorInstagramUsername = `joseantoniodiferenciagro`;
 - authorInstagramExternalId = `52610638028`;
 - associationType = `collaborator`.
+
+
+## Reels enrichment
+
+Workflow separado:
+
+`CWMacm8bwxDXue4w`
+
+Mapping observado:
+
+- `views → views_count`;
+- `video_play_count → plays_count` quando não-NULL;
+- `likes → likes_count`;
+- `num_comments → comments_count`.
+
+Na POC:
+
+- views = NULL em 3/3;
+- video_play_count = NULL em 3/3;
+- likes = disponível em 3/3;
+- comments = disponível em 3/3;
+- shares/saves = não observados.
+
+`audio_url` não é tratado como `audio_name`.
+
+Nenhum post é criado pelo enrichment.
+
+Snapshots são novas observações históricas vinculadas a um collection_run próprio.
