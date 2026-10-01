@@ -347,3 +347,31 @@ Também foi identificada uma falha semântica nos counters: o replay idempotente
 Detalhes:
 
 `docs/POST_ASSOCIATIONS_FOUNDATION.md`
+
+
+## Etapa 3.3.2 — Correção estrutural aplicada
+
+Após a POC, a modelagem foi corrigida para suportar posts colaborativos.
+
+Mudanças de banco:
+
+- `instagram_posts` tornou-se canônico global;
+- criado `monitored_profile_posts`;
+- os 19 posts legados foram backfilled como `author`;
+- 19 snapshots foram preservados;
+- a FK de snapshots agora exige associação perfil↔post;
+- adicionados author username/external ID e hashtags.
+
+Mudanças no workflow, sem execução:
+
+- divergência de `user_posted` não descarta mais automaticamente um post;
+- author/collaborator/discovered são classificados por evidência;
+- post upsert é global;
+- associação é resolvida antes do snapshot;
+- evidence type não é rebaixado;
+- terminal replay é bloqueado antes de upserts;
+- finalizadores só alteram runs em `running`.
+
+O post `Dc9H9yExV6q` continua ausente do banco. A nova lógica o classificaria como collaborator de Leonardo, mas nenhuma execução foi feita.
+
+O run histórico também não foi reparado; seus counters persistidos continuam refletindo o replay antigo.
