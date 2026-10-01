@@ -2,27 +2,32 @@
 
 ## Estado real
 
-O banco continua com uma única tabela de negócio aplicada:
+Migrations aplicadas:
 
-`public.monitored_profiles`
+- `20260930195835_create_monitored_profiles_foundation`;
+- `20261001041950_create_posts_snapshots_foundation`.
 
-Migration existente:
+Tabelas de negócio/observação existentes:
 
-`20260930195835_create_monitored_profiles_foundation`
+- `public.monitored_profiles`;
+- `public.collection_runs`;
+- `public.instagram_posts`;
+- `public.post_metric_snapshots`;
+- `public.profile_metric_snapshots`.
 
-A fundação de posts/snapshots permanece **DRAFT — NÃO APLICADA**.
+Após a Etapa 3.2, as quatro novas tabelas permanecem vazias.
 
-## Modelo proposto após Etapa 3.1.1
+## Relações
 
 ```text
 monitored_profiles
+  ├─< collection_runs
   ├─< instagram_posts
   │     └─< post_metric_snapshots
-  │
-  ├─< collection_runs
-  │     ├─< post_metric_snapshots
-  │     └─< profile_metric_snapshots
-  │
+  └─< profile_metric_snapshots
+
+collection_runs
+  ├─< post_metric_snapshots
   └─< profile_metric_snapshots
 ```
 
@@ -30,60 +35,74 @@ monitored_profiles
 
 Entidade operacional server-side.
 
-Campos centrais:
+Campos principais:
 
-- monitored_profile_id;
-- collection_type;
-- provider_key;
-- orchestrator;
-- provider_run_id;
-- orchestrator_run_id;
-- status;
+- `monitored_profile_id`;
+- `collection_type`;
+- `provider_key`;
+- `orchestrator`;
+- `provider_run_id`;
+- `orchestrator_run_id`;
+- `started_at` / `finished_at`;
+- `status`;
 - contadores;
-- horários;
-- erro sanitizado.
+- `error_message`.
 
-O run é criado antes da chamada ao provider e reutilizado em retries/polling.
+Constraint temporal:
 
-### Integridade cross-profile
+- `running` exige `finished_at IS NULL`;
+- `success|partial|error` exige `finished_at IS NOT NULL`.
 
-`collection_runs`:
+### instagram_posts
 
-`UNIQUE(id, monitored_profile_id)`
+Entidade canônica de conteúdo observado do Instagram.
 
-`instagram_posts`:
+Identidade por prioridade:
 
-`UNIQUE(id, monitored_profile_id)`
+1. `instagram_media_id`;
+2. `instagram_shortcode`;
+3. `permalink`.
 
-`post_metric_snapshots` usa FKs compostas para garantir que post e run pertencem ao mesmo perfil.
+Pelo menos uma identidade é obrigatória.
 
-`profile_metric_snapshots` usa FK composta para garantir que o run pertence ao mesmo perfil.
+### post_metric_snapshots
 
-Nenhum trigger customizado é necessário para essa integridade.
+Histórico temporal de métricas do post.
 
-### Snapshots
+Inclui `monitored_profile_id` redundante propositalmente para integridade e consulta.
 
-Snapshots são imutáveis para o collector:
+FKs compostas garantem que:
 
-- SELECT + INSERT;
-- sem UPDATE;
-- sem DELETE.
+- post e snapshot pertencem ao mesmo perfil;
+- run e snapshot pertencem ao mesmo perfil.
 
-Um snapshot só pode existir quando pelo menos uma métrica foi observada.
+### profile_metric_snapshots
+
+Histórico temporal do perfil.
+
+FK composta garante que o run pertence ao mesmo perfil do snapshot.
 
 ### NULL vs ZERO
 
 - `0` = zero observado;
 - `NULL` = indisponível / não observado.
 
-### Segurança
+## Imutabilidade
 
-`collection_runs` não é exposta ao frontend no MVP.
+Para o collector:
 
-`instagram_posts`, `post_metric_snapshots` e `profile_metric_snapshots` poderão ser lidos por roles internas via RLS.
+- post snapshots: SELECT + INSERT;
+- profile snapshots: SELECT + INSERT;
+- sem UPDATE;
+- sem DELETE.
 
-O `service_role` ignora RLS, portanto o SQL futuro fará REVOKE explícito de todos os privilégios automáticos antes dos grants mínimos.
+## Segurança
 
-Detalhes e SQL draft:
+- `collection_runs`: server-side only;
+- posts e snapshots: SELECT para `viewer|editor|admin` via RLS;
+- frontend não escreve posts/snapshots;
+- `service_role` teve grants automáticos revogados e recebeu apenas a matriz mínima aprovada.
+
+Detalhes completos:
 
 `docs/POSTS_SNAPSHOTS_FOUNDATION.md`
