@@ -100,3 +100,23 @@ Pela nova normalização:
 
 - author = joseantoniodiferenciagro
 - associação Leonardo = collaborator
+
+
+## Validação runtime 3.3.3
+
+A primeira execução após a migration canônica criou:
+
+- novo collection_run;
+- novo provider_run_id.
+
+O provider respondeu `ready` com `records=0`.
+
+Consequência:
+
+- nenhum `InstagramPost` foi normalizado;
+- nenhum `MonitoredProfilePostAssociation` foi criado/atualizado;
+- nenhum snapshot novo foi criado.
+
+Assim, os contratos de author/collaborator/discovered continuam validados estruturalmente, mas não foram exercitados por dados reais nesta execução.
+
+O tratamento de batch vazio encerrou o run como `error` sem alterar conteúdo existente.
