@@ -942,3 +942,21 @@ A camada de banco está pronta. A próxima etapa deve ser autorizada separadamen
 - inserir os primeiros snapshots reais.
 
 Até essa autorização, as quatro tabelas permanecem vazias.
+
+
+## Etapa 3.3.1 — Associação post ↔ perfil
+
+A POC real demonstrou que `instagram_posts.monitored_profile_id` não representa corretamente posts colaborativos.
+
+A correção arquitetural aprovada para revisão passa a considerar:
+
+- `instagram_posts` como mídia canônica global;
+- nova relação `monitored_profile_posts`;
+- autoria observada no post via `author_instagram_username` e `author_instagram_external_id`;
+- snapshots ligados à associação perfil↔post e ao collection run do mesmo perfil.
+
+O SQL corretivo permanece **DRAFT — NÃO APLICADO** em:
+
+`docs/POST_ASSOCIATIONS_FOUNDATION.md`
+
+Nenhuma alteração de banco foi feita nesta etapa.
