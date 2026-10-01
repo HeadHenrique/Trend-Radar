@@ -1,48 +1,47 @@
 # Roadmap
 
-## Fase 1–3.2
+## Até Etapa 3.3
 
-- [x] frontend foundation;
-- [x] monitored_profiles;
-- [x] Auth/RLS;
-- [x] primeiro perfil real;
-- [x] Profile Collector POC;
-- [x] fundação real de posts/snapshots.
+- [x] monitored profiles;
+- [x] Profile Collector;
+- [x] posts/snapshots foundation;
+- [x] primeira ingestão real de posts;
+- [x] 19 posts / 19 snapshots;
+- [x] idempotência técnica comprovada.
 
-## Fase 3.3 — Primeira ingestão real de posts
+## Etapa 3.3.1 — Correção pós-POC
 
-- [x] reinspecionar Supabase/GitHub/n8n;
-- [x] validar credenciais existentes;
-- [x] pesquisar Posts Scraper atual;
-- [x] confirmar limite no provider;
-- [x] criar `Trend Radar — Posts Collector POC`;
-- [x] collection_run antes do provider;
-- [x] salvar provider_run_id real;
-- [x] polling limitado;
-- [x] coletar exatamente 20 registros do provider;
-- [x] normalizar batch;
-- [x] validar proprietário;
-- [x] ordenar por published_at;
-- [x] deduplicar;
-- [x] persistir 19 posts válidos;
-- [x] persistir snapshots somente de métricas observadas;
-- [x] preservar NULL vs ZERO;
-- [x] provar idempotência reutilizando o mesmo provider job;
-- [x] 0 posts duplicados;
-- [x] 0 snapshots duplicados;
-- [x] workflow restaurado genérico;
-- [x] workflow permanece DRAFT/não publicado;
-- [x] sem Schedule Trigger;
-- [x] sem UI de Posts;
-- [x] sem IA/Trend Engine.
+Arquitetura concluída, implementação não autorizada:
 
-## Próxima etapa
+- [x] identificar limitação 1 post → 1 perfil;
+- [x] projetar post canônico global;
+- [x] projetar `monitored_profile_posts`;
+- [x] definir association_type;
+- [x] reinspecionar `Dc9H9yExV6q`;
+- [x] confirmar colaboração explícita via `coauthor_producers`;
+- [x] projetar nova integridade de snapshots;
+- [x] definir migração dos 19 posts;
+- [x] definir tratamento do 20º post;
+- [x] corrigir semântica de collection run counters;
+- [x] definir replay de run terminal;
+- [x] definir recovery de error;
+- [x] definir semântica de orchestrator_run_id;
+- [x] recomendar hashtags TEXT[] nullable;
+- [x] manter likes/comments em snapshots;
+- [x] adiar views/plays enrichment;
+- [x] SQL draft criado;
+- [ ] migration autorizada;
+- [ ] schema alterado;
+- [ ] workflow ajustado;
+- [ ] 20º post reprocessado.
 
-A próxima etapa deve ser definida após revisar estes dados reais.
+## Próxima autorização necessária
 
-Pendências candidatas, ainda não autorizadas:
+Antes de qualquer implementação:
 
-- decidir tratamento de collaborative/coauthor posts;
-- avaliar se Reels Scraper é necessário para views/plays;
-- desenhar a primeira UI de biblioteca de posts;
-- definir recorrência/scheduler apenas após medir consumo.
+1. aprovar a fundação de associações;
+2. autorizar migration corretiva;
+3. autorizar separadamente mudança do Posts Collector;
+4. autorizar eventual data repair do collection run atual.
+
+Não iniciar Reels enrichment, UI /posts ou Trend Engine antes disso.
