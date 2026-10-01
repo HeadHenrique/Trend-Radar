@@ -203,3 +203,38 @@ Resultado real:
 - 0 posts canônicos atualizados.
 
 O workflow permanece DRAFT/active=false/sem Schedule.
+
+
+## Etapa 3.4.2 — Reels Views Discovery Diagnostic
+
+Workflow isolado:
+
+`Trend Radar — Reels Views Discovery Diagnostic`
+
+ID:
+
+`0dnlSxCbcENJR4E4`
+
+Fluxo:
+
+```text
+perfil saudável
+→ carregar Reels canônicos existentes
+→ novo collection_run
+→ Bright Data discover_new / discover_by=url
+→ num_of_posts=1
+→ match seguro com post existente
+→ snapshot diagnóstico
+```
+
+A execução única retornou um Reel existente, mas:
+
+- views = NULL;
+- video_play_count = NULL;
+- likes/comments presentes.
+
+Os workflows de Posts e Reels Enrichment não foram alterados.
+
+Conclusão arquitetural atual:
+
+views/plays permanecem métricas opcionais e não devem bloquear frontend/analytics baseados em likes/comments/followers.
