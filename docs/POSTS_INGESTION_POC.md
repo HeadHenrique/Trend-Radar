@@ -375,3 +375,111 @@ Mudanças no workflow, sem execução:
 O post `Dc9H9yExV6q` continua ausente do banco. A nova lógica o classificaria como collaborator de Leonardo, mas nenhuma execução foi feita.
 
 O run histórico também não foi reparado; seus counters persistidos continuam refletindo o replay antigo.
+
+
+## Etapa 3.3.3 — Validação real do collector canônico
+
+Foi executada exatamente uma nova coleta lógica pelo Manual Trigger.
+
+### Execução
+
+- n8n execution ID: `8`;
+- novo collection_run: `7eba4bbb-b7b8-4e4b-b2a5-ee59685f2add`;
+- novo provider_run_id: `sd_mupzulxc2bedzsf3mn`;
+- orchestrator_run_id: `8`.
+
+O run histórico anterior não foi reutilizado nem alterado.
+
+### Resultado do provider
+
+O Bright Data Instagram Posts Scraper confirmou o job como `ready`, mas retornou:
+
+- records = 0;
+- errors = 0;
+- collection_duration ≈ 23,606 segundos;
+- error_message = `No records found. The data may not be available or has changed. Please try again later or adjust your search criteria.`
+
+O download retornou HTTP 200 com array vazio.
+
+Por isso o workflow encerrou o novo collection_run como:
+
+- status = error;
+- received_count = 0;
+- inserted_count = 0;
+- updated_count = 0;
+- error_message sanitizado = `Bright Data retornou download inválido ou batch vazio para a coleta de posts.`
+
+### Persistência
+
+Nenhuma linha de conteúdo foi alterada nesta execução:
+
+- instagram_posts permaneceu 19;
+- monitored_profile_posts permaneceu 19;
+- post_metric_snapshots permaneceu 19;
+- profile_metric_snapshots permaneceu 0.
+
+Distribuição de associação permaneceu:
+
+- author = 19;
+- collaborator = 0;
+- discovered = 0.
+
+Nenhuma associação antiga foi rebaixada.
+
+### Dc9H9yExV6q
+
+O post não apareceu porque o provider retornou 0 registros no batch inteiro.
+
+Ele continua ausente do banco.
+
+Portanto esta execução **não validou em runtime** a regra collaborator para esse post. A lógica permanece apenas estruturalmente implementada.
+
+### Métricas e hashtags
+
+Como nenhum registro de post foi retornado nesta nova coleta:
+
+- nenhuma métrica nova foi observada;
+- nenhum snapshot novo foi criado;
+- nenhuma hashtag nova foi observada/persistida.
+
+Não foi chamado Reels Scraper complementar.
+
+### Duplicação
+
+Estado final continua:
+
+- media ID duplicado = 0;
+- shortcode duplicado = 0;
+- permalink duplicado = 0;
+- associação duplicada = 0.
+
+### Estado do conteúdo existente
+
+Sem mudança em relação à POC anterior:
+
+- reel = 15;
+- image = 2;
+- carousel = 2;
+- post mais recente = `2026-09-12T01:57:22Z`;
+- post mais antigo = `2025-03-19T03:38:30Z`.
+
+### Conclusão
+
+A Etapa 3.3.3 validou:
+
+- criação de novo run;
+- criação de novo provider_run_id;
+- tratamento de batch vazio;
+- preservação do modelo canônico existente;
+- ausência de downgrade/duplicação;
+- manutenção do workflow DRAFT.
+
+Não validou em runtime:
+
+- author em novo payload;
+- collaborator;
+- discovered;
+- upsert canônico com registros reais;
+- novos snapshots.
+
+Uma nova coleta futura exige autorização separada.
