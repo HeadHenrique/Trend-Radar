@@ -1,47 +1,45 @@
 # Roadmap
 
-## Até Etapa 3.3
+## Concluído
 
-- [x] monitored profiles;
-- [x] Profile Collector;
-- [x] posts/snapshots foundation;
-- [x] primeira ingestão real de posts;
-- [x] 19 posts / 19 snapshots;
-- [x] idempotência técnica comprovada.
+- [x] monitored_profiles
+- [x] Profile Collector POC
+- [x] posts/snapshots foundation
+- [x] primeira ingestão real de posts
+- [x] arquitetura de associações
+- [x] migration de associações
+- [x] post canônico global
+- [x] monitored_profile_posts
+- [x] backfill 19/19
+- [x] nova FK de snapshots
+- [x] índice de cobertura da nova FK
+- [x] database.types.ts regenerado
+- [x] Posts Collector adaptado
+- [x] author/collaborator/discovered
+- [x] regra de não downgrade
+- [x] replay terminal protegido
+- [x] workflow permanece DRAFT
 
-## Etapa 3.3.1 — Correção pós-POC
+## Etapa 3.3.2
 
-Arquitetura concluída, implementação não autorizada:
+Implementação estrutural concluída.
 
-- [x] identificar limitação 1 post → 1 perfil;
-- [x] projetar post canônico global;
-- [x] projetar `monitored_profile_posts`;
-- [x] definir association_type;
-- [x] reinspecionar `Dc9H9yExV6q`;
-- [x] confirmar colaboração explícita via `coauthor_producers`;
-- [x] projetar nova integridade de snapshots;
-- [x] definir migração dos 19 posts;
-- [x] definir tratamento do 20º post;
-- [x] corrigir semântica de collection run counters;
-- [x] definir replay de run terminal;
-- [x] definir recovery de error;
-- [x] definir semântica de orchestrator_run_id;
-- [x] recomendar hashtags TEXT[] nullable;
-- [x] manter likes/comments em snapshots;
-- [x] adiar views/plays enrichment;
-- [x] SQL draft criado;
-- [ ] migration autorizada;
-- [ ] schema alterado;
-- [ ] workflow ajustado;
-- [ ] 20º post reprocessado.
+Não executado:
 
-## Próxima autorização necessária
+- Posts Collector
+- Bright Data
+- 20º post
+- data repair de counters
 
-Antes de qualquer implementação:
+## Próxima etapa
 
-1. aprovar a fundação de associações;
-2. autorizar migration corretiva;
-3. autorizar separadamente mudança do Posts Collector;
-4. autorizar eventual data repair do collection run atual.
+Validação controlada do collector novo.
 
-Não iniciar Reels enrichment, UI /posts ou Trend Engine antes disso.
+Pendências:
+
+- executar uma coleta/reprocessamento autorizado;
+- validar comportamento de Dc9H9yExV6q;
+- decidir data repair histórico;
+- depois avaliar Reels enrichment;
+- depois UI /posts;
+- depois Trend Engine.
