@@ -43,3 +43,30 @@ Pendências:
 - depois avaliar Reels enrichment;
 - depois UI /posts;
 - depois Trend Engine.
+
+
+## Etapa 3.3.3 — Validação real
+
+Concluído:
+
+- [x] reinspecionar estado real;
+- [x] confirmar perfil saudável = leonardofroese;
+- [x] executar uma única nova coleta lógica;
+- [x] criar novo collection_run;
+- [x] criar novo provider_run_id;
+- [x] confirmar tratamento de provider `records=0`;
+- [x] confirmar 0 alterações em posts/associações/snapshots;
+- [x] confirmar nenhuma associação rebaixada;
+- [x] rodar Security Advisor;
+- [x] rodar Performance Advisor;
+- [x] workflow continua DRAFT/active=false/sem Schedule.
+
+Inconclusivo por ausência de dados no batch:
+
+- [ ] validar author em novo payload;
+- [ ] validar collaborator em runtime;
+- [ ] validar discovered em runtime;
+- [ ] validar `Dc9H9yExV6q` na nova lógica;
+- [ ] validar snapshots da nova coleta.
+
+Próxima coleta real requer nova autorização. Não executar automaticamente.
