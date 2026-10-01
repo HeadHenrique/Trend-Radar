@@ -7,6 +7,8 @@ import type {
   MonitoredProfile,
   MonitoredProfileRow,
   MonitoringStatus,
+  PostAssociationType,
+  ProfileDetails,
   ProfileGroup,
   ProfilePriority,
   ProfilesRepository,
@@ -80,6 +82,55 @@ export const profilesRepository: ProfilesRepository = {
       profile.instagramUsername.includes(term) ||
       profile.displayName?.toLowerCase().includes(term),
     )
+  },
+
+  async getProfileDetails(profileId: string): Promise<ProfileDetails> {
+    const { data: associations, error: associationsError } = await supabase
+      .from('monitored_profile_posts')
+      .select('instagram_post_id, association_type')
+      .eq('monitored_profile_id', profileId)
+
+    if (associationsError) throw dataError(associationsError)
+
+    if (associations.length === 0) {
+      return {
+        monitoredContentCount: 0,
+        reelCount: 0,
+        collabCount: 0,
+        recentPosts: [],
+      }
+    }
+
+    const postIds = associations.map((association) => association.instagram_post_id)
+    const associationByPostId = new Map(
+      associations.map((association) => [
+        association.instagram_post_id,
+        association.association_type as PostAssociationType,
+      ]),
+    )
+
+    const { data: posts, error: postsError } = await supabase
+      .from('instagram_posts')
+      .select('id, thumbnail_url, content_type, published_at, caption, permalink')
+      .in('id', postIds)
+      .order('published_at', { ascending: false, nullsFirst: false })
+
+    if (postsError) throw dataError(postsError)
+
+    return {
+      monitoredContentCount: associations.length,
+      reelCount: posts.filter((post) => post.content_type === 'reel').length,
+      collabCount: associations.filter((association) => association.association_type === 'collaborator').length,
+      recentPosts: posts.slice(0, 3).map((post) => ({
+        id: post.id,
+        thumbnailUrl: post.thumbnail_url,
+        contentType: post.content_type,
+        publishedAt: post.published_at,
+        caption: post.caption,
+        permalink: post.permalink,
+        associationType: associationByPostId.get(post.id) ?? 'discovered',
+      })),
+    }
   },
 
   async createProfile(input: CreateProfileInput) {
