@@ -135,3 +135,27 @@ Consequência:
 - nenhum snapshot novo foi criado.
 
 Os contratos de author/collaborator/discovered continuam validados estruturalmente, mas não foram exercitados por dados reais nesta execução.
+
+
+## Validação runtime 3.3.4
+
+O contrato canônico foi exercitado com 20 registros reais do snapshot histórico.
+
+Confirmado em runtime:
+
+- author = 19;
+- collaborator = 1;
+- discovered = 0;
+- upsert global por media ID/shortcode/permalink;
+- associação antes do snapshot;
+- hashtags estruturadas persistidas;
+- NULL novo não apagou valores válidos;
+- 20 snapshots criados no novo run.
+
+Caso colaborativo validado:
+
+`Dc9H9yExV6q`
+
+- authorInstagramUsername = `joseantoniodiferenciagro`;
+- authorInstagramExternalId = `52610638028`;
+- associationType = `collaborator`.
