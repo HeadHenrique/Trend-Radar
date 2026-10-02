@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       collection_runs: {
         Row: {
+          collection_purpose: string
           collection_type: string
           created_at: string
           error_message: string | null
@@ -33,6 +34,7 @@ export type Database = {
           updated_count: number
         }
         Insert: {
+          collection_purpose: string
           collection_type: string
           created_at?: string
           error_message?: string | null
@@ -50,6 +52,7 @@ export type Database = {
           updated_count?: number
         }
         Update: {
+          collection_purpose?: string
           collection_type?: string
           created_at?: string
           error_message?: string | null
