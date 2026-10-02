@@ -598,3 +598,89 @@ Hoje:
 A base é suficiente para sinais estáticos e especificação do engine.
 
 Não existe série uniforme suficiente para velocity, acceleration, maturity ou Trend Score temporal.
+
+
+## Etapa 4.6 — collection purpose + recorrência de posts
+
+### Lineage
+
+`collection_runs` agora possui duas dimensões:
+
+```text
+collection_type
+→ classificação técnica coarse
+
+collection_purpose
+→ propósito operacional real
+```
+
+Purposes:
+
+- profile_metadata;
+- posts_snapshot;
+- posts_reprocess;
+- post_metrics_enrichment;
+- post_metrics_diagnostic.
+
+### Workflows
+
+Profile Collector:
+
+`profile + profile_metadata`
+
+Posts Collector:
+
+`posts + posts_snapshot`
+
+Reels Enrichment:
+
+`posts + post_metrics_enrichment`
+
+Views Diagnostic:
+
+`posts + post_metrics_diagnostic`
+
+Reprocessamento futuro:
+
+`posts + posts_reprocess`
+
+### Recorrência de posts
+
+```text
+healthy/active profiles
+        ↓
+collection_runs purpose=posts_snapshot
+        ↓
+último success/partial por perfil
+        ↓
+due_at por priority
+        ↓
+error backoff de 6h
+        ↓
+ordenar fila
+        ↓
+Perfil elegível?
+   ├─ TRUE → collection_run(posts_snapshot) → provider
+   └─ FALSE → terminal limpo
+```
+
+Intervals:
+
+- P1 = 24h;
+- P2 = 72h;
+- P3 = 7d.
+
+O relógio usa `finished_at`.
+
+Reprocess, enrichment e diagnostic não avançam a recorrência.
+
+### Estado da automação
+
+A seleção recorrente está implementada, mas o workflow permanece:
+
+- DRAFT;
+- active=false;
+- Manual Trigger;
+- sem Schedule Trigger.
+
+A execução 18 validou fila vazia e não tocou no provider.
