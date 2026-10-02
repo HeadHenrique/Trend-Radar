@@ -7,19 +7,19 @@ function getSupabaseConfig() {
 
   if (!projectUrl) {
     throw new Error(
-      '[Trend Radar] Configuração ausente: defina VITE_SUPABASE_URL no ambiente.',
+      '[Caliber Orbit] Configuração ausente: defina VITE_SUPABASE_URL no ambiente.',
     )
   }
 
   if (!publishableKey) {
     throw new Error(
-      '[Trend Radar] Configuração ausente: defina VITE_SUPABASE_PUBLISHABLE_KEY no ambiente.',
+      '[Caliber Orbit] Configuração ausente: defina VITE_SUPABASE_PUBLISHABLE_KEY no ambiente.',
     )
   }
 
   if (!publishableKey.startsWith('sb_publishable_')) {
     throw new Error(
-      '[Trend Radar] VITE_SUPABASE_PUBLISHABLE_KEY precisa ser uma publishable key válida.',
+      '[Caliber Orbit] VITE_SUPABASE_PUBLISHABLE_KEY precisa ser uma publishable key válida.',
     )
   }
 
@@ -29,7 +29,7 @@ function getSupabaseConfig() {
     parsedUrl = new URL(projectUrl)
   } catch {
     throw new Error(
-      '[Trend Radar] VITE_SUPABASE_URL possui um valor inválido.',
+      '[Caliber Orbit] VITE_SUPABASE_URL possui um valor inválido.',
     )
   }
 
