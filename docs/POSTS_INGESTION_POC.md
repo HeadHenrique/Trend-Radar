@@ -753,3 +753,33 @@ Duplicados globais após a execução:
 - permalink = 0.
 
 Workflow permanece DRAFT/active=false/Manual Trigger/sem Schedule. A recorrência completa de posts não foi implementada.
+
+
+## Etapa 4.4 — segundo competitor no onboarding multi-perfil
+
+A lógica da Etapa 4.3 foi validada novamente sem alteração.
+
+Execution `17` selecionou dinamicamente `helio.tatsuo`, porque Leonardo e Raphael já possuíam run posts success/partial.
+
+- collection_run: `73d0fc24-f46f-423f-bf1d-93b1a8bf0a7c`
+- provider_run_id: `sd_muqg6gla1ujharn7e5`
+- records/received: `20`
+- inserted: `20`
+- updated: `0`
+- snapshots: `20`
+- invalid: `0`
+- status: `success`
+
+Distribuição: 8 Reels, 5 Images, 7 Carousels, 0 Videos, 0 Unknown.
+
+Associações: author=20, collaborator=0, discovered=0.
+
+Métricas: likes=19/20, comments=20/20, views/plays/shares/saves=0/20 disponíveis.
+
+Hashtags: 20 NULL, 0 arrays vazios, 0 arrays não vazios.
+
+Cross-profile: 0 compartilhados com Leonardo, 0 com Raphael.
+
+Deduplicação global: 0 media ID, 0 shortcode, 0 permalink duplicados.
+
+Nenhum bug foi encontrado ou corrigido. Workflow permanece DRAFT/active=false/Manual Trigger/sem Schedule.
