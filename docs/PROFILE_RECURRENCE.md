@@ -437,3 +437,23 @@ Resultado real:
 A fila de recorrência não foi alterada nesta etapa. O Profile Collector continua DRAFT, active=false e sem Schedule Trigger.
 
 Durante a validação foi cadastrado externamente `helio.tatsuo` como competitor pending. Ele não foi processado, porque a autorização permitia uma única execução do Profile Collector.
+
+
+## Etapa 4.4 — segundo competitor real
+
+A lógica existente foi validada sem alteração.
+
+Execution `16` selecionou dinamicamente `helio.tatsuo`.
+
+- collection_run: `9e52e3a3-5997-428e-b9f9-00c6821f75cf`
+- provider_run_id: `sd_muqg4m8hdwpkf3ks`
+- external ID: `9687447251`
+- display name: `Helio Tatsuo Yostsui`
+- followers: `340070`
+- following: `2173`
+- posts_count: `2482`
+- profile snapshot: `9f4a7c04-97d2-4ee5-b7c4-89b7d21f554e`
+- monitoring_status final: `healthy`
+- status do run: `success`
+
+Nenhum bug de seleção foi encontrado. O Profile Collector permanece DRAFT, active=false e sem Schedule Trigger.

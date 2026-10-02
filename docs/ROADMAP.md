@@ -343,3 +343,36 @@ Pendências antes da automação recorrente:
 Observação concorrente:
 
 Durante a execução foi cadastrado pelo frontend `helio.tatsuo`, competitor pending. Ele não foi processado nesta etapa.
+
+
+## Etapa 4.4 — segundo concorrente real
+
+Concluído:
+
+- [x] Hélio pending sem runs/associações;
+- [x] Profile Collector selecionou Hélio automaticamente;
+- [x] metadata real + profile snapshot;
+- [x] Hélio healthy;
+- [x] Posts Collector selecionou Hélio automaticamente;
+- [x] nenhuma alteração de seleção necessária;
+- [x] 1 provider job por collector;
+- [x] 20 posts reais, 20 inserts, 20 snapshots;
+- [x] 8 Reels / 5 Images / 7 Carousels;
+- [x] author=20;
+- [x] 0 overlaps com Leonardo/Raphael;
+- [x] 0 duplicados canônicos;
+- [x] frontend validado estruturalmente sem alteração;
+- [x] workflows DRAFT/active=false;
+- [x] sem Schedule;
+- [x] sem Reels workflows;
+- [x] sem Trend Engine/IA.
+
+Pendências antes da primeira versão do Trend Engine:
+
+- definir sinais do score sem depender de views;
+- definir baseline por perfil/nicho/formato;
+- definir janela temporal mínima;
+- separar sinal de perfil de sinal de post;
+- tratar amostra pequena e métricas NULL;
+- definir recorrência de posts antes de tendências temporais;
+- ampliar número de perfis/referências para reduzir viés.

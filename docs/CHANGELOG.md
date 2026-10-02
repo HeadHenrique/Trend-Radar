@@ -1,5 +1,56 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.4
+
+### Segundo competitor real
+
+- `helio.tatsuo` validado ponta a ponta sem alterar workflows;
+- Profile Collector execution `16`;
+- profile run `9e52e3a3-5997-428e-b9f9-00c6821f75cf`;
+- provider run `sd_muqg4m8hdwpkf3ks`;
+- display name `Helio Tatsuo Yostsui`;
+- external ID `9687447251`;
+- followers 340070, following 2173, posts_count 2482;
+- profile snapshot `9f4a7c04-97d2-4ee5-b7c4-89b7d21f554e`;
+- Hélio passou de pending para healthy.
+
+### Posts
+
+- Posts Collector execution `17`;
+- seleção multi-perfil escolheu Hélio automaticamente;
+- posts run `73d0fc24-f46f-423f-bf1d-93b1a8bf0a7c`;
+- provider run `sd_muqg6gla1ujharn7e5`;
+- records/received = 20;
+- inserted = 20;
+- updated = 0;
+- snapshots = 20;
+- status = success;
+- 8 Reels, 5 Images, 7 Carousels;
+- associations: author = 20.
+
+### Cross-profile e métricas
+
+- compartilhados com Leonardo = 0;
+- compartilhados com Raphael = 0;
+- duplicados media ID/shortcode/permalink = 0;
+- likes disponíveis = 19/20;
+- comments disponíveis = 20/20;
+- views/plays/shares/saves indisponíveis;
+- hashtags = NULL em 20/20.
+
+### Escopo
+
+- nenhum bug bloqueante encontrado;
+- nenhum workflow alterado;
+- nenhum frontend alterado;
+- nenhum schema/migration;
+- nenhuma segunda execução;
+- sem Schedule Trigger;
+- sem publicação;
+- sem Reels Enrichment/Views Diagnostic;
+- sem Trend Engine/IA.
+
+
 ## 2026-10-02 — Etapa 4.3
 
 ### Competitor onboarding
