@@ -294,3 +294,59 @@ A tela específica trava o grupo como competitor no create/edit, mas a tela gera
 Followers usa exclusivamente `monitored_profiles.followers_count`.
 
 Dados nulos são apresentados como insuficientes/não informados; nenhuma métrica analítica foi inventada.
+
+
+## Etapa 4.1 — Profile Collector recorrente
+
+O Profile Collector deixou de depender de `monitoring_status=pending`.
+
+Workflow:
+
+`Trend Radar — Profile Collector POC`
+
+ID:
+
+`BijTnAz2cSLTMzva`
+
+Fluxo atual:
+
+```text
+active profiles
+→ selecionar 1 elegível por next_collection_at
+→ collection_run(profile)
+→ Bright Data Profile Scraper
+→ normalizar + validar identidade
+→ monitored_profiles
+→ profile_metric_snapshots
+→ finalizar collection_run
+```
+
+Elegibilidade:
+
+```text
+active = true
+status ∈ pending | healthy | error
+next_collection_at IS NULL OR <= agora
+```
+
+Frequência provisória:
+
+- prioridade 1: +1h;
+- prioridade 2: +6h;
+- prioridade 3: +24h;
+- error: +6h.
+
+O Profile Scraper é a única source of truth de followers_count.
+
+Execução 13 validou:
+
+- healthy recurrence;
+- collection run;
+- provider_run_id;
+- followers 2767;
+- following 286;
+- posts_count 226;
+- primeiro profile_metric_snapshot;
+- success counters 1/0/1.
+
+Workflow continua DRAFT/active=false/sem Schedule Trigger.
