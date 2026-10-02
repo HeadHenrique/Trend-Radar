@@ -684,3 +684,80 @@ A seleção recorrente está implementada, mas o workflow permanece:
 - sem Schedule Trigger.
 
 A execução 18 validou fila vazia e não tocou no provider.
+
+
+## Etapa 4.7 — produção controlada dos collectors
+
+Somente dois workflows foram ativados:
+
+```text
+Profile Collector
+Manual Trigger ─┐
+                ├→ fila interna → duplicate guard → collection_run → provider
+Schedule HH:10 ─┘
+
+Posts Collector
+Manual Trigger ───────┐
+                      ├→ due selector → no-due guard → duplicate guard → collection_run → provider
+Schedule 4h @ :40 ────┘
+```
+
+Timezone dos dois:
+
+`America/Sao_Paulo`
+
+### Guard de concorrência
+
+Profile:
+
+- bloqueia run duplicado `profile_metadata` running do mesmo profile.
+
+Posts:
+
+- bloqueia run duplicado `posts_snapshot` running do mesmo profile.
+
+Não existe batch paralelo.
+
+### Schedules
+
+Profile:
+
+`0 10 * * * *`
+
+Posts:
+
+`0 40 */4 * * *`
+
+Eles foram deliberadamente deslocados para não iniciarem no mesmo minuto.
+
+### Production boundary
+
+Ativos:
+
+- Profile Collector;
+- Posts Collector.
+
+Inativos:
+
+- Reels Enrichment;
+- Views Diagnostic.
+
+Nenhum Schedule Trigger foi adicionado aos workflows de diagnóstico/enrichment.
+
+### Observabilidade
+
+Produção usa:
+
+- collection_runs;
+- n8n executions.
+
+Não foi criada tabela nova de logs.
+
+### Rollback operacional
+
+Pausa:
+
+- unpublish/desativar Profile Collector;
+- unpublish/desativar Posts Collector.
+
+Não remover schedule, schema ou histórico para pausar.

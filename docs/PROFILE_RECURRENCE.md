@@ -478,3 +478,52 @@ Estado final:
 - active=false;
 - Manual Trigger;
 - sem Schedule Trigger.
+
+
+## Etapa 4.7 — Profile Collector automático
+
+O workflow foi publicado para produção controlada.
+
+Triggers:
+
+- `Iniciar POC Manual`, preservado;
+- `Agendar Profile Collector`, Schedule Trigger v1.4.
+
+Configuração:
+
+```text
+cron = 0 10 * * * *
+timezone = America/Sao_Paulo
+```
+
+Resultado:
+
+- uma execution por hora;
+- minuto 10;
+- regra de elegibilidade continua usando next_collection_at;
+- no-due continua encerrando antes de collection_run/provider.
+
+### Duplicate guard
+
+Antes de `Criar Collection Run`, o workflow verifica:
+
+```text
+monitored_profile_id = perfil selecionado
+collection_purpose = profile_metadata
+status = running
+```
+
+Se existir:
+
+`Coleta de perfil já em andamento`
+
+encerra o tick sem novo run/provider.
+
+Running antigo não é convertido automaticamente em error.
+
+Estado publicado:
+
+- active=true;
+- activeVersionId=`d0327ad6-1327-4a56-938b-c010de5d89f1`.
+
+Nenhuma execução manual foi feita na Etapa 4.7.

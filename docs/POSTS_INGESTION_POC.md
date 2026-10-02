@@ -858,3 +858,59 @@ Resultado:
 - 0 alterações em posts/associações/snapshots.
 
 Nenhuma coleta real foi executada.
+
+
+## Etapa 4.7 — Posts Collector automático
+
+O workflow foi publicado para produção controlada.
+
+Triggers:
+
+- Manual Trigger preservado;
+- Schedule Trigger v1.4.
+
+Configuração:
+
+```text
+cron = 0 40 */4 * * *
+timezone = America/Sao_Paulo
+```
+
+Horários:
+
+- 00:40;
+- 04:40;
+- 08:40;
+- 12:40;
+- 16:40;
+- 20:40.
+
+O schedule não altera a regra de due_at.
+
+### Guards
+
+No due preservado:
+
+```text
+Perfil elegível?
+→ FALSE
+→ Nenhum perfil elegível para coleta de posts
+```
+
+Duplicate running guard adicionado:
+
+```text
+perfil selecionado
++ collection_purpose=posts_snapshot
++ status=running
+→ Coleta de posts já em andamento
+```
+
+Esse caminho termina sem criar segundo collection_run/provider.
+
+Estado publicado:
+
+- active=true;
+- activeVersionId=`54ac82e5-8b01-499c-8980-b1012f76d821`.
+
+Nenhuma execução manual ou provider job foi disparado na Etapa 4.7.

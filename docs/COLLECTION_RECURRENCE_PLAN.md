@@ -495,3 +495,55 @@ A recorrência de seleção está pronta, mas ainda faltam decisões de schedule
 - limite de provider jobs;
 - controle de custo;
 - observabilidade.
+
+
+## Etapa 4.7 — automação controlada ativada
+
+A seleção recorrente deixou de depender de execução manual.
+
+### Scheduler
+
+Profile Collector:
+
+- Schedule Trigger v1.4;
+- cron `0 10 * * * *`;
+- uma execution por hora, em HH:10;
+- timezone `America/Sao_Paulo`.
+
+Posts Collector:
+
+- Schedule Trigger v1.4;
+- cron `0 40 */4 * * *`;
+- executions em 00:40, 04:40, 08:40, 12:40, 16:40 e 20:40;
+- timezone `America/Sao_Paulo`.
+
+Schedules apenas oferecem ticks.
+
+Regras de negócio continuam internas:
+
+- Profile usa next_collection_at;
+- Posts usa due_at derivado do último posts_snapshot.
+
+### Concorrência
+
+Mantido máximo de 1 perfil por workflow execution.
+
+Adicionados guards contra run duplicado em andamento para o mesmo perfil/purpose.
+
+Running stale bloqueia novo provider job e exige investigação manual.
+
+### Production state
+
+Profile Collector:
+
+- active=true;
+- activeVersionId=d0327ad6-1327-4a56-938b-c010de5d89f1.
+
+Posts Collector:
+
+- active=true;
+- activeVersionId=54ac82e5-8b01-499c-8980-b1012f76d821.
+
+Reels Enrichment e Views Diagnostic continuam inativos.
+
+Não houve execução manual na Etapa 4.7.
