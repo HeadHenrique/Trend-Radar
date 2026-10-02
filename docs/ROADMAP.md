@@ -262,3 +262,42 @@ Antes de automatizar:
 - errors;
 - polling;
 - cenário com múltiplos perfis/competitors.
+
+
+## Etapa 4.2 — Biblioteca visual de posts e Reels
+
+Implementado:
+
+- [x] /posts substituído por biblioteca visual real;
+- [x] grid responsivo de cards;
+- [x] postsRepository dedicado;
+- [x] queries em lote para posts, associações, perfis e snapshots;
+- [x] 1 card por instagram_posts.id;
+- [x] snapshot mais recente por contexto post + perfil;
+- [x] busca por caption, autor, shortcode e hashtags;
+- [x] filtros por tipo, perfil, associação e período;
+- [x] ordenação por recentes, antigos, curtidas e comentários;
+- [x] NULL preservado como dado indisponível;
+- [x] views/plays ausentes não aparecem como zero;
+- [x] PostDetailDrawer com autoria, associações, hashtags e métricas;
+- [x] link para conteúdo original no Instagram;
+- [x] collab Dc9H9yExV6q representado sem duplicação;
+- [x] estados loading/error/empty sem mocks;
+- [x] responsividade desktop/tablet/mobile;
+- [x] nenhuma alteração de schema;
+- [x] nenhuma alteração de n8n;
+- [x] nenhuma chamada Bright Data;
+- [x] nenhum Trend Score/IA/player interno.
+
+Dados reais usados na validação:
+
+- 20 posts;
+- 16 Reels;
+- 2 imagens;
+- 2 carrosséis;
+- 0 vídeos;
+- 43 post metric snapshots;
+- views NULL em 43/43 snapshots;
+- plays NULL em 43/43 snapshots;
+- 19 associações author;
+- 1 associação collaborator.
