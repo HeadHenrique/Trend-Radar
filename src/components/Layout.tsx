@@ -63,7 +63,7 @@ export function Layout() {
         <header className="topbar">
           <div>
             <span className="eyebrow">Inteligência executiva</span>
-            <strong>Caliber Trend Radar</strong>
+            <strong>Caliber Orbit</strong>
           </div>
 
           <div className="topbar-user">
