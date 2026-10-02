@@ -502,3 +502,99 @@ Resultado: Profile Collector execution 16, Posts Collector execution 17, 20 novo
 Estado final: Leonardo own/healthy/20 associações; Raphael competitor/healthy/20; Hélio competitor/healthy/20.
 
 Não houve alteração de schema, migration, frontend ou workflow na Etapa 4.4.
+
+
+## Etapa 4.5 — Trend Engine V0 (especificação)
+
+Nenhum engine foi implementado.
+
+Fluxo conceitual futuro:
+
+```text
+canonical posts + associations + snapshots
+        ↓
+observable feature extraction
+        ↓
+semantic feature extraction (future AI)
+        ↓
+signal aggregation by scope/window
+        ↓
+adoption + overlap + temporal metrics
+        ↓
+performance baseline/lift
+        ↓
+data confidence
+        ↓
+TrendCandidate
+        ↓
+Trend Score + maturity
+```
+
+### Princípio temporal
+
+Sem velocity ou persistence válida existe somente sinal observado.
+
+Trend Score fica indisponível.
+
+### Baseline
+
+Baseline primário:
+
+`profile + content_type + metric_basis`
+
+Mediana é escolhida sobre média.
+
+A base real demonstra o motivo:
+
+Leonardo Reel possui median likes = 13 e mean likes = 643,50.
+
+### Metric semantics
+
+`observed_interactions = likes + comments` somente quando ambos forem observados.
+
+NULL nunca vira zero.
+
+### IA
+
+IA futura gera semantic features estruturadas.
+
+O motor quantitativo calcula adoção, velocidade, lift, confiança e score.
+
+LLM não gera Trend Score diretamente.
+
+### Collection lineage
+
+`collection_type=posts` hoje mistura:
+
+- posts snapshot;
+- reprocess;
+- enrichment;
+- diagnostic.
+
+Proposta futura:
+
+`collection_purpose`
+
+Valores:
+
+- profile_metadata;
+- posts_snapshot;
+- posts_reprocess;
+- post_metrics_enrichment;
+- post_metrics_diagnostic.
+
+Nenhuma migration foi criada nesta etapa.
+
+### Estado de suficiência
+
+Hoje:
+
+- 3 profiles;
+- 60 posts;
+- 60 associations;
+- 83 post snapshots;
+- 3 profile snapshots.
+
+A base é suficiente para sinais estáticos e especificação do engine.
+
+Não existe série uniforme suficiente para velocity, acceleration, maturity ou Trend Score temporal.
