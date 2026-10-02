@@ -222,3 +222,43 @@ Próximas etapas candidatas, sob nova autorização:
 - recorrência do Profile Collector;
 - analytics confiáveis sobre likes/comments/followers;
 - somente depois Trend Engine.
+
+
+## Etapa 4.1 — Profile Collector recorrente + histórico
+
+Concluído:
+
+- [x] remover dependência exclusiva de pending;
+- [x] elegibilidade por next_collection_at;
+- [x] pending/healthy/error na mesma fila;
+- [x] 1 perfil por execução;
+- [x] ordenação por prioridade/data;
+- [x] collection_run antes do provider;
+- [x] provider_run_id persistido;
+- [x] trigger do provider sem retry automático;
+- [x] polling limitado;
+- [x] validação username/external ID;
+- [x] NULL não apaga metadata anterior;
+- [x] followers source of truth = Profile Scraper;
+- [x] profile_metric_snapshot;
+- [x] idempotência por profile+run;
+- [x] success counters;
+- [x] error backoff +6h;
+- [x] execução real única;
+- [x] healthy recurrence validada;
+- [x] followers 2766 → 2767;
+- [x] following=286;
+- [x] posts_count=226;
+- [x] profile snapshots 0 → 1;
+- [x] workflow permanece DRAFT/active=false;
+- [x] sem Schedule Trigger;
+- [x] Posts/Reels workflows não executados.
+
+Antes de automatizar:
+
+- revisar custo;
+- volume de perfis;
+- frequência;
+- errors;
+- polling;
+- cenário com múltiplos perfis/competitors.
