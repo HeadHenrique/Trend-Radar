@@ -1877,3 +1877,16 @@ select {
   margin: 0 auto;
   object-fit: contain;
 }
+
+
+/* Caliber Orbit — HQ sidebar sizing */
+.brand {
+  padding: 0 0 18px;
+}
+
+.brand-logo {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  image-rendering: auto;
+}
