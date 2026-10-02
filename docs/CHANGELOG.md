@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.2
+
+### Biblioteca de conteúdos
+
+- /posts deixou de ser empty state e passou a consumir dados reais;
+- criado postsRepository com quatro leituras em lote: instagram_posts, monitored_profile_posts, monitored_profiles e post_metric_snapshots;
+- criado view model canônico com um item por instagram_posts.id;
+- snapshots agrupados por contexto post + perfil e somente a observação mais recente é usada na UI;
+- histórico não é somado;
+- criados PostCard, PostDetailDrawer e PostsToolbar;
+- grid responsivo com visual vertical para Reels;
+- thumbnails reais com fallback por content type;
+- busca local por caption, autor, shortcode e hashtags;
+- filtros por tipo, perfil, associação e período;
+- ordenação por recentes, antigos, curtidas e comentários;
+- NULL de métricas permanece indisponível, sem conversão para zero;
+- views/plays/shares/saves só aparecem quando observados;
+- followers não entra em cards de conteúdo;
+- abrir no Instagram usa permalink real em nova aba;
+- sem player interno.
+
+### Validação de dados
+
+Estado real observado:
+
+- instagram_posts = 20;
+- Reels = 16;
+- Imagens = 2;
+- Carrosséis = 2;
+- Vídeos = 0;
+- post_metric_snapshots = 43;
+- views NULL = 43;
+- plays NULL = 43;
+- associations: author = 19, collaborator = 1.
+
+Collab de referência:
+
+- shortcode Dc9H9yExV6q;
+- autor original joseantoniodiferenciagro;
+- perfil monitorado Leonardo Froese;
+- association_type collaborator;
+- biblioteca mantém somente um card canônico.
+
+### Escopo preservado
+
+- schema/migrations inalterados;
+- n8n inalterado;
+- Bright Data não chamada;
+- sem Schedule Trigger;
+- sem dados fake;
+- sem Trend Score;
+- sem IA;
+- sem player de vídeo.
+
+
 ## 2026-10-02 — Etapa 4.1
 
 ### Profile Collector
