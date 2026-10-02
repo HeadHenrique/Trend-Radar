@@ -1,5 +1,87 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.5
+
+### Data audit
+
+Auditoria read-only confirmou:
+
+- monitored_profiles = 3;
+- instagram_posts = 60;
+- monitored_profile_posts = 60;
+- post_metric_snapshots = 83;
+- profile_metric_snapshots = 3;
+- collection_runs = 10.
+
+Format mix:
+
+- Reels = 40;
+- Carousels = 13;
+- Images = 7.
+
+Latest metric coverage:
+
+- likes = 48/60;
+- comments = 60/60;
+- complete likes+comments = 48/60;
+- views = 0/60;
+- plays = 0/60;
+- shares = 0/60;
+- saves = 0/60.
+
+Structured hashtags:
+
+- 13/60 posts com array não vazio.
+
+### Trend Engine V0 spec
+
+- signal, trend, adoption, overlap, velocity, persistence e acceleration definidos;
+- baseline por profile + content_type;
+- mediana escolhida em vez de média;
+- observed_interactions exige likes e comments;
+- NULL não vira zero;
+- follower-normalized rate fica somente como proxy atual;
+- performance_lift exige baseline compatível;
+- data_confidence definido;
+- TrendCandidate definido;
+- Trend Score proposto com gate temporal;
+- maturity definida sem classificar tendências atuais;
+- IA separada do motor quantitativo.
+
+### Collection lineage
+
+Problema identificado:
+
+`collection_type=posts` mistura Posts Collector, reprocess, Reels Enrichment e Views Diagnostic.
+
+Proposto futuramente:
+
+`collection_purpose`
+
+Sem migration nesta etapa.
+
+### Recurrence plan
+
+Proposta inicial:
+
+- priority 1: diária;
+- priority 2: a cada 3 dias;
+- priority 3: semanal.
+
+Volume calculado somente em records, sem preço financeiro.
+
+### Escopo
+
+- nenhum banco alterado;
+- nenhuma migration;
+- nenhum n8n alterado;
+- nenhum collector executado;
+- nenhuma Bright Data chamada;
+- nenhum frontend alterado;
+- nenhuma IA executada;
+- nenhum Trend Engine implementado.
+
+
 ## 2026-10-02 — Etapa 4.4
 
 ### Segundo competitor real
