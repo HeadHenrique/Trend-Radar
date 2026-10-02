@@ -1,5 +1,88 @@
 # Changelog
 
+
+## 2026-10-02 — Etapa 4.7
+
+### Automation
+
+Profile Collector publicado:
+
+- active=true;
+- activeVersionId=`d0327ad6-1327-4a56-938b-c010de5d89f1`;
+- Manual Trigger preservado;
+- Schedule Trigger v1.4;
+- cron `0 10 * * * *`;
+- timezone `America/Sao_Paulo`.
+
+Posts Collector publicado:
+
+- active=true;
+- activeVersionId=`54ac82e5-8b01-499c-8980-b1012f76d821`;
+- Manual Trigger preservado;
+- Schedule Trigger v1.4;
+- cron `0 40 */4 * * *`;
+- timezone `America/Sao_Paulo`.
+
+### Duplicate guards
+
+Profile:
+
+- verifica run `profile_metadata/running` para o profile selecionado;
+- não cria segundo provider job.
+
+Posts:
+
+- verifica run `posts_snapshot/running`;
+- não cria segundo provider job.
+
+Stale running permanece para investigação manual.
+
+### Production boundary
+
+Continuam inativos:
+
+- Reels Enrichment;
+- Views Diagnostic.
+
+### Budget
+
+Schedule aproximado:
+
+- Profile = 720 executions/mês;
+- Posts = 180 executions/mês;
+- total = ~900/mês.
+
+Provider theoretical hard cap:
+
+- Profile = 720 records/mês;
+- Posts = 3600 records/mês;
+- total = 4320 records/mês.
+
+Expected current:
+
+- Profile ~360 records/mês;
+- Posts ~600 records/mês;
+- total ~960 records/mês.
+
+### Pricing audit
+
+Documentação oficial pública consultada em 2026-10-02:
+
+- n8n Cloud pricing por workflow execution;
+- Bright Data Web Scraper/Instagram pricing por successful record.
+
+Nenhuma assinatura foi alterada.
+
+### Escopo
+
+- nenhuma execução manual;
+- nenhum provider job manual;
+- nenhuma chamada Bright Data manual;
+- nenhum schema/migration;
+- nenhum frontend;
+- nenhum Trend Engine;
+- nenhuma IA.
+
 ## 2026-10-02 — Etapa 4.6
 
 ### Collection purpose
