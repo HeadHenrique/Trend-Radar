@@ -1861,3 +1861,19 @@ select {
 .post-detail-tags span {
   border: 1px solid var(--border-purple);
 }
+
+
+/* Caliber Orbit — sidebar brand */
+.brand {
+  display: block;
+  padding: 0 6px 18px;
+}
+
+.brand-logo {
+  display: block;
+  width: 100%;
+  max-width: 184px;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+}

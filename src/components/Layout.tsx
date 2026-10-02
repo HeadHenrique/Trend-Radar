@@ -1,7 +1,6 @@
 import {
   Bell,
   ChartNoAxesCombined,
-  Compass,
   Crosshair,
   FileText,
   Gauge,
@@ -35,11 +34,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <div className="brand-mark"><Compass size={19} /></div>
-          <div>
-            <strong>CALIBER</strong>
-            <span>TREND RADAR</span>
-          </div>
+          <img className="brand-logo" src="/caliber-orbit-logo.webp" alt="Caliber Orbit" />
         </div>
 
         <nav>
