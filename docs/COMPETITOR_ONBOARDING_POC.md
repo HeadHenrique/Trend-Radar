@@ -325,3 +325,72 @@ Não foi feito:
 - alteração de frontend;
 - Trend Engine;
 - IA.
+
+
+# Etapa 4.4 — segundo concorrente real
+
+## Estado inicial
+Hélio já existia no frontend como `helio.tatsuo`, competitor, active=true, priority=2, pending, sem followers, sem runs e sem associações.
+
+Contagens iniciais: monitored_profiles=3, collection_runs=8, instagram_posts=40, monitored_profile_posts=40, post_metric_snapshots=63, profile_metric_snapshots=2.
+
+## Profile Collector
+Nenhuma alteração foi feita no workflow antes do teste. A fila real selecionou dinamicamente `helio.tatsuo`.
+
+- execution: `16`
+- collection_run: `9e52e3a3-5997-428e-b9f9-00c6821f75cf`
+- provider_run_id: `sd_muqg4m8hdwpkf3ks`
+- display_name: `Helio Tatsuo Yostsui`
+- instagram_external_id: `9687447251`
+- followers: `340070`
+- following: `2173`
+- posts_count: `2482`
+- profile snapshot: `9f4a7c04-97d2-4ee5-b7c4-89b7d21f554e`
+- status: `success`
+- monitoring_status final: `healthy`
+
+## Posts Collector
+Nenhuma alteração foi feita na lógica de onboarding. A seleção dinâmica apontou Hélio como único healthy sem run posts success/partial.
+
+- execution: `17`
+- collection_run: `73d0fc24-f46f-423f-bf1d-93b1a8bf0a7c`
+- provider_run_id: `sd_muqg6gla1ujharn7e5`
+- records/received: `20`
+- inserted: `20`
+- updated: `0`
+- snapshots: `20`
+- status: `success`
+
+Distribuição: 8 Reels, 5 Images, 7 Carousels, 0 Videos, 0 Unknown.
+
+Associações: author=20, collaborator=0, discovered=0.
+
+Posts canônicos preexistentes reutilizados: 0.
+
+## Cross-profile e dedup
+- compartilhados com Leonardo: 0
+- compartilhados com Raphael: 0
+- duplicados por media ID: 0
+- duplicados por shortcode: 0
+- duplicados por permalink: 0
+
+## Métricas e hashtags
+- likes: 19/20
+- comments: 20/20
+- views: 0/20
+- plays: 0/20
+- shares: 0/20
+- saves: 0/20
+- comments_count=0 reais: 5/20
+- hashtags não NULL/não vazias: 0
+- hashtags []: 0
+- hashtags NULL: 20
+
+## Estado final
+- Leonardo: own, healthy, 20 posts associados
+- Raphael: competitor, healthy, 20 posts associados
+- Hélio: competitor, healthy, 20 posts associados
+
+Contagens finais: monitored_profiles 3→3, collection_runs 8→10, instagram_posts 40→60, monitored_profile_posts 40→60, post_metric_snapshots 63→83, profile_metric_snapshots 2→3.
+
+Nenhum bug bloqueante foi encontrado. Nenhum workflow ou frontend foi alterado. Ambos os collectors permanecem DRAFT, active=false, Manual Trigger e sem Schedule Trigger.
