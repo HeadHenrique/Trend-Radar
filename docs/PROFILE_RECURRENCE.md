@@ -403,3 +403,37 @@ Até lá:
 - Manual Trigger;
 - active=false;
 - sem Schedule Trigger.
+
+
+## Etapa 4.3 — primeiro competitor real
+
+Execução manual única:
+
+`14`
+
+Perfil selecionado dinamicamente:
+
+`raphaelcostaoficial`
+
+Profile collection_run:
+
+`a0300964-b92d-4b25-bb99-125dbd3ccf06`
+
+Provider run:
+
+`sd_muqfo65v17r8x2nvk1`
+
+Resultado real:
+
+- instagram_external_id = 1526023890;
+- display_name = Raphael Costa | Grupo 220🫡;
+- followers = 295953;
+- following = 1661;
+- posts_count = 6234;
+- monitoring_status = healthy;
+- profile snapshot criado;
+- status do run = success.
+
+A fila de recorrência não foi alterada nesta etapa. O Profile Collector continua DRAFT, active=false e sem Schedule Trigger.
+
+Durante a validação foi cadastrado externamente `helio.tatsuo` como competitor pending. Ele não foi processado, porque a autorização permitia uma única execução do Profile Collector.
