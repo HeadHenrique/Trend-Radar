@@ -376,3 +376,44 @@ Pendências antes da primeira versão do Trend Engine:
 - tratar amostra pequena e métricas NULL;
 - definir recorrência de posts antes de tendências temporais;
 - ampliar número de perfis/referências para reduzir viés.
+
+
+## Etapa 4.5 — Trend Engine V0 + Data Sufficiency
+
+Concluído:
+
+- [x] reinspeção read-only do Supabase real;
+- [x] auditoria dos 60 posts;
+- [x] cobertura real de likes/comments/views/plays/hashtags;
+- [x] distribuição por formato/perfil;
+- [x] auditoria de 83 post snapshots;
+- [x] auditoria de 10 collection_runs;
+- [x] baseline profile + content_type definido;
+- [x] mediana escolhida como baseline robusto;
+- [x] observed_interactions com coverage explícita;
+- [x] current followers rate classificado apenas como proxy;
+- [x] performance_lift especificado;
+- [x] sinais observáveis separados de sinais semânticos;
+- [x] adoption/overlap/velocity definidos;
+- [x] data_confidence especificado;
+- [x] TrendCandidate especificado;
+- [x] Trend Score V0 proposto sem dependência de views;
+- [x] gate temporal definido;
+- [x] maturity stages especificados;
+- [x] problema de lineage em collection_runs documentado;
+- [x] collection_purpose proposto;
+- [x] backfill conceitual desenhado;
+- [x] política de recorrência proposta;
+- [x] volume mensal de records estimado;
+- [x] mapping /competitors, /trends e Dashboard;
+- [x] papel da IA separado do motor quantitativo;
+- [x] nenhuma implementação de engine/frontend/schema/n8n.
+
+Próxima etapa técnica recomendada:
+
+1. resolver collection_purpose;
+2. desenhar/implementar recorrência de posts;
+3. acumular ao menos 2 janelas completas;
+4. validar coverage temporal;
+5. somente depois implementar Trend Engine quantitativo;
+6. semantic feature extraction entra depois como camada separada.
