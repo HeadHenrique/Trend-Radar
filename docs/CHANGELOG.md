@@ -1,5 +1,111 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.1
+
+### Profile Collector
+
+- workflow `Trend Radar — Profile Collector POC` evoluído para recorrência manual;
+- deixou de filtrar somente monitoring_status=pending;
+- busca active=true e seleciona 1 perfil elegível por next_collection_at;
+- suporta pending, healthy e error;
+- ordenação por prioridade, data de coleta e created_at;
+- continua DRAFT/active=false/sem Schedule.
+
+### Collection runs
+
+- collection_run criado antes do provider;
+- collection_type=profile;
+- provider_key=bright_data;
+- orchestrator=n8n;
+- orchestrator_run_id real;
+- provider_run_id persistido;
+- POST que cria provider job sem retry automático.
+
+### Profile contract
+
+Adicionados ao resultado normalizado:
+
+- followingCount;
+- postsCount.
+
+NULL não apaga:
+
+- external ID;
+- display name;
+- profile picture;
+- followers.
+
+### Profile snapshots
+
+- profile_metric_snapshots integrado ao collector;
+- lookup por profile+run antes do INSERT;
+- snapshot só é criado com métrica observada.
+
+### Execução real
+
+Execution:
+
+`13`
+
+Perfil:
+
+`leonardofroese`
+
+Antes:
+
+- followers=2766;
+- profile snapshots=0.
+
+Provider:
+
+- followers=2767;
+- following=286;
+- posts_count=226.
+
+Collection run:
+
+`2841cb95-0106-4691-931f-0bb90ab64031`
+
+Provider run:
+
+`sd_muqbz2hh2idhvxeg6s`
+
+Resultado:
+
+- received=1;
+- inserted=0;
+- updated=1;
+- status=success.
+
+Perfil:
+
+- followers_count=2767;
+- monitoring_status=healthy;
+- last_collected_at=2026-10-02T02:16:16.069Z;
+- next_collection_at=2026-10-02T08:16:16.129Z.
+
+Snapshot:
+
+`ed03e8a2-68fb-42cc-9d76-12e89a156ae2`
+
+- followers=2767;
+- following=286;
+- posts_count=226.
+
+Total profile snapshots:
+
+`0 → 1`.
+
+### Escopo
+
+- frontend não alterado;
+- schema/migrations não alterados;
+- Posts Collector não executado;
+- Reels workflows não executados;
+- workflow não publicado;
+- sem Schedule Trigger;
+- sem IA/Trend Engine.
+
 ## 2026-10-01 — Etapa 4.0
 
 ### Profiles
