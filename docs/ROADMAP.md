@@ -301,3 +301,45 @@ Dados reais usados na validação:
 - plays NULL em 43/43 snapshots;
 - 19 associações author;
 - 1 associação collaborator.
+
+
+## Etapa 4.3 — onboarding real de concorrente + multi-perfil
+
+Concluído:
+
+- [x] primeiro competitor real já cadastrado pelo frontend;
+- [x] Profile Collector selecionou Raphael dinamicamente;
+- [x] metadata real persistida;
+- [x] profile_metric_snapshot criado;
+- [x] Raphael healthy;
+- [x] seleção do Posts Collector corrigida para onboarding multi-perfil;
+- [x] perfis com run posts success/partial são excluídos;
+- [x] priority + created_at usados na seleção;
+- [x] Posts Collector selecionou Raphael dinamicamente;
+- [x] 1 provider job de posts;
+- [x] 20 registros reais;
+- [x] 20 posts canônicos novos;
+- [x] 20 associações;
+- [x] 20 post snapshots;
+- [x] 19 author + 1 collaborator;
+- [x] 0 duplicados por media ID/shortcode/permalink;
+- [x] 0 posts compartilhados com Leonardo observados;
+- [x] frontend validado estruturalmente sem alteração;
+- [x] workflows permanecem DRAFT/active=false;
+- [x] sem Schedule Trigger;
+- [x] sem schema/migration;
+- [x] sem Reels workflows;
+- [x] sem Trend Engine/IA.
+
+Pendências antes da automação recorrente:
+
+- desenhar política de recorrência de posts;
+- decidir frequência/custo por grupo e prioridade;
+- definir tratamento de backlog quando vários perfis precisarem onboarding;
+- definir retry/backoff operacional de runs de posts com error;
+- avaliar batch sizing/polling conforme volume;
+- testar cross-profile real quando um mesmo post for observado para dois perfis.
+
+Observação concorrente:
+
+Durante a execução foi cadastrado pelo frontend `helio.tatsuo`, competitor pending. Ele não foi processado nesta etapa.

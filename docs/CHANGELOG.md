@@ -1,5 +1,77 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.3
+
+### Competitor onboarding
+
+- primeiro competitor real `raphaelcostaoficial` validado ponta a ponta;
+- Profile Collector execution 14;
+- profile collection_run `a0300964-b92d-4b25-bb99-125dbd3ccf06`;
+- profile provider_run_id `sd_muqfo65v17r8x2nvk1`;
+- metadata real: external ID 1526023890, display name Raphael Costa | Grupo 220🫡;
+- followers 295953, following 1661, posts_count 6234;
+- profile snapshot `d4829ad9-965c-4eea-91e4-bbc9cd82c982`;
+- Raphael passou de pending para healthy.
+
+### Posts onboarding multi-perfil
+
+- removida decisão final arbitrária por `healthy + priority + limit 1`;
+- Posts Collector agora carrega até 50 perfis healthy/active;
+- carrega collection_runs de posts;
+- exclui perfis com run success/partial;
+- error não conclui onboarding;
+- priority e created_at definem a ordem;
+- adicionados nodes `Buscar Runs de Posts` e `Selecionar Perfil para Onboarding`;
+- sem UUID/username hardcoded.
+
+Execução real:
+
+- Posts Collector execution 15;
+- collection_run `cf9f4140-4ea7-46f6-9f35-4c22a4e54de0`;
+- provider_run_id `sd_muqfqf58187oezokgf`;
+- records = 20;
+- received = 20;
+- inserted = 20;
+- updated = 0;
+- snapshots = 20;
+- status = success.
+
+Conteúdo Raphael:
+
+- Reels = 16;
+- Carrosséis = 4;
+- Imagens = 0;
+- author = 19;
+- collaborator = 1;
+- discovered = 0.
+
+Métricas:
+
+- likes = 20/20;
+- comments = 20/20;
+- views/plays/shares/saves = indisponíveis 20/20.
+
+Dedup/cross-profile:
+
+- media ID duplicado = 0;
+- shortcode duplicado = 0;
+- permalink duplicado = 0;
+- posts compartilhados Raphael + Leonardo = 0 no batch.
+
+### Escopo
+
+- nenhuma segunda execução dos collectors;
+- workflows continuam DRAFT/active=false;
+- somente Manual Trigger;
+- sem Schedule;
+- sem frontend;
+- sem schema/migration;
+- sem Reels Enrichment/Views Diagnostic;
+- sem Trend Engine/IA.
+
+Durante a execution 15, `helio.tatsuo` foi cadastrado externamente como competitor pending. Não foi criado/processado pelos collectors da etapa.
+
+
 ## 2026-10-02 — Etapa 4.2
 
 ### Biblioteca de conteúdos

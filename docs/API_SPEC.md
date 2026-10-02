@@ -281,3 +281,59 @@ Validação real:
 - following=286;
 - posts_count=226;
 - profile snapshot criado.
+
+
+## Onboarding inicial de posts por perfil
+
+A elegibilidade para a primeira coleta de posts não depende de coluna nova no perfil.
+
+Um perfil é candidato quando:
+
+```text
+active = true
+monitoring_status = healthy
+```
+
+Ele é excluído da fila quando existe `collection_runs` com:
+
+```text
+monitored_profile_id = profile.id
+collection_type = posts
+status IN (success, partial)
+```
+
+`error` não conclui onboarding.
+
+Ordenação:
+
+1. priority ASC;
+2. created_at ASC.
+
+A regra é implementada no n8n com leitura de perfis + leitura de runs + Code node. Não existe `next_posts_collection_at`.
+
+### Validação Raphael
+
+Profile result:
+
+```ts
+{
+  instagramUsername: 'raphaelcostaoficial',
+  instagramExternalId: '1526023890',
+  displayName: 'Raphael Costa | Grupo 220🫡',
+  followersCount: 295953,
+  followingCount: 1661,
+  postsCount: 6234
+}
+```
+
+Posts run:
+
+- 20 registros;
+- 20 posts canônicos novos;
+- 19 author;
+- 1 collaborator;
+- 20 post snapshots;
+- views/plays/shares/saves indisponíveis;
+- likes/comments disponíveis em 20/20.
+
+A semântica NULL != ZERO permanece preservada.

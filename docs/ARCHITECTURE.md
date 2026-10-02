@@ -421,3 +421,60 @@ Não foram adicionados:
 - alteração de n8n;
 - chamada Bright Data;
 - scheduler.
+
+
+## Etapa 4.3 — onboarding inicial de posts multi-perfil
+
+O Posts Collector deixou de usar `limit 1` diretamente sobre os perfis healthy como decisão final.
+
+Fluxo atual de onboarding inicial:
+
+```text
+monitored_profiles
+  active=true
+  healthy
+  limit 50
+        ↓
+collection_runs
+  collection_type=posts
+        ↓
+Code: Selecionar Perfil para Onboarding
+  excluir profile com run success/partial
+  priority ASC
+  created_at ASC
+        ↓
+Criar Collection Run
+        ↓
+Bright Data Posts
+        ↓
+pipeline canônico existente
+```
+
+Um run `error` não marca onboarding como concluído.
+
+Esta regra resolve somente a primeira coleta de posts. Não existe ainda política de recorrência de posts.
+
+### Validação real N:N
+
+Raphael Costa foi o primeiro competitor real onboardado ponta a ponta.
+
+Profile Collector:
+
+- execution 14;
+- profile run a0300964-b92d-4b25-bb99-125dbd3ccf06;
+- metadata real + profile snapshot;
+- healthy.
+
+Posts Collector:
+
+- execution 15;
+- posts run cf9f4140-4ea7-46f6-9f35-4c22a4e54de0;
+- 20 posts reais;
+- 20 inserts canônicos;
+- 20 associações;
+- 20 snapshots;
+- 19 author + 1 collaborator.
+
+Nenhum post compartilhado com Leonardo foi observado nesse batch. Portanto a possibilidade de duas associações para um mesmo post permanece estruturalmente suportada, mas não foi exercitada entre esses dois perfis nesta coleta.
+
+Nenhum schema/RPC/migration foi adicionado.
