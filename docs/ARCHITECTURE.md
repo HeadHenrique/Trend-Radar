@@ -478,3 +478,27 @@ Posts Collector:
 Nenhum post compartilhado com Leonardo foi observado nesse batch. Portanto a possibilidade de duas associações para um mesmo post permanece estruturalmente suportada, mas não foi exercitada entre esses dois perfis nesta coleta.
 
 Nenhum schema/RPC/migration foi adicionado.
+
+
+## Etapa 4.4 — validação com segundo competitor
+
+A arquitetura de onboarding inicial foi validada com um segundo concorrente sem alteração estrutural.
+
+```text
+helio.tatsuo pending
+→ Profile Collector
+→ metadata real + profile snapshot
+→ healthy
+→ Posts Collector
+→ seleção automática sem run posts success/partial
+→ 20 conteúdos
+→ posts canônicos
+→ associações
+→ post snapshots
+```
+
+Resultado: Profile Collector execution 16, Posts Collector execution 17, 20 novos posts canônicos, 20 associações author, 20 snapshots, nenhum overlap real com Leonardo/Raphael e nenhum duplicado global.
+
+Estado final: Leonardo own/healthy/20 associações; Raphael competitor/healthy/20; Hélio competitor/healthy/20.
+
+Não houve alteração de schema, migration, frontend ou workflow na Etapa 4.4.
