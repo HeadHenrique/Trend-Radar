@@ -666,3 +666,90 @@ O Manual Trigger normal voltou a apontar para `Selecionar Perfil Saudável`.
 O workflow não contém o provider_run_id histórico nem o collection_run_id do recovery.
 
 Permanece DRAFT, active=false e sem Schedule Trigger.
+
+
+## Etapa 4.3 — onboarding inicial multi-perfil
+
+A seleção inicial do Posts Collector foi corrigida para não escolher novamente um perfil já onboardado.
+
+Nova sequência:
+
+```text
+healthy + active profiles
+→ collection_runs de posts
+→ excluir perfis com success/partial
+→ ordenar priority ASC
+→ desempatar por created_at
+→ selecionar 1 perfil
+→ collection_run
+→ provider
+→ persistência canônica
+```
+
+Nodes novos:
+
+- Buscar Runs de Posts;
+- Selecionar Perfil para Onboarding.
+
+Execução manual única:
+
+`15`
+
+Perfil selecionado:
+
+`raphaelcostaoficial`
+
+Run:
+
+`cf9f4140-4ea7-46f6-9f35-4c22a4e54de0`
+
+Provider run:
+
+`sd_muqfqf58187oezokgf`
+
+Resultado:
+
+- records = 20;
+- received = 20;
+- inserted = 20;
+- updated = 0;
+- snapshots = 20;
+- invalid = 0;
+- status = success.
+
+Distribuição Raphael:
+
+- 16 Reels;
+- 4 Carrosséis;
+- 0 Images;
+- 0 Videos;
+- 0 Unknown.
+
+Associações:
+
+- author = 19;
+- collaborator = 1;
+- discovered = 0.
+
+Métricas:
+
+- likes = 20/20;
+- comments = 20/20;
+- views/plays/shares/saves = 0/20 disponíveis.
+
+Hashtags:
+
+- 1 post com array não vazio;
+- 19 NULL.
+
+Cross-profile com Leonardo:
+
+- 0 posts compartilhados observados neste batch.
+
+Duplicados globais após a execução:
+
+- media ID = 0;
+- shortcode = 0;
+- permalink = 0.
+
+Workflow permanece DRAFT/active=false/Manual Trigger/sem Schedule. A recorrência completa de posts não foi implementada.
