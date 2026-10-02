@@ -337,3 +337,115 @@ Posts run:
 - likes/comments disponíveis em 20/20.
 
 A semântica NULL != ZERO permanece preservada.
+
+
+## Trend Engine V0 — contrato não persistido
+
+Etapa 4.5 define contrato conceitual, sem criar endpoint/tabela.
+
+### Observed interactions
+
+```ts
+type MetricCoverage = {
+  likesObserved: boolean
+  commentsObserved: boolean
+  viewsObserved: boolean
+  playsObserved: boolean
+  sharesObserved: boolean
+  savesObserved: boolean
+}
+
+type ObservedInteractions = {
+  value: number | null
+  metricBasis: 'likes_comments'
+  coverage: MetricCoverage
+}
+```
+
+`value` só existe quando likes e comments são ambos observados.
+
+### Data confidence
+
+```ts
+type DataConfidence = {
+  level: 'insufficient' | 'low' | 'medium' | 'high'
+  score: number
+  sampleSize: number
+  sampleFactor: number
+  metricCoverage: number
+  temporalCoverage: number
+  creatorCoverage: number
+  lineageQuality: number
+  reasons: string[]
+}
+```
+
+### TrendCandidate
+
+```ts
+type TrendCandidate = {
+  signalKey: string
+  signalType: string
+  label: string
+  scope: {
+    marketCode: string | null
+    profileGroup: 'own' | 'competitor' | 'reference' | 'trendsetter' | 'all'
+    contentType: 'reel' | 'carousel' | 'image' | 'video' | 'unknown' | null
+  }
+  firstSeenAt: string | null
+  lastSeenAt: string | null
+  postCount: number
+  creatorCount: number
+  eligibleCreatorCount: number
+  competitorCount: number
+  adoption: number | null
+  competitorOverlap: number | null
+  competitorOverlapRate: number | null
+  velocity: number | null
+  acceleration: number | null
+  persistence: number | null
+  recency: number | null
+  performance: {
+    metricBasis: 'likes_comments' | 'likes' | 'comments' | null
+    medianBaseline: number | null
+    baselineN: number
+    liftRatio: number | null
+    delta: number | null
+  }
+  confidence: DataConfidence
+  score: {
+    value: number | null
+    availableWeight: number
+    reasonUnavailable: string | null
+  }
+  maturity: 'emerging' | 'accelerating' | 'established' | 'saturating' | 'unclassified'
+  evidencePostIds: string[]
+}
+```
+
+Nada é persistido na Etapa 4.5.
+
+### Trend Score gate
+
+Score deve permanecer NULL quando:
+
+- adoption indisponível;
+- recency indisponível;
+- confidence insufficient;
+- peso disponível < 0,60;
+- velocity e persistence indisponíveis simultaneamente.
+
+### Collection purpose futuro
+
+Proposta conceitual:
+
+```ts
+type CollectionPurpose =
+  | 'profile_metadata'
+  | 'posts_snapshot'
+  | 'posts_reprocess'
+  | 'post_metrics_enrichment'
+  | 'post_metrics_diagnostic'
+```
+
+Nenhuma alteração de schema foi aplicada.
