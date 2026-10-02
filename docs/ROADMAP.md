@@ -460,3 +460,42 @@ Antes da automação:
 - observabilidade e alertas;
 - coverage states para Trend Engine;
 - avaliar índice composto somente após workload real.
+
+
+## Etapa 4.7 — automação controlada dos collectors
+
+Concluído:
+
+- [x] reinspeção real antes da publicação;
+- [x] 3 profiles active/healthy;
+- [x] 0 collection_runs running;
+- [x] Schedule Trigger configurado pelo schema real do n8n;
+- [x] timezone America/Sao_Paulo explícito;
+- [x] Profile schedule HH:10;
+- [x] Posts schedule a cada 4h no minuto 40;
+- [x] Manual Trigger preservado nos dois;
+- [x] no-due do Profile validado estruturalmente;
+- [x] no-due do Posts preservado;
+- [x] guard duplicate profile_metadata running;
+- [x] guard duplicate posts_snapshot running;
+- [x] stale running não gera segundo provider job;
+- [x] máximo 1 profile por workflow execution;
+- [x] Profile Collector publicado;
+- [x] Posts Collector publicado;
+- [x] Reels Enrichment permaneceu inativo;
+- [x] Views Diagnostic permaneceu inativo;
+- [x] nenhuma execução manual;
+- [x] nenhuma chamada Bright Data manual;
+- [x] nenhum schema/frontend/Trend Engine/IA;
+- [x] runbook operacional criado;
+- [x] pricing público atual documentado.
+
+Próxima etapa:
+
+- auditar primeiras executions automáticas reais;
+- confirmar collection_runs gerados pelos schedules;
+- medir executions no-due vs with-work;
+- validar duplicate guards sob operação real;
+- observar erros/stale running;
+- acompanhar records Bright Data e budget n8n;
+- só então avaliar escala/backlog.
