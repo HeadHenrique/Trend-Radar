@@ -457,3 +457,24 @@ Execution `16` selecionou dinamicamente `helio.tatsuo`.
 - status do run: `success`
 
 Nenhum bug de seleção foi encontrado. O Profile Collector permanece DRAFT, active=false e sem Schedule Trigger.
+
+
+## Etapa 4.6 — collection purpose
+
+O Profile Collector não teve elegibilidade, polling, snapshot, frequência ou error handling alterados.
+
+Somente a criação de `collection_runs` foi atualizada:
+
+```text
+collection_type = profile
+collection_purpose = profile_metadata
+```
+
+O workflow não foi executado nesta etapa.
+
+Estado final:
+
+- DRAFT;
+- active=false;
+- Manual Trigger;
+- sem Schedule Trigger.
