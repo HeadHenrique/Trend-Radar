@@ -417,3 +417,46 @@ Próxima etapa técnica recomendada:
 4. validar coverage temporal;
 5. somente depois implementar Trend Engine quantitativo;
 6. semantic feature extraction entra depois como camada separada.
+
+
+## Etapa 4.6 — collection purpose + recorrência controlada
+
+Concluído:
+
+- [x] reinspeção dos 10 collection_runs reais;
+- [x] nenhum run inesperado;
+- [x] Migration A com collection_purpose nullable + CHECK;
+- [x] backfill operacional auditado fora de migration;
+- [x] counts 3/4/1/1/1;
+- [x] Migration B com NOT NULL;
+- [x] constraint semântica type/purpose;
+- [x] database.types.ts regenerado;
+- [x] Profile Collector grava profile_metadata;
+- [x] Posts Collector grava posts_snapshot;
+- [x] Reels Enrichment grava post_metrics_enrichment;
+- [x] Views Diagnostic grava post_metrics_diagnostic;
+- [x] reprocess futuro documentado como posts_reprocess;
+- [x] Posts Collector evoluído para onboarding + recorrência;
+- [x] due_at derivado de finished_at;
+- [x] priority 1 = 24h;
+- [x] priority 2 = 72h;
+- [x] priority 3 = 7d;
+- [x] error backoff = 6h;
+- [x] guard explícito de fila vazia;
+- [x] execution 18 validou nenhum perfil elegível;
+- [x] 0 novos collection_runs na validação;
+- [x] 0 Bright Data calls;
+- [x] 0 provider jobs;
+- [x] 0 alterações em posts/snapshots;
+- [x] workflows permanecem DRAFT/active=false;
+- [x] sem Schedule Trigger.
+
+Antes da automação:
+
+- decidir frequência do scheduler/orquestrador;
+- decidir quantidade máxima de perfis por tick;
+- backlog e concorrência;
+- limites de custo/provider;
+- observabilidade e alertas;
+- coverage states para Trend Engine;
+- avaliar índice composto somente após workload real.
