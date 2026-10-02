@@ -230,3 +230,54 @@ Campos alternativos ausentes:
 Snapshot criado porque likes/comments foram observados.
 
 Nenhum post canônico foi criado ou atualizado.
+
+
+## Profile Collector recorrente
+
+Contrato normalizado:
+
+```ts
+type InstagramProviderProfileResult = {
+  instagramUsername: string | null
+  instagramExternalId: string | null
+  displayName: string | null
+  profilePictureUrl: string | null
+  followersCount: number | null
+  followingCount: number | null
+  postsCount: number | null
+  fetchedAt: string
+}
+```
+
+Regras:
+
+- NULL novo não apaga metadata válida anterior;
+- followers_count oficial vem apenas do Profile Scraper;
+- identidade usa username + external ID quando disponível;
+- profile snapshot só é criado quando followers/following/posts_count possuem ao menos uma observação.
+
+Elegibilidade:
+
+- active=true;
+- pending|healthy|error;
+- next_collection_at NULL ou vencido.
+
+Success:
+
+- received=1;
+- inserted=0;
+- updated=1.
+
+Error:
+
+- profile → monitoring_status=error;
+- next_collection_at=agora+6h;
+- run → status=error;
+- mensagem sanitizada.
+
+Validação real:
+
+- followers=2767;
+- following=286;
+- posts_count=226;
+- profile snapshot criado.
