@@ -449,3 +449,81 @@ type CollectionPurpose =
 ```
 
 Nenhuma alteração de schema foi aplicada.
+
+
+## Collection Purpose
+
+Contrato persistido:
+
+```ts
+type CollectionPurpose =
+  | 'profile_metadata'
+  | 'posts_snapshot'
+  | 'posts_reprocess'
+  | 'post_metrics_enrichment'
+  | 'post_metrics_diagnostic'
+```
+
+`collection_runs.collection_purpose` é obrigatório.
+
+Compatibilidade:
+
+```text
+profile_metadata
+→ collection_type profile | profile_and_posts
+
+demais purposes
+→ collection_type posts | profile_and_posts
+```
+
+## Posts recurrence selector
+
+Entrada:
+
+- profiles active=true;
+- monitoring_status=healthy;
+- runs purpose=posts_snapshot.
+
+Estado derivado por perfil:
+
+```ts
+type PostsCollectionQueueState = {
+  onboarding: boolean
+  lastPostsSnapshotAt: string | null
+  dueAt: string | null
+  lastPostsSnapshotErrorAt: string | null
+  backoffUntil: string | null
+  blockedByBackoff: boolean
+  eligible: boolean
+  queueReason:
+    | 'initial_onboarding'
+    | 'recurrence_due'
+    | 'recurrence_not_due'
+    | 'error_backoff'
+}
+```
+
+Intervals:
+
+- priority 1 = 24h;
+- priority 2 = 72h;
+- priority 3 = 7d.
+
+Error backoff:
+
+`6h`
+
+Run error não conclui onboarding e não avança due_at.
+
+### Guard
+
+Se nenhum perfil estiver elegível:
+
+```json
+{
+  "eligible": false,
+  "reason": "Nenhum perfil elegível para coleta de posts."
+}
+```
+
+Esse caminho não cria collection_run e não chama provider.
