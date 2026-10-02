@@ -783,3 +783,78 @@ Cross-profile: 0 compartilhados com Leonardo, 0 com Raphael.
 Deduplicação global: 0 media ID, 0 shortcode, 0 permalink duplicados.
 
 Nenhum bug foi encontrado ou corrigido. Workflow permanece DRAFT/active=false/Manual Trigger/sem Schedule.
+
+
+## Etapa 4.6 — onboarding + recorrência controlada
+
+O Posts Collector deixou de ser somente onboarding inicial.
+
+Novos runs normais:
+
+```text
+collection_type = posts
+collection_purpose = posts_snapshot
+```
+
+### Seleção
+
+O node foi renomeado para:
+
+`Selecionar Perfil para Coleta de Posts`
+
+Ele recebe:
+
+- até 50 perfis active=true / healthy;
+- somente runs `collection_purpose=posts_snapshot`.
+
+Regras:
+
+- sem success/partial → onboarding;
+- success/partial → recorrência por finished_at;
+- priority 1 = 24h;
+- priority 2 = 72h;
+- priority 3 = 7d;
+- error mais recente → backoff 6h;
+- reprocess/enrichment/diagnostic não avançam o relógio.
+
+Ordenação:
+
+1. onboarding;
+2. priority;
+3. due_at mais antigo;
+4. created_at.
+
+### Guard de fila vazia
+
+Adicionado:
+
+`Perfil elegível?`
+
+TRUE:
+
+- Criar Collection Run;
+- provider.
+
+FALSE:
+
+- `Nenhum perfil elegível para coleta de posts`;
+- termina sem error operacional.
+
+### Validação
+
+Execution:
+
+`18`
+
+Todos os três perfis retornaram:
+
+`queueReason = recurrence_not_due`
+
+Resultado:
+
+- 0 novos collection_runs;
+- 0 Bright Data calls;
+- 0 provider jobs;
+- 0 alterações em posts/associações/snapshots.
+
+Nenhuma coleta real foi executada.

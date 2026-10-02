@@ -6,15 +6,25 @@
 - `20261001041950_create_posts_snapshots_foundation`
 - `20261001201951_create_post_profile_associations`
 - `20261001202104_index_post_snapshot_profile_post_fk`
+- `20261002151345_add_collection_purpose_nullable`
+- `20261002151409_enforce_collection_purpose`
 
-## Estado atual
+## Estado atual — Etapa 4.6
 
-- monitored_profiles = 1
-- collection_runs = 1
-- instagram_posts = 19
-- monitored_profile_posts = 19
-- post_metric_snapshots = 19
-- profile_metric_snapshots = 0
+- monitored_profiles = 3
+- collection_runs = 10
+- instagram_posts = 60
+- monitored_profile_posts = 60
+- post_metric_snapshots = 83
+- profile_metric_snapshots = 3
+
+Execução manual de validação da recorrência:
+
+- n8n execution = 18;
+- nenhum perfil elegível;
+- 0 novos collection_runs;
+- 0 provider jobs;
+- 0 alterações de posts/snapshots.
 
 ## Relações
 
@@ -30,17 +40,68 @@ collection_runs
   └─< profile_metric_snapshots
 ```
 
+## collection_runs
+
+Campos de classificação:
+
+### collection_type
+
+Classificação técnica coarse:
+
+- profile
+- posts
+- profile_and_posts
+
+### collection_purpose
+
+Propósito operacional obrigatório:
+
+- profile_metadata
+- posts_snapshot
+- posts_reprocess
+- post_metrics_enrichment
+- post_metrics_diagnostic
+
+`collection_purpose` é NOT NULL.
+
+Compatibilidade:
+
+```text
+profile_metadata
+→ profile | profile_and_posts
+
+posts_snapshot
+posts_reprocess
+post_metrics_enrichment
+post_metrics_diagnostic
+→ posts | profile_and_posts
+```
+
+Distribuição histórica atual:
+
+- profile_metadata = 3;
+- posts_snapshot = 4;
+- posts_reprocess = 1;
+- post_metrics_enrichment = 1;
+- post_metrics_diagnostic = 1.
+
 ## instagram_posts
 
 Post canônico global.
 
-Não possui mais `monitored_profile_id`.
+Não possui `monitored_profile_id`.
 
-Novos campos:
+Campos de identidade:
 
-- author_instagram_username text NULL
-- author_instagram_external_id text NULL
-- hashtags text[] NULL
+- instagram_media_id;
+- instagram_shortcode;
+- permalink.
+
+Campos adicionais:
+
+- author_instagram_username;
+- author_instagram_external_id;
+- hashtags.
 
 ## monitored_profile_posts
 
@@ -48,51 +109,64 @@ PK:
 
 `(monitored_profile_id, instagram_post_id)`
 
-Campos:
+Association types:
 
-- association_type
-- first_seen_at
-- last_seen_at
-- created_at
-
-Tipos:
-
-- author
-- collaborator
-- discovered
+- author;
+- collaborator;
+- discovered.
 
 ## post_metric_snapshots
 
-Continua contendo `monitored_profile_id` como contexto da observação/run.
+Contexto:
 
-FK principal:
+`post + monitored_profile + collection_run`
 
-`(monitored_profile_id, post_id) → monitored_profile_posts(...)`
+Métricas:
 
-FK de run:
+- likes;
+- comments;
+- views;
+- plays;
+- shares;
+- saves.
 
-`(collection_run_id, monitored_profile_id) → collection_runs(...)`
+NULL continua significando não observado.
 
-Likes/comments/views/plays/shares/saves são métricas da mídia canônica. Agregações futuras não devem duplicar a mesma mídia só por múltiplas associações.
+## profile_metric_snapshots
 
-## Backfill
+Métricas:
 
-19 posts antigos → 19 associações `author`.
+- followers_count;
+- following_count;
+- posts_count.
 
-IDs, captions, timestamps e snapshots preservados.
+Profile Collector é source of truth de followers.
 
-## Run histórico
+## Recorrência de posts
 
-Não reparado nesta etapa.
+O relógio usa somente:
 
-Estado persistido:
+```text
+collection_purpose = posts_snapshot
+status IN (success, partial)
+finished_at
+```
 
-- received=20
-- inserted=0
-- updated=19
+Ignorados no relógio:
 
-Resultado lógico original documentado:
+- posts_reprocess;
+- post_metrics_enrichment;
+- post_metrics_diagnostic.
 
-- received=20
-- inserted=19
-- updated=0
+Intervalos:
+
+- priority 1 = 24h;
+- priority 2 = 72h;
+- priority 3 = 7d.
+
+Error posts_snapshot não avança o relógio.
+
+Se o último error for mais recente que o último success/partial:
+
+- backoff de 6h;
+- depois disso a elegibilidade volta a depender do onboarding/due_at.
