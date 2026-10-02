@@ -1,5 +1,106 @@
 # Changelog
 
+## 2026-10-02 — Etapa 4.6
+
+### Collection purpose
+
+- adicionada coluna `collection_purpose` em `collection_runs`;
+- Migration A nullable + CHECK;
+- backfill operacional auditado dos 10 runs históricos;
+- Migration B com NOT NULL;
+- adicionada compatibilidade semântica entre collection_type e collection_purpose.
+
+Distribuição final:
+
+- profile_metadata = 3;
+- posts_snapshot = 4;
+- posts_reprocess = 1;
+- post_metrics_enrichment = 1;
+- post_metrics_diagnostic = 1.
+
+### Workflows
+
+- Profile Collector grava `profile_metadata`;
+- Posts Collector grava `posts_snapshot`;
+- Reels Enrichment grava `post_metrics_enrichment`;
+- Views Diagnostic grava `post_metrics_diagnostic`;
+- nenhum workflow foi publicado;
+- nenhum Schedule Trigger foi criado.
+
+### Posts recurrence
+
+Posts Collector passou de onboarding-only para onboarding + recorrência:
+
+- P1 = 24h;
+- P2 = 72h;
+- P3 = 7d;
+- relógio baseado em último `posts_snapshot` success/partial `finished_at`;
+- error não avança relógio;
+- error mais recente aplica backoff de 6h;
+- reprocess/enrichment/diagnostic são ignorados pelo relógio;
+- onboarding continua prioritário;
+- fila ordenada por onboarding, priority, due_at e created_at.
+
+### Estado real
+
+Leonardo:
+
+- último válido = execution 4 / partial;
+- due_at = 2026-10-04T16:00:47.708Z;
+- error execution 8 teve backoff expirado.
+
+Raphael:
+
+- último válido = execution 15;
+- due_at = 2026-10-05T04:02:24.504Z.
+
+Hélio:
+
+- último válido = execution 17;
+- due_at = 2026-10-05T04:14:52.847Z.
+
+### Validação manual
+
+Execution:
+
+`18`
+
+Resultado:
+
+- nenhum perfil elegível;
+- guard FALSE executado;
+- 0 collection_runs novos;
+- 0 Bright Data calls;
+- 0 provider jobs;
+- posts 60 → 60;
+- post snapshots 83 → 83.
+
+### Advisors
+
+Security Advisor:
+
+- nenhum finding novo ligado a collection_purpose;
+- RLS no collection_runs sem policy permanece intencional/server-side;
+- Leaked Password Protection continua como WARN preexistente.
+
+Performance Advisor:
+
+- 2 FKs sem covering index;
+- 5 unused indexes;
+- nenhum índice novo criado prematuramente.
+
+### Escopo
+
+- Profile Collector não executado;
+- Reels Enrichment não executado;
+- Views Diagnostic não executado;
+- nenhuma coleta real de posts;
+- nenhuma chamada Bright Data;
+- nenhum frontend;
+- nenhum Trend Engine;
+- nenhuma IA.
+
+
 ## 2026-10-02 — Etapa 4.5
 
 ### Data audit
