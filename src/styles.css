@@ -1845,3 +1845,19 @@ select {
     border-bottom-color: var(--border);
   }
 }
+
+
+/* Light theme finishing details */
+.profiles-table tbody tr:hover td {
+  background: #FAF8FC;
+}
+
+.profile-row-clickable:focus-visible td {
+  background: var(--surface-purple-soft);
+}
+
+.detail-group-badge,
+.post-card-tags span,
+.post-detail-tags span {
+  border: 1px solid var(--border-purple);
+}
