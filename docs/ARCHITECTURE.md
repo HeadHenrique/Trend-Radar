@@ -350,3 +350,74 @@ Execução 13 validou:
 - success counters 1/0/1.
 
 Workflow continua DRAFT/active=false/sem Schedule Trigger.
+
+
+## Etapa 4.2 — Biblioteca /posts
+
+A página /posts usa uma camada de domínio própria e não consulta Supabase diretamente.
+
+Fluxo:
+
+    /posts
+      ↓
+    PostsToolbar + PostCard + PostDetailDrawer
+      ↓
+    postsRepository
+      ├─ instagram_posts
+      ├─ monitored_profile_posts
+      ├─ monitored_profiles
+      └─ post_metric_snapshots
+
+### Modelo de leitura
+
+O repository carrega as quatro fontes em lote.
+
+Não existe request N+1 por card.
+
+A chave visual continua sendo instagram_posts.id, portanto múltiplas associações não duplicam o post.
+
+Snapshots são agrupados por:
+
+    post_id + monitored_profile_id
+
+Para cada contexto é retido somente o snapshot com captured_at mais recente. O item canônico expõe a observação mais recente entre seus contextos apenas para apresentação, além da contagem histórica de snapshots.
+
+### Semântica de métricas
+
+NULL significa dado indisponível.
+
+A UI não converte NULL para zero.
+
+Likes e comments usam a última observação disponível.
+
+Views, plays, shares e saves só são renderizados quando não são NULL.
+
+Followers continua pertencendo ao perfil e não é tratado como métrica de post.
+
+### Collab
+
+Dc9H9yExV6q é um único instagram_posts.
+
+Autoria canônica:
+
+    joseantoniodiferenciagro
+
+Associação monitorada:
+
+    Leonardo Froese → collaborator
+
+O drawer apresenta as duas identidades sem transformar o perfil monitorado no autor original.
+
+### Limites desta etapa
+
+Não foram adicionados:
+
+- player de vídeo;
+- Trend Score;
+- IA;
+- RPC;
+- migration;
+- alteração de schema;
+- alteração de n8n;
+- chamada Bright Data;
+- scheduler.
