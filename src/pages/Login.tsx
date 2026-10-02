@@ -46,7 +46,7 @@ export default function Login() {
           <div className="brand-mark"><Compass size={19} /></div>
           <div>
             <strong>CALIBER</strong>
-            <span>TREND RADAR</span>
+            <span>ORBIT</span>
           </div>
         </div>
 
