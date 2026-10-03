@@ -1,6 +1,68 @@
 # Changelog
 
 
+## 2026-10-03 — Etapa 5.1
+
+### Curadoria BR
+
+Raphael:
+
+- niche: Gestão
+- category: Gestão Estratégica
+- tags: gestão, estratégia, processos, cultura, empreendedorismo
+
+Hélio:
+
+- niche: Gestão
+- category: Gestão Empresarial
+- tags: vendas, financeiro, liderança, cultura, processos
+
+Leonardo:
+
+- preservado.
+
+### US foundation
+
+Novos perfis:
+
+- leilahormozi
+  - US
+  - trendsetter
+  - Liderança
+  - Gestão e Liderança Empresarial
+  - priority 2
+  - pending
+
+- codiesanchez
+  - US
+  - reference
+  - Empreendedorismo
+  - Aquisição e Crescimento de Negócios
+  - priority 2
+  - pending
+
+Provider fields foram deixados NULL.
+
+### Estado
+
+monitored_profiles:
+
+- 3 → 5
+- BR = 3
+- US = 2
+
+### Escopo
+
+- nenhum frontend alterado;
+- nenhum schema/migration;
+- nenhum n8n;
+- nenhum schedule;
+- nenhum collector executado manualmente;
+- nenhum provider job manual;
+- nenhuma IA;
+- nenhum Brazil Gap.
+
+
 ## 2026-10-03 — Etapa 5.0
 
 ### /trends
