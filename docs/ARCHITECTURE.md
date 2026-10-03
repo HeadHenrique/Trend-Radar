@@ -761,3 +761,50 @@ Pausa:
 - unpublish/desativar Posts Collector.
 
 Não remover schedule, schema ou histórico para pausar.
+
+
+## Etapa 5.0 — /trends como Reels Radar
+
+Fluxo frontend:
+
+```text
+instagram_posts (reel)
++ monitored_profile_posts
++ monitored_profiles
++ post_metric_snapshots
+        ↓
+trendsRepository
+        ↓
+TrendReelItem por post canônico + mercado
+        ↓
+filtros BR / US + nicho + perfil + período
+        ↓
+ranking descritivo observável
+        ↓
+TrendReelCard
+        ↓
+PostDetailDrawer em modo Reel
+        ↓
+Instagram official embed / fallback
+```
+
+### Fronteiras
+
+- mercado vem de primary_market_code;
+- latest metrics por post + profile;
+- NULL preservado;
+- nenhuma query N+1;
+- nenhum Trend Engine;
+- nenhum backend novo;
+- nenhum provider;
+- nenhum n8n.
+
+### Player
+
+O player usa permalink real e tenta o embed oficial do Instagram.
+
+Falha de embed:
+
+thumbnail + link externo.
+
+Nenhuma URL temporária de vídeo é persistida.
