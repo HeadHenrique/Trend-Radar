@@ -808,3 +808,46 @@ Falha de embed:
 thumbnail + link externo.
 
 Nenhuma URL temporária de vídeo é persistida.
+
+
+## Etapa 5.1 — curadoria de perfis e referências US
+
+A taxonomia usada pela camada visual continua no nível do perfil.
+
+```text
+monitored_profiles
+  niche + category + tags
+        ↓
+matchesTrendNiche
+        ↓
+/trends filters
+```
+
+Nenhuma classificação semântica por Reel foi criada.
+
+### Perfis US
+
+Exatamente dois perfis US foram adicionados:
+
+- leilahormozi
+- codiesanchez
+
+Fluxo operacional esperado:
+
+```text
+pending
+→ Profile Collector automático
+→ healthy
+→ Posts Collector automático
+→ Reels US
+→ /trends > EUA
+```
+
+Nenhum workflow/schedule foi alterado.
+
+### Capacidade
+
+5 profiles priority 2:
+
+- Profile Collector: demanda teórica máxima ~20/dia, abaixo de 24 ticks/dia;
+- Posts Collector: ~1,7 recorrências/dia para 5 perfis, abaixo de 6 ticks/dia, além do onboarding inicial.
