@@ -294,3 +294,58 @@ Antes de Brazil Gap:
 3. deixar a recorrência criar série temporal;
 4. reavaliar coverage de views;
 5. somente depois conectar Trend Engine temporal e comparação BR × US.
+
+
+## Etapa 5.1 — metadata de nicho + fundação US
+
+A UI de /trends não precisou ser alterada.
+
+O helper existente:
+
+`matchesTrendNiche`
+
+já usa:
+
+- profile.niche;
+- profile.category;
+- profile.tags;
+
+com normalização de acentos/case.
+
+### Curadoria BR
+
+Raphael:
+
+- niche = Gestão
+- category = Gestão Estratégica
+- tags = gestão, estratégia, processos, cultura, empreendedorismo
+
+Hélio:
+
+- niche = Gestão
+- category = Gestão Empresarial
+- tags = vendas, financeiro, liderança, cultura, processos
+
+Leonardo foi preservado:
+
+- niche = Gestão
+- category = Gestão Empresarial
+
+### US
+
+Foram cadastrados exatamente 2 perfis:
+
+- @leilahormozi — trendsetter — Liderança
+- @codiesanchez — reference — Empreendedorismo
+
+Ambos:
+
+- market = US
+- priority = 2
+- active = true
+- monitoring_status = pending
+- provider fields = NULL
+
+Até o onboarding automático ocorrer, /trends > EUA pode continuar em empty state.
+
+Nenhum mock foi adicionado.
