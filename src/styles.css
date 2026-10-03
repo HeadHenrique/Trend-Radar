@@ -1890,3 +1890,22 @@ select {
   height: auto;
   image-rendering: auto;
 }
+
+
+/* Caliber Orbit — white/purple logo contrast */
+.brand {
+  margin-bottom: 18px;
+  padding: 10px 8px;
+  border-radius: 14px;
+  background: #17141C;
+  box-shadow: 0 6px 18px rgba(20, 15, 30, 0.08);
+}
+
+.brand-logo {
+  width: 100%;
+  max-width: none;
+  height: auto;
+  margin: 0 auto;
+  object-fit: contain;
+  image-rendering: auto;
+}
