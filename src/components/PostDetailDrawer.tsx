@@ -12,6 +12,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
+import { InstagramReelEmbed } from './InstagramReelEmbed'
 import {
   associationLabels,
   contentTypeLabels,
@@ -21,10 +22,13 @@ import {
   formatPostDateTime,
 } from '../features/posts/presentation'
 import type { PostLibraryItem } from '../features/posts/types'
+import { trendItemNicheLabel } from '../features/trends/presentation'
+import type { TrendReelItem } from '../features/trends/types'
 
 interface PostDetailDrawerProps {
   post: PostLibraryItem | null
   onClose: () => void
+  trendItem?: TrendReelItem | null
 }
 
 function PlaceholderIcon({ contentType }: { contentType: PostLibraryItem['contentType'] }) {
@@ -33,25 +37,61 @@ function PlaceholderIcon({ contentType }: { contentType: PostLibraryItem['conten
   return <ImageIcon size={34} />
 }
 
-export function PostDetailDrawer({ post, onClose }: PostDetailDrawerProps) {
+function formatBaselineValue(value: number | null) {
+  if (value === null) return 'Indisponível'
+  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(value)
+}
+
+export function PostDetailDrawer({ post, onClose, trendItem = null }: PostDetailDrawerProps) {
   if (!post) return null
 
-  const metrics = post.latestMetrics
+  const metrics = trendItem?.latestMetrics ?? post.latestMetrics
   const metricContext = metrics
     ? post.associations.find((association) => association.profile.id === metrics.monitoredProfileId)
     : null
 
+  const primaryTrendAssociation = trendItem
+    ? (
+        trendItem.associations.find(
+          (association) => association.profile.id === trendItem.primaryAssociationProfileId,
+        ) ?? trendItem.associations[0]
+      )
+    : null
+
+  const trendNiche = trendItem ? trendItemNicheLabel(trendItem) : null
+  const drawerClassName = trendItem
+    ? 'profile-drawer post-detail-drawer trend-reel-drawer'
+    : 'profile-drawer post-detail-drawer'
+
+  const regularMedia = (
+    <div className={'post-detail-media ' + post.contentType}>
+      {post.thumbnailUrl ? (
+        <img src={post.thumbnailUrl} alt="" />
+      ) : (
+        <div className="post-media-placeholder">
+          <PlaceholderIcon contentType={post.contentType} />
+          <span>{contentTypeLabels[post.contentType]}</span>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <div className="drawer-backdrop" role="presentation" onMouseDown={onClose}>
       <aside
-        className="profile-drawer post-detail-drawer"
-        aria-label="Detalhes do conteúdo"
+        className={drawerClassName}
+        aria-label={trendItem ? 'Análise do Reel' : 'Detalhes do conteúdo'}
         onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="drawer-header post-drawer-header">
           <div>
             <div className="detail-badges">
               <span className="detail-group-badge">{contentTypeLabels[post.contentType]}</span>
+              {trendItem ? (
+                <span className="trend-market-badge">
+                  {trendItem.market === 'BR' ? 'Brasil' : 'EUA'}
+                </span>
+              ) : null}
               {post.associations.some((item) => item.associationType === 'collaborator') ? (
                 <span className="post-association-badge collaborator">Collab</span>
               ) : null}
@@ -61,7 +101,9 @@ export function PostDetailDrawer({ post, onClose }: PostDetailDrawerProps) {
             </div>
             <h2>{post.instagramShortcode || 'Conteúdo monitorado'}</h2>
             <p>
-              {post.authorInstagramUsername ? 'Autor original @' + post.authorInstagramUsername : 'Autor original não observado'}
+              {post.authorInstagramUsername
+                ? 'Autor original @' + post.authorInstagramUsername
+                : 'Autor original não observado'}
             </p>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="Fechar detalhes">
@@ -69,16 +111,92 @@ export function PostDetailDrawer({ post, onClose }: PostDetailDrawerProps) {
           </button>
         </div>
 
-        <div className={'post-detail-media ' + post.contentType}>
-          {post.thumbnailUrl ? (
-            <img src={post.thumbnailUrl} alt="" />
-          ) : (
-            <div className="post-media-placeholder">
-              <PlaceholderIcon contentType={post.contentType} />
-              <span>{contentTypeLabels[post.contentType]}</span>
+        {trendItem ? (
+          <div className="trend-reel-analysis-grid">
+            <InstagramReelEmbed
+              permalink={post.permalink}
+              thumbnailUrl={post.thumbnailUrl}
+              authorUsername={post.authorInstagramUsername}
+            />
+
+            <div className="trend-reel-intelligence-column">
+              <section className="profile-detail-section trend-context-panel">
+                <div className="profile-detail-section-heading">
+                  <span className="eyebrow">Contexto</span>
+                  <h3>Leitura do Reel</h3>
+                </div>
+
+                <dl className="profile-detail-list">
+                  <div>
+                    <dt>Mercado</dt>
+                    <dd>{trendItem.market === 'BR' ? 'Brasil' : 'EUA'}</dd>
+                  </div>
+                  <div>
+                    <dt>Perfil monitorado</dt>
+                    <dd>
+                      {primaryTrendAssociation
+                        ? '@' + primaryTrendAssociation.profile.instagramUsername
+                        : 'Não observado'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Nicho / categoria</dt>
+                    <dd>{trendNiche ?? 'Não informado'}</dd>
+                  </div>
+                  <div>
+                    <dt>Associação</dt>
+                    <dd>
+                      {primaryTrendAssociation
+                        ? associationLabels[primaryTrendAssociation.associationType]
+                        : 'Não observada'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Publicado em</dt>
+                    <dd>{formatPostDate(post.publishedAt)}</dd>
+                  </div>
+                  <div>
+                    <dt>Duração</dt>
+                    <dd>{formatDuration(post.durationSeconds)}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className="trend-highlight-panel">
+                <span className="eyebrow">Sinais observáveis</span>
+                <h3>Por que está em destaque?</h3>
+                <ul>
+                  {trendItem.rankingContext.reasons.map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+
+                {trendItem.rankingContext.baseline ? (
+                  <div className="trend-baseline-note">
+                    <strong>Baseline do perfil</strong>
+                    <span>
+                      Mediana de interações: {formatBaselineValue(
+                        trendItem.rankingContext.baseline.medianObservedInteractions,
+                      )}
+                    </span>
+                    <span>
+                      Amostra completa: {trendItem.rankingContext.baseline.sampleSize} Reels
+                    </span>
+                    {trendItem.rankingContext.interactionLift !== null ? (
+                      <span>
+                        Interações observadas: {trendItem.rankingContext.interactionLift.toFixed(2)}× a mediana
+                      </span>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="post-muted-copy">
+                    Baseline insuficiente para comparação relativa deste perfil.
+                  </p>
+                )}
+              </section>
             </div>
-          )}
-        </div>
+          </div>
+        ) : regularMedia}
 
         <section className="profile-detail-section post-detail-section">
           <div className="profile-detail-section-heading">
@@ -165,8 +283,12 @@ export function PostDetailDrawer({ post, onClose }: PostDetailDrawerProps) {
           {metrics ? (
             <>
               <div className="post-detail-metrics">
-                <div><Heart size={14} /><span>Curtidas</span><strong>{formatMetric(metrics.likesCount)}</strong></div>
-                <div><MessageCircle size={14} /><span>Comentários</span><strong>{formatMetric(metrics.commentsCount)}</strong></div>
+                {metrics.likesCount !== null ? (
+                  <div><Heart size={14} /><span>Curtidas</span><strong>{formatMetric(metrics.likesCount)}</strong></div>
+                ) : null}
+                {metrics.commentsCount !== null ? (
+                  <div><MessageCircle size={14} /><span>Comentários</span><strong>{formatMetric(metrics.commentsCount)}</strong></div>
+                ) : null}
                 {metrics.viewsCount !== null ? (
                   <div><Eye size={14} /><span>Views</span><strong>{formatMetric(metrics.viewsCount)}</strong></div>
                 ) : null}
