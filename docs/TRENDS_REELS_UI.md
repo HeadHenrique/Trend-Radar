@@ -1,0 +1,296 @@
+# Tendências — Reels Brasil / EUA
+
+## Etapa 5.0
+
+A rota `/trends` passou de um empty state de Trend Engine para uma experiência de descoberta baseada em Reels reais.
+
+Esta etapa não implementa:
+
+- Trend Score;
+- TrendCandidate;
+- velocity;
+- acceleration;
+- maturity;
+- Brazil Gap;
+- classificação semântica por IA.
+
+## Fonte de dados
+
+`trendsRepository` faz quatro leituras em lote:
+
+1. `instagram_posts` filtrado por `content_type=reel`;
+2. `monitored_profile_posts`;
+3. `monitored_profiles`;
+4. `post_metric_snapshots`.
+
+Não existe query por card.
+
+O mercado vem exclusivamente de:
+
+`monitored_profiles.primary_market_code`
+
+Mercados preparados:
+
+- BR;
+- US.
+
+## Estado real auditado em 03/10/2026
+
+Perfis:
+
+- 3 BR;
+- 0 US.
+
+Reels associados a BR:
+
+- 40 Reels canônicos;
+- 3 perfis monitorados;
+- 32/40 com likes observados;
+- 40/40 com comments observados;
+- 0/40 com views observadas.
+
+Reels US:
+
+- 0.
+
+Nenhum dado foi criado para preencher lacunas.
+
+## Latest metrics
+
+O repository agrupa snapshots por:
+
+`post_id + monitored_profile_id`
+
+Somente o snapshot mais recente daquele contexto entra na apresentação.
+
+Histórico nunca é somado.
+
+Quando existem múltiplos contextos para o mesmo post:
+
+- todos permanecem nas associations;
+- a UI escolhe um contexto primário somente para ordenação/apresentação de métricas;
+- contexto com likes + comments completos tem precedência;
+- em empate, vence a observação mais recente.
+
+## Observed interactions
+
+```text
+observed_interactions =
+likes_count + comments_count
+```
+
+Somente quando:
+
+```text
+likes_count != NULL
+AND
+comments_count != NULL
+```
+
+Caso contrário:
+
+`observed_interactions = NULL`
+
+NULL nunca vira zero.
+
+## Ranking provisório "Em destaque"
+
+"Em destaque" não é Trend Score.
+
+A ordenação é uma tupla determinística, nesta ordem:
+
+1. Reel acima do baseline de interações;
+2. Reel publicado nos últimos 7 dias;
+3. likes + comments completos;
+4. maior `observed_interactions`;
+5. publicação mais recente.
+
+Não existe peso oculto ou IA.
+
+### Outras ordenações
+
+- Mais engajados = `observed_interactions DESC`, NULL por último;
+- Mais curtidos = likes DESC, NULL por último;
+- Mais comentados = comments DESC, NULL por último;
+- Mais recentes = `published_at DESC`;
+- Mais visualizados = views DESC, somente quando existe ao menos uma view observada no mercado selecionado.
+
+No estado atual BR:
+
+"Mais visualizados" fica desabilitado.
+
+## Baseline
+
+Baseline é calculado por:
+
+`monitored_profile_id + content_type=reel`
+
+Estatística:
+
+mediana.
+
+O Reel atual é excluído da amostra de peers.
+
+Amostra mínima:
+
+`5`
+
+Métricas possíveis:
+
+- median likes;
+- median comments;
+- median observed interactions.
+
+"Acima do baseline" exige:
+
+`observed_interactions > median_observed_interactions`
+
+"Alta interação" exige:
+
+`observed_interactions / median_observed_interactions >= 1.5`
+
+quando a mediana é maior que zero.
+
+Sem amostra suficiente:
+
+- nenhum lift é mostrado;
+- nenhuma classificação acima do baseline é inventada.
+
+## Nichos
+
+Filtros visuais:
+
+- Todos;
+- Gestão;
+- Financeiro;
+- Vendas;
+- Liderança;
+- Empreendedorismo;
+- Estratégia;
+- Comercial;
+- Marketing;
+- Outros.
+
+Eles usam exclusivamente:
+
+- `monitored_profiles.niche`;
+- `monitored_profiles.category`;
+- `monitored_profiles.tags`.
+
+Caption não é classificada.
+
+"Outros" inclui perfis sem metadata de nicho ou sem correspondência com os termos explícitos.
+
+## Mercado EUA
+
+A UI já suporta US.
+
+Estado atual:
+
+nenhum perfil US.
+
+Empty state:
+
+`Nenhuma referência dos EUA monitorada ainda.`
+
+Descrição:
+
+`Adicione referências e trendsetters americanos para começar a acompanhar sinais do mercado dos EUA.`
+
+Não existem mocks ou fallback BR para US.
+
+## Cards
+
+Cada Reel exibe, quando observado:
+
+- thumbnail;
+- autor canônico;
+- perfil monitorado relacionado;
+- avatar do perfil;
+- mercado;
+- data de publicação;
+- caption curta;
+- nicho/categoria;
+- likes;
+- comments;
+- views somente se não-NULL;
+- Collab quando associação explícita;
+- badges determinísticos Recente / Alta interação / Acima do baseline.
+
+Autoria canônica e perfil monitorado não são confundidos.
+
+## Drawer
+
+`PostDetailDrawer` foi evoluído e reutilizado pela página Tendências.
+
+No modo Tendências ele ganha:
+
+- layout maior;
+- player/embed;
+- contexto de mercado;
+- perfil monitorado;
+- nicho/categoria;
+- associação;
+- duração;
+- conteúdo completo;
+- associations;
+- última observação;
+- bloco "Por que está em destaque?";
+- baseline quando suficiente.
+
+A rota `/posts` mantém o comportamento existente.
+
+## Player / embed
+
+Estratégia:
+
+- não persiste `video_url`;
+- não usa CDN temporária como player;
+- não faz scraping no frontend;
+- usa permalink canônico;
+- tenta renderizar o embed oficial do Instagram via `https://www.instagram.com/embed.js`;
+- se um iframe oficial não aparecer, cai para thumbnail + botão "Abrir Reel no Instagram".
+
+Referência Meta:
+
+`https://developers.facebook.com/docs/instagram-platform/oembed/`
+
+A documentação da Meta informa que Instagram oEmbed suporta photo, video e Reel posts e que conteúdo privado, inativo, age-restricted ou com embeds desabilitados não é suportado.
+
+Nenhuma alteração de backend foi necessária para a estratégia atual.
+
+## Busca
+
+Busca local cobre:
+
+- caption;
+- autor;
+- username de perfil monitorado;
+- display name;
+- shortcode;
+- hashtags.
+
+## Período
+
+Usa somente:
+
+`instagram_posts.published_at`
+
+Opções:
+
+- 7 dias;
+- 30 dias;
+- 90 dias;
+- Todo período.
+
+Collection time não é usado como publicação.
+
+## Próximos passos
+
+Antes de Brazil Gap:
+
+1. adicionar referências/trendsetters US de forma autorizada;
+2. acumular Reels US reais;
+3. deixar a recorrência criar série temporal;
+4. reavaliar coverage de views;
+5. somente depois conectar Trend Engine temporal e comparação BR × US.

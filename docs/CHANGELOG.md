@@ -1,6 +1,74 @@
 # Changelog
 
 
+## 2026-10-03 — Etapa 5.0
+
+### /trends
+
+A rota passou a ser um radar visual de Reels com dados reais.
+
+Incluído:
+
+- tabs Brasil / EUA;
+- nichos por metadata real de perfil;
+- filtros de perfil, período e ordenação;
+- busca;
+- contadores reais;
+- grid vertical;
+- cards com autor canônico e perfil monitorado;
+- métricas observadas;
+- Collab;
+- badges determinísticos;
+- drawer analítico;
+- embed oficial Instagram com fallback.
+
+### Dados reais validados
+
+BR:
+
+- 40 Reels;
+- 3 perfis;
+- likes 32/40;
+- comments 40/40;
+- views 0/40.
+
+US:
+
+- 0 perfis;
+- 0 Reels.
+
+### Ranking
+
+"Em destaque" não é Trend Score.
+
+Ordem:
+
+1. acima do baseline;
+2. recente <= 7d;
+3. métricas completas;
+4. observed_interactions;
+5. published_at.
+
+Baseline:
+
+- monitored_profile_id + reel;
+- mediana;
+- mínimo 5 peers.
+
+### Escopo preservado
+
+- nenhum schema;
+- nenhuma migration;
+- nenhum RLS;
+- nenhum n8n;
+- nenhum collector executado;
+- nenhum provider job;
+- nenhuma IA;
+- nenhum Trend Score;
+- nenhum Brazil Gap;
+- nenhuma view inventada.
+
+
 ## 2026-10-02 — Etapa 4.7
 
 ### Automation

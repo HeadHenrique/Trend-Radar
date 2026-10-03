@@ -1909,3 +1909,577 @@ select {
   object-fit: contain;
   image-rendering: auto;
 }
+
+
+/* =========================================================
+   Caliber Orbit — Trends / Reels Radar
+   ========================================================= */
+
+.trends-reels-page {
+  --trend-card-radius: 16px;
+}
+
+.trends-market-section {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.trends-market-tabs {
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-secondary);
+}
+
+.trends-market-tabs button {
+  min-width: 112px;
+  min-height: 38px;
+  border: 0;
+  border-radius: 9px;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 650;
+  transition: .18s ease;
+}
+
+.trends-market-tabs button:hover {
+  color: var(--text-primary);
+  background: #FFFFFF;
+}
+
+.trends-market-tabs button.active {
+  color: #FFFFFF;
+  background: var(--primary);
+  box-shadow: 0 5px 14px rgba(95, 85, 135, .18);
+}
+
+.trends-market-tabs button:focus-visible,
+.trend-niche-chips button:focus-visible,
+.trend-reel-card:focus-visible {
+  outline: 3px solid rgba(95, 85, 135, .2);
+  outline-offset: 2px;
+}
+
+.trend-niche-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.trend-niche-chips button {
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: #FFFFFF;
+  cursor: pointer;
+  font-size: 10px;
+  transition: .18s ease;
+}
+
+.trend-niche-chips button:hover {
+  color: var(--primary);
+  border-color: var(--border-purple);
+  background: var(--surface-purple-soft);
+}
+
+.trend-niche-chips button.active {
+  color: var(--primary);
+  border-color: var(--border-purple);
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+
+.trends-toolbar {
+  display: grid;
+  grid-template-columns: minmax(250px, 1.7fr) repeat(4, minmax(140px, .8fr));
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 11px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 4px rgba(20, 15, 30, .02);
+}
+
+.trends-toolbar select:disabled {
+  color: #77717F;
+  background: #F7F5F8;
+  cursor: not-allowed;
+}
+
+.trends-reels-library {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(20, 15, 30, .03);
+}
+
+.trends-reels-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-secondary);
+}
+
+.trends-reels-summary > div {
+  padding: 16px 18px;
+  border-right: 1px solid var(--border);
+}
+
+.trends-reels-summary > div:last-child {
+  border-right: 0;
+}
+
+.trends-reels-summary span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.trends-reels-summary strong {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-primary);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.trends-reels-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.trends-reels-heading h2 {
+  margin: 5px 0 0;
+  color: var(--text-primary);
+  font-size: 17px;
+}
+
+.trends-coverage-note {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+.trends-reels-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px;
+}
+
+.trends-reels-empty {
+  padding: 14px;
+}
+
+.trend-reel-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #E5E0EA;
+  border-radius: var(--trend-card-radius);
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(20, 15, 30, .03);
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.trend-reel-card:hover {
+  transform: translateY(-2px);
+  border-color: #BFB3D1;
+  box-shadow: 0 8px 22px rgba(20, 15, 30, .07);
+}
+
+.trend-reel-media {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: var(--surface-purple-soft);
+}
+
+.trend-reel-media > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.trend-reel-placeholder {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  text-align: center;
+}
+
+.trend-reel-media-badges,
+.trend-reel-traction-badges {
+  position: absolute;
+  left: 9px;
+  right: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.trend-reel-media-badges {
+  top: 9px;
+}
+
+.trend-reel-traction-badges {
+  bottom: 9px;
+}
+
+.trend-market-badge,
+.trend-reel-traction-badges span {
+  min-height: 23px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 999px;
+  color: #FFFFFF;
+  background: rgba(42, 37, 48, .78);
+  backdrop-filter: blur(8px);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.trend-market-badge {
+  background: rgba(95, 85, 135, .88);
+}
+
+.trend-reel-traction-badges span {
+  color: #342D40;
+  background: rgba(255,255,255,.92);
+  border-color: rgba(255,255,255,.92);
+}
+
+.trend-reel-card-body {
+  padding: 12px;
+}
+
+.trend-reel-author {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.trend-reel-author > div:first-child {
+  min-width: 0;
+}
+
+.trend-reel-author strong {
+  display: block;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: 10px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trend-reel-author span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 8px;
+}
+
+.trend-reel-author img,
+.trend-reel-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid var(--border-purple);
+  border-radius: 50%;
+  object-fit: cover;
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.trend-reel-avatar-fallback {
+  display: grid;
+  place-items: center;
+}
+
+.trend-reel-caption {
+  display: -webkit-box;
+  min-height: 43px;
+  overflow: hidden;
+  margin: 10px 0 8px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.trend-reel-context {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.trend-reel-context span {
+  max-width: 100%;
+  padding: 4px 6px;
+  overflow: hidden;
+  border-radius: 6px;
+  color: var(--primary);
+  background: var(--primary-soft);
+  font-size: 7px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trend-reel-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.trend-reel-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 8px;
+}
+
+.trend-reel-metrics svg {
+  color: var(--primary);
+}
+
+/* Trend drawer and official Instagram embed */
+.trend-reel-drawer {
+  width: min(980px, 100%);
+}
+
+.trend-reel-analysis-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.trend-reel-intelligence-column {
+  min-width: 0;
+}
+
+.instagram-reel-player {
+  position: relative;
+  min-height: 520px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: var(--surface-secondary);
+}
+
+.instagram-reel-player .instagram-media {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 auto !important;
+  background: #FFFFFF;
+}
+
+.instagram-reel-loading {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  color: var(--text-secondary);
+  text-align: center;
+  font-size: 10px;
+}
+
+.instagram-reel-loading svg {
+  color: var(--primary);
+}
+
+.instagram-reel-fallback {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #FFFFFF;
+}
+
+.instagram-reel-fallback img,
+.instagram-reel-fallback-placeholder {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  display: block;
+  object-fit: cover;
+  background: var(--surface-purple-soft);
+}
+
+.instagram-reel-fallback-placeholder {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  color: var(--primary);
+}
+
+.instagram-reel-fallback > div:last-child {
+  padding: 12px;
+}
+
+.instagram-reel-fallback strong,
+.instagram-reel-fallback span {
+  display: block;
+}
+
+.instagram-reel-fallback strong {
+  color: var(--text-primary);
+  font-size: 10px;
+}
+
+.instagram-reel-fallback span {
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.instagram-reel-open {
+  width: 100%;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.trend-context-panel {
+  margin-top: 0;
+}
+
+.trend-highlight-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-purple);
+  border-radius: 12px;
+  background: var(--surface-purple-soft);
+}
+
+.trend-highlight-panel h3 {
+  margin: 6px 0 10px;
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.trend-highlight-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.trend-baseline-note {
+  display: grid;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border-purple);
+}
+
+.trend-baseline-note strong {
+  color: var(--text-primary);
+  font-size: 9px;
+}
+
+.trend-baseline-note span {
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+/* tablet */
+@media (max-width: 1320px) {
+  .trends-reels-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .trends-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trends-search {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 900px) {
+  .trends-reels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trend-reel-analysis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .instagram-reel-player {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .trends-market-tabs {
+    width: 100%;
+  }
+
+  .trends-market-tabs button {
+    flex: 1;
+  }
+
+  .trends-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .trends-search {
+    grid-column: auto;
+  }
+
+  .trends-reels-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .trends-reels-summary > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .trends-reels-summary > div:last-child {
+    border-bottom: 0;
+  }
+
+  .trends-reels-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .trends-reels-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+
+  .trend-reel-drawer {
+    width: 100%;
+    padding: 16px;
+  }
+}
