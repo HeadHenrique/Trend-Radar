@@ -499,3 +499,41 @@ Próxima etapa:
 - observar erros/stale running;
 - acompanhar records Bright Data e budget n8n;
 - só então avaliar escala/backlog.
+
+
+## Etapa 5.0 — Tendências com Reels BR / US
+
+Concluído:
+
+- [x] /trends deixou o empty state antigo;
+- [x] trendsRepository em lote;
+- [x] domínio TrendReelItem tipado;
+- [x] tabs Brasil / EUA;
+- [x] filtro real por primary_market_code;
+- [x] filtro de nicho por metadata de perfil;
+- [x] busca por caption/autor/username/shortcode/hashtags;
+- [x] período 7d/30d/90d/all por published_at;
+- [x] foco exclusivo em Reels;
+- [x] "Em destaque" determinístico sem Trend Score;
+- [x] observed_interactions com NULL semantics;
+- [x] baseline mediano por profile + reel, amostra mínima 5;
+- [x] Mais visualizados condicionado a views reais;
+- [x] grid vertical responsivo;
+- [x] card acessível por teclado;
+- [x] PostDetailDrawer reutilizado/evoluído;
+- [x] embed oficial do Instagram + fallback;
+- [x] estado vazio US sem mocks;
+- [x] zero perfis US fake;
+- [x] zero views fake;
+- [x] zero alterações de schema;
+- [x] zero alterações de n8n;
+- [x] zero execução de collectors.
+
+Próximos passos:
+
+- cadastrar referências/trendsetters US autorizados;
+- acumular dados US reais;
+- aguardar série temporal recorrente;
+- reavaliar views;
+- integrar Trend Engine apenas quando houver cobertura temporal suficiente;
+- Brazil Gap continua fora de escopo.
