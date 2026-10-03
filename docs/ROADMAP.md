@@ -537,3 +537,38 @@ Próximos passos:
 - reavaliar views;
 - integrar Trend Engine apenas quando houver cobertura temporal suficiente;
 - Brazil Gap continua fora de escopo.
+
+
+## Etapa 5.1 — Curadoria BR + Fundação US
+
+Concluído:
+
+- [x] taxonomia controlada de nichos;
+- [x] Raphael curado com niche/category/tags;
+- [x] Hélio curado com niche/category/tags;
+- [x] Leonardo preservado;
+- [x] shortlist pública de 6 candidatos US;
+- [x] usernames selecionados verificados;
+- [x] exatamente 2 perfis US cadastrados;
+- [x] @leilahormozi como trendsetter;
+- [x] @codiesanchez como reference;
+- [x] priority=2;
+- [x] active=true;
+- [x] provider fields NULL;
+- [x] monitoring_status=pending;
+- [x] capacidade do Profile Collector validada;
+- [x] capacidade do Posts Collector validada;
+- [x] /trends validado estruturalmente sem mudança de frontend;
+- [x] zero collectors manuais;
+- [x] zero provider jobs manuais;
+- [x] zero n8n changes;
+- [x] zero schema/migration;
+- [x] zero IA;
+- [x] zero Brazil Gap.
+
+Próximo passo:
+
+- deixar schedules existentes processarem os 2 US naturalmente;
+- auditar onboarding automático;
+- depois auditar primeira base real de Reels US;
+- só então avaliar comparação BR × US.
