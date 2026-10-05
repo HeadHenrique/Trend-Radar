@@ -572,3 +572,37 @@ Próximo passo:
 - auditar onboarding automático;
 - depois auditar primeira base real de Reels US;
 - só então avaliar comparação BR × US.
+
+
+## Player nativo de Reels + cache estável
+
+Concluído:
+
+- [x] payload real reinspecionado;
+- [x] videos[0] confirmado como MP4 real;
+- [x] fallback post_content Video URL;
+- [x] fallback videos_duration URL;
+- [x] URL temporária não persistida;
+- [x] bucket privado reel-media-cache;
+- [x] video_storage_path;
+- [x] video_cached_at;
+- [x] Edge Function idempotente;
+- [x] limite de 64 MiB;
+- [x] falha de cache não quebra ingestão;
+- [x] Posts Collector atualizado sem mudança de schedule;
+- [x] collection_purpose posts_snapshot preservado;
+- [x] cache futuro automático;
+- [x] backfill sem novo provider job;
+- [x] signed URLs em lote;
+- [x] player <video> no card;
+- [x] embed virou fallback;
+- [x] drawer prefere player nativo;
+- [x] 32 Reels históricos cacheados;
+- [x] auditoria de views/shares;
+- [x] documento de opções de segunda fonte.
+
+Pendências:
+
+- 25 Reels sem cache aguardam nova aparição em coleta automática ou resolução futura autorizada;
+- views/plays/shares permanecem sem fonte observada no pipeline atual;
+- avaliar POC pequena de segunda fonte antes de qualquer integração.
