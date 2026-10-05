@@ -102,10 +102,10 @@ export function compareTrendReels(a: TrendReelItem, b: TrendReelItem, sort: Tren
     return metricOrder || publishedAtValue(b) - publishedAtValue(a)
   }
 
-  if (sort === 'views') {
+  if (sort === 'plays') {
     const metricOrder = compareNullableDesc(
-      a.latestMetrics?.viewsCount ?? null,
-      b.latestMetrics?.viewsCount ?? null,
+      a.latestMetrics?.playsCount ?? null,
+      b.latestMetrics?.playsCount ?? null,
     )
     return metricOrder || publishedAtValue(b) - publishedAtValue(a)
   }
