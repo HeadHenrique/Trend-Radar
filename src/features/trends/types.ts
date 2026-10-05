@@ -12,7 +12,7 @@ export type TrendSort =
   | 'likes'
   | 'comments'
   | 'recent'
-  | 'views'
+  | 'plays'
 
 export type TrendNicheKey =
   | 'all'
