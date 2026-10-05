@@ -973,3 +973,41 @@ Validação real:
 - collection run `81753ab7-528a-4fa1-b47d-128245daccce`;
 - status success;
 - zero duplicidades.
+
+
+## Reparação oportunista de mídia no Reel Plays Enrichment
+
+O workflow `Caliber Orbit — Reel Plays Enrichment` também atua como segunda camada de reparo de mídia.
+
+A mesma resposta do ScrapeCreators usada para `video_play_count` também pode conter `video_url`.
+
+O fluxo agora carrega `video_storage_path` junto do Reel e, após normalização:
+
+```text
+response success
++ identidade válida
++ video_storage_path NULL
++ video_url presente
+        ↓
+cache-reel-media
+```
+
+Essa chamada ocorre em branch paralela best-effort.
+
+Ela:
+
+- não gera nova request ao ScrapeCreators;
+- não altera a cadência de plays;
+- não bloqueia Inserir Snapshot de Plays;
+- não altera plays_count/views_count/shares_count;
+- reaproveita a Edge Function existente.
+
+Falha de mídia não transforma o run de métricas em erro.
+
+### Backfill controlado 2026-10-05
+
+- 24 URLs consultadas;
+- 23 objetos novos;
+- 1 falha de upload;
+- cobertura final 66/67;
+- 0 snapshots de métricas criados pelo backfill.
