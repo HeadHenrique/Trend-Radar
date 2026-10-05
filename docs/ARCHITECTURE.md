@@ -1011,3 +1011,43 @@ Falha de mídia não transforma o run de métricas em erro.
 - 1 falha de upload;
 - cobertura final 66/67;
 - 0 snapshots de métricas criados pelo backfill.
+
+
+## Latest observed metrics por campo
+
+`PostMetrics` deixou de representar a última row inteira de `post_metric_snapshots`.
+
+Agora cada contexto:
+
+`post_id + monitored_profile_id`
+
+é agregado por campo usando:
+
+`aggregateObservedMetrics`
+
+Regra:
+
+- ordenar snapshots do mais novo para o mais antigo;
+- escolher o primeiro valor não-NULL de cada métrica;
+- nunca transformar NULL em zero;
+- zero real permanece zero;
+- `capturedAt` é o timestamp mais recente entre os valores efetivamente usados.
+
+Essa regra é compartilhada por:
+
+- postsRepository;
+- trendsRepository.
+
+Isso permite múltiplos providers sem que um provider que não observa determinada métrica apague a observação de outro.
+
+### Reel Plays Backfill
+
+Backfill manual temporário:
+
+- workflow ID `pzajlzNlQhhizNgK`;
+- sem schedule;
+- limite 20 requests/execution;
+- 62 requests máximas autorizadas e utilizadas;
+- 61 snapshots inseridos;
+- cobertura final 66/67;
+- um Reel permaneceu sem plays por provider_unsuccessful.

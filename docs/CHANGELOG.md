@@ -1,6 +1,63 @@
 # Changelog
 
 
+## 2026-10-05 — Correção definitiva de Reproduções
+
+### Agregação
+
+Novo helper:
+
+`src/features/posts/metrics.ts`
+
+Regra:
+
+- latest non-NULL por métrica;
+- NULL posterior não apaga valor anterior;
+- zero real permanece 0;
+- capturedAt usa a observação mais recente efetivamente utilizada.
+
+Aplicado em:
+
+- postsRepository;
+- trendsRepository.
+
+### Plays backfill
+
+Workflow temporário:
+
+`Caliber Orbit — Reel Plays Backfill`
+
+ID:
+
+`pzajlzNlQhhizNgK`
+
+Executions:
+
+- 115 → 20 requests / 20 créditos / 20 snapshots;
+- 116 → 20 / 20 / 20;
+- 117 → 20 / 20 / 20;
+- 118 → 2 requests / 1 crédito / 1 snapshot / 1 provider_unsuccessful.
+
+Estado final:
+
+- 67 Reels;
+- 66 com plays;
+- 1 sem plays;
+- 98,51% de cobertura;
+- 66 snapshots totais com plays_count;
+- 0 duplicidades.
+
+Reel pendente:
+
+`DeEQ2SzOYLs`
+
+Motivo:
+
+`provider_unsuccessful`
+
+Sem retry automático.
+
+
 ## 2026-10-05 — Cobertura nativa de mídia dos Reels
 
 ### Backfill

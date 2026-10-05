@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { aggregateObservedMetrics } from './metrics'
 import type {
   InstagramPostRow,
   MonitoredProfilePostRow,
@@ -34,19 +35,6 @@ function toAssociatedProfile(row: MonitoredProfileRow) {
     instagramUsername: row.instagram_username,
     displayName: row.display_name,
     profilePictureUrl: row.profile_picture_url,
-  }
-}
-
-function toMetrics(row: PostMetricSnapshotRow): PostMetrics {
-  return {
-    monitoredProfileId: row.monitored_profile_id,
-    likesCount: row.likes_count,
-    commentsCount: row.comments_count,
-    viewsCount: row.views_count,
-    playsCount: row.plays_count,
-    sharesCount: row.shares_count,
-    savesCount: row.saves_count,
-    capturedAt: row.captured_at,
   }
 }
 
@@ -118,7 +106,7 @@ export const postsRepository: PostsRepository = {
 
     const snapshotsByContext = new Map<
       string,
-      { latest: PostMetricSnapshotRow; count: number }
+      { rows: PostMetricSnapshotRow[]; count: number }
     >()
 
     snapshotsResult.data.forEach((snapshot) => {
@@ -126,10 +114,11 @@ export const postsRepository: PostsRepository = {
       const current = snapshotsByContext.get(key)
 
       if (!current) {
-        snapshotsByContext.set(key, { latest: snapshot, count: 1 })
+        snapshotsByContext.set(key, { rows: [snapshot], count: 1 })
         return
       }
 
+      current.rows.push(snapshot)
       current.count += 1
     })
 
@@ -146,7 +135,7 @@ export const postsRepository: PostsRepository = {
       const mappedAssociation: PostAssociation = {
         associationType: normalizeAssociationType(association.association_type),
         profile,
-        latestMetrics: context ? toMetrics(context.latest) : null,
+        latestMetrics: context ? aggregateObservedMetrics(context.rows) : null,
         snapshotCount: context?.count ?? 0,
       }
 
