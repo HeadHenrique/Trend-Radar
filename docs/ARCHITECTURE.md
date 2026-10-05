@@ -911,3 +911,65 @@ Path:
 Não existe assinatura N+1 por card.
 
 `CachedReelPlayer` prefere <video> e usa InstagramReelEmbed apenas como fallback.
+
+
+## Reel Plays Enrichment — produção
+
+Workflow separado:
+
+- nome: `Caliber Orbit — Reel Plays Enrichment`;
+- ID: `2rekO9lh9xpgH9lt`;
+- provider: ScrapeCreators;
+- endpoint: `GET /v1/instagram/post`;
+- collection_type: `posts`;
+- collection_purpose: `post_metrics_enrichment`;
+- schedule: `0 20 */6 * * *`;
+- timezone: `America/Sao_Paulo`;
+- limite manual: 5 requests;
+- limite schedule: 20 requests.
+
+Fluxo:
+
+```text
+Manual/Schedule
+→ carregar perfis/posts/associações/snapshots/runs
+→ escolher associação canônica por post
+   author > collaborator > discovered
+→ calcular due por idade
+→ selecionar até N posts canônicos
+→ criar collection_run por contexto de perfil
+→ ScrapeCreators por permalink
+→ validar success + identidade + video_play_count
+→ inserir snapshot imutável
+→ finalizar collection_run
+```
+
+Cadência:
+
+- Reel <= 7 dias: 6h;
+- Reel entre 8 e 30 dias: 24h;
+- Reel > 30 dias: 7 dias;
+- nunca enriquecido: due imediatamente.
+
+O workflow nunca preenche `views_count` com `video_play_count`.
+
+Persistência:
+
+- `video_play_count → plays_count`;
+- likes/comments da mesma resposta;
+- views/shares/saves permanecem NULL quando ausentes.
+
+Guard:
+
+- contexto com `post_metrics_enrichment` em `running` não é selecionado;
+- sem Reel due: no-op sem request, run ou snapshot artificial.
+
+Validação real:
+
+- execution 108;
+- 5 requests;
+- 5 sucessos;
+- 5 snapshots;
+- collection run `81753ab7-528a-4fa1-b47d-128245daccce`;
+- status success;
+- zero duplicidades.
