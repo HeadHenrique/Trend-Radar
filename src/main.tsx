@@ -6,7 +6,7 @@ import './styles.css'
 const rootElement = document.getElementById('root')
 
 if (!rootElement) {
-  throw new Error('[Caliber Orbit] Elemento #root não encontrado.')
+  throw new Error('[Orbit] Elemento #root não encontrado.')
 }
 
 const root = createRoot(rootElement)
@@ -17,7 +17,7 @@ function ConfigError({ children }: { children: ReactNode }) {
       <div className="auth-screen">
         <div className="auth-card">
           <span className="eyebrow">Configuração</span>
-          <h1>Caliber Orbit não conseguiu iniciar</h1>
+          <h1>Orbit não conseguiu iniciar</h1>
           <p>{children}</p>
         </div>
       </div>
@@ -75,7 +75,7 @@ async function bootstrap() {
       </StrictMode>,
     )
   } catch (error) {
-    console.error('[Caliber Orbit] Falha ao inicializar a aplicação.', error)
+    console.error('[Orbit] Falha ao inicializar a aplicação.', error)
     root.render(
       <ConfigError>
         Falha ao inicializar a aplicação. Verifique a configuração do ambiente e o console do navegador.

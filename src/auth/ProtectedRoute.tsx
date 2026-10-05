@@ -9,7 +9,7 @@ export function ProtectedRoute() {
     return (
       <div className="auth-screen">
         <div className="auth-card">
-          <span className="eyebrow">Caliber Orbit</span>
+          <span className="eyebrow">Orbit</span>
           <h1>Carregando sessão</h1>
           <p>Validando seu acesso ao ambiente interno.</p>
         </div>

@@ -34,7 +34,7 @@ export function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand">
-          <img className="brand-logo" src="/caliber-orbit-logo.png" alt="Caliber Orbit" />
+          <img className="brand-logo" src="/orbit-logo.webp" alt="Orbit" width={600} height={200} />
         </div>
 
         <nav>
@@ -63,7 +63,7 @@ export function Layout() {
         <header className="topbar">
           <div>
             <span className="eyebrow">Inteligência executiva</span>
-            <strong>Caliber Orbit</strong>
+            <strong>Orbit</strong>
           </div>
 
           <div className="topbar-user">

@@ -28,7 +28,7 @@ export default function Settings() {
             <strong>{health.message}</strong>
           </div>
           <dl>
-            <div><dt>Projeto</dt><dd>Caliber Orbit</dd></div>
+            <div><dt>Projeto</dt><dd>Orbit</dd></div>
             <div><dt>Project ref</dt><dd>{supabaseProjectRef}</dd></div>
             <div><dt>Cliente</dt><dd>Publishable key</dd></div>
           </dl>

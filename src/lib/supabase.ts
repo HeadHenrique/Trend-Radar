@@ -7,19 +7,19 @@ function getSupabaseConfig() {
 
   if (!projectUrl) {
     throw new Error(
-      '[Caliber Orbit] Configuração ausente: defina VITE_SUPABASE_URL no ambiente.',
+      '[Orbit] Configuração ausente: defina VITE_SUPABASE_URL no ambiente.',
     )
   }
 
   if (!publishableKey) {
     throw new Error(
-      '[Caliber Orbit] Configuração ausente: defina VITE_SUPABASE_PUBLISHABLE_KEY no ambiente.',
+      '[Orbit] Configuração ausente: defina VITE_SUPABASE_PUBLISHABLE_KEY no ambiente.',
     )
   }
 
   if (!publishableKey.startsWith('sb_publishable_')) {
     throw new Error(
-      '[Caliber Orbit] VITE_SUPABASE_PUBLISHABLE_KEY precisa ser uma publishable key válida.',
+      '[Orbit] VITE_SUPABASE_PUBLISHABLE_KEY precisa ser uma publishable key válida.',
     )
   }
 
@@ -29,7 +29,7 @@ function getSupabaseConfig() {
     parsedUrl = new URL(projectUrl)
   } catch {
     throw new Error(
-      '[Caliber Orbit] VITE_SUPABASE_URL possui um valor inválido.',
+      '[Orbit] VITE_SUPABASE_URL possui um valor inválido.',
     )
   }
 

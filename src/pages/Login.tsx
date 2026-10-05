@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
-import { Compass } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 
 export default function Login() {
@@ -43,11 +42,14 @@ export default function Login() {
     <div className="auth-screen">
       <form className="auth-card" onSubmit={handleSubmit}>
         <div className="auth-brand">
-          <div className="brand-mark"><Compass size={19} /></div>
-          <div>
-            <strong>CALIBER</strong>
-            <span>ORBIT</span>
-          </div>
+          <img
+            className="brand-logo"
+            src="/orbit-logo.webp"
+            alt="Orbit"
+            width={600}
+            height={200}
+            style={{ maxWidth: 220, margin: 0, background: '#17141C', borderRadius: 14 }}
+          />
         </div>
 
         <span className="eyebrow">Acesso interno</span>
