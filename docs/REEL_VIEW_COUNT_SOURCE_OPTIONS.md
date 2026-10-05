@@ -224,3 +224,30 @@ O Caliber Orbit continua exibindo:
 `NULL → —`
 
 para views, plays e shares ausentes.
+
+
+## Estado após ativação do Reel Plays Enrichment
+
+ScrapeCreators deixou de ser apenas POC e passou a ser provider controlado de:
+
+`plays_count`
+
+Fonte:
+
+`data.xdt_shortcode_media.video_play_count`
+
+Semântica interna:
+
+- `plays_count`: preenchido pelo enrichment;
+- `views_count`: continua independente;
+- `shares_count`: continua independente.
+
+A UI utiliza o label:
+
+`Reproduções`
+
+para `plays_count`.
+
+Não houve reclassificação de `video_play_count` como view.
+
+A busca por uma fonte separada de `views_count` só deve continuar se o produto realmente precisar diferenciar views de reproduções na interface.
