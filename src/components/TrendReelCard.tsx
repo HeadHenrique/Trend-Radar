@@ -10,7 +10,7 @@ import type { KeyboardEvent, MouseEvent } from 'react'
 import { formatMetric, formatPostDate, formatPostDateTime } from '../features/posts/presentation'
 import { trendItemNicheLabel } from '../features/trends/presentation'
 import type { TrendReelItem } from '../features/trends/types'
-import { InstagramReelEmbed } from './InstagramReelEmbed'
+import { CachedReelPlayer } from './CachedReelPlayer'
 
 interface TrendReelCardProps {
   item: TrendReelItem
@@ -59,11 +59,13 @@ export function TrendReelCard({
     >
       <div className="trend-reel-media">
         {isPlaying ? (
-          <InstagramReelEmbed
+          <CachedReelPlayer
+            playbackUrl={item.videoPlaybackUrl}
             permalink={post.permalink}
             thumbnailUrl={post.thumbnailUrl}
             authorUsername={item.author.instagramUsername}
             variant="inline"
+            autoPlay
           />
         ) : (
           <>

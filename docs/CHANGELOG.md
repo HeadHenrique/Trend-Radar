@@ -1,6 +1,80 @@
 # Changelog
 
 
+## 2026-10-04 — Player nativo de Reels + cache estável
+
+### Database / Storage
+
+Migration:
+
+`20261005011529_add_reel_media_cache`
+
+Adicionado em instagram_posts:
+
+- video_storage_path;
+- video_cached_at.
+
+Storage:
+
+- bucket privado reel-media-cache;
+- 64 MiB por arquivo;
+- frontend autenticado com role válida pode ler;
+- upload permanece server-side.
+
+### Posts Collector
+
+Normalização passou a extrair videoSourceUrl de:
+
+1. videos[0];
+2. post_content Video .url;
+3. videos_duration[0].url.
+
+A URL temporária não é persistida.
+
+Após o upsert do post, cache-reel-media tenta armazenar o MP4 estável.
+
+Falha do cache não interrompe associação, snapshot nem finalização normal.
+
+Schedule e posts_snapshot permaneceram inalterados.
+
+### Backfill
+
+Executado workflow temporário sem Bright Data:
+
+- 56 URLs históricas;
+- 32 caches concluídos;
+- 24 URLs expiradas/HTTP error;
+- workflow temporário arquivado.
+
+Storage inicial:
+
+- ~131,2 MiB;
+- média ~4,1 MiB;
+- maior ~11,5 MiB.
+
+### Frontend
+
+- CachedReelPlayer;
+- <video controls playsInline preload="metadata">;
+- signed URLs em lote;
+- um player por vez preservado;
+- Instagram embed virou fallback.
+
+### Views / shares
+
+Banco:
+
+- views_count non-NULL = 0;
+- plays_count non-NULL = 0;
+- shares_count non-NULL = 0.
+
+Payload real mais recente:
+
+nenhum dos campos auditados de view/play/share trouxe número confiável.
+
+Nenhuma métrica nova foi inventada ou persistida.
+
+
 ## 2026-10-03 — Etapa 5.1
 
 ### Curadoria BR

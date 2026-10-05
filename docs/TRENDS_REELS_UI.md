@@ -349,3 +349,85 @@ Ambos:
 Até o onboarding automático ocorrer, /trends > EUA pode continuar em empty state.
 
 Nenhum mock foi adicionado.
+
+
+## Player nativo + cache estável de vídeo
+
+A experiência de /trends agora prefere vídeo cacheado no Supabase Storage.
+
+Fluxo:
+
+```text
+Posts Collector
+→ URL MP4 temporária do payload
+→ cache-reel-media Edge Function
+→ bucket privado reel-media-cache
+→ instagram_posts.video_storage_path
+→ trendsRepository cria signed URLs em lote
+→ CachedReelPlayer usa <video>
+→ InstagramReelEmbed somente como fallback
+```
+
+### Semântica do vídeo
+
+A URL temporária do Instagram nunca é salva em `instagram_posts`.
+
+Ela existe somente durante a execution do Posts Collector para alimentar a função de cache.
+
+Campos persistidos:
+
+- video_storage_path;
+- video_cached_at.
+
+O player recebe signed URL de 1 hora para o arquivo privado.
+
+### Player
+
+Quando há vídeo cacheado:
+
+```html
+<video controls playsInline preload="metadata" poster="..." />
+```
+
+No card, o vídeo inicia após o clique no Play e continua respeitando `playingReelId`, portanto apenas um Reel fica ativo por vez.
+
+Se o arquivo não estiver cacheado ou a signed URL falhar:
+
+- InstagramReelEmbed;
+- depois o fallback já existente para abrir no Instagram.
+
+### Backfill inicial
+
+Foi usado somente histórico retido de executions do Posts Collector, sem nova chamada Bright Data.
+
+- URLs históricas únicas tentadas: 56;
+- vídeos cacheados: 32;
+- URLs expiradas/HTTP error: 24;
+- Reels atuais no banco: 57;
+- Reels ainda sem cache: 25.
+
+Nenhum job de discovery foi criado para completar os 25 restantes.
+
+Eles serão cacheados naturalmente quando aparecerem em coletas automáticas futuras.
+
+### Volume inicial
+
+- arquivos: 32;
+- total: ~131,2 MiB;
+- média: ~4,1 MiB;
+- maior: ~11,5 MiB;
+- limite por arquivo no bucket: 64 MiB.
+
+### Métricas
+
+O player não altera métricas.
+
+Cards continuam lendo somente o latestMetrics do contexto.
+
+No momento da implementação:
+
+- views observadas = 0;
+- plays observados = 0;
+- shares observados = 0.
+
+NULL permanece —.

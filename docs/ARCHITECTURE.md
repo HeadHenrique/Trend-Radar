@@ -851,3 +851,63 @@ Nenhum workflow/schedule foi alterado.
 
 - Profile Collector: demanda teórica máxima ~20/dia, abaixo de 24 ticks/dia;
 - Posts Collector: ~1,7 recorrências/dia para 5 perfis, abaixo de 6 ticks/dia, além do onboarding inicial.
+
+
+## Cache estável de mídia de Reels
+
+Storage:
+
+- bucket privado: `reel-media-cache`;
+- leitura: authenticated com trend_radar_role viewer/editor/admin;
+- escrita: somente trusted/server-side service role;
+- browser não possui policy de upload.
+
+Banco:
+
+`instagram_posts`
+
+- video_storage_path text NULL;
+- video_cached_at timestamptz NULL.
+
+### Ingestão
+
+O Posts Collector resolve `videoSourceUrl` somente em memória:
+
+1. videos[0];
+2. post_content type=Video .url;
+3. videos_duration[0].url.
+
+Depois do upsert canônico do post:
+
+```text
+Tem vídeo para cache?
+├─ não → associação/snapshot normal
+└─ sim
+   → cache-reel-media
+   → restaura contexto
+   → associação/snapshot normal
+```
+
+Falha de cache não transforma posts_snapshot em error.
+
+A Edge Function valida:
+
+- host Instagram/Facebook CDN;
+- status HTTP;
+- tamanho máximo 64 MiB;
+- MIME;
+- assinatura MP4 ftyp;
+- identidade canônica;
+- idempotência do path.
+
+Path:
+
+`reels/{instagram_media_id || shortcode}.mp4`
+
+### Frontend
+
+`trendsRepository` agrupa todos os video_storage_path e usa uma única chamada `createSignedUrls`.
+
+Não existe assinatura N+1 por card.
+
+`CachedReelPlayer` prefere <video> e usa InstagramReelEmbed apenas como fallback.

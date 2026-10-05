@@ -12,7 +12,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react'
-import { InstagramReelEmbed } from './InstagramReelEmbed'
+import { CachedReelPlayer } from './CachedReelPlayer'
 import {
   associationLabels,
   contentTypeLabels,
@@ -113,10 +113,12 @@ export function PostDetailDrawer({ post, onClose, trendItem = null }: PostDetail
 
         {trendItem ? (
           <div className="trend-reel-analysis-grid">
-            <InstagramReelEmbed
+            <CachedReelPlayer
+              playbackUrl={trendItem.videoPlaybackUrl}
               permalink={post.permalink}
               thumbnailUrl={post.thumbnailUrl}
               authorUsername={post.authorInstagramUsername}
+              variant="drawer"
             />
 
             <div className="trend-reel-intelligence-column">

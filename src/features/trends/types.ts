@@ -75,6 +75,9 @@ export interface TrendReelItem {
   profileMetadata: TrendProfileMetadata[]
   primaryAssociationProfileId: string | null
   latestMetrics: PostMetrics | null
+  videoStoragePath: string | null
+  videoCachedAt: string | null
+  videoPlaybackUrl: string | null
   observedInteractions: number | null
   rankingContext: TrendRankingContext
 }
