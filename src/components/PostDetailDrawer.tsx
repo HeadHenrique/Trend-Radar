@@ -295,7 +295,7 @@ export function PostDetailDrawer({ post, onClose, trendItem = null }: PostDetail
                   <div><Eye size={14} /><span>Views</span><strong>{formatMetric(metrics.viewsCount)}</strong></div>
                 ) : null}
                 {metrics.playsCount !== null ? (
-                  <div><Play size={14} /><span>Plays</span><strong>{formatMetric(metrics.playsCount)}</strong></div>
+                  <div><Play size={14} /><span>Reproduções</span><strong>{formatMetric(metrics.playsCount)}</strong></div>
                 ) : null}
                 {metrics.sharesCount !== null ? (
                   <div><Share2 size={14} /><span>Compart.</span><strong>{formatMetric(metrics.sharesCount)}</strong></div>
