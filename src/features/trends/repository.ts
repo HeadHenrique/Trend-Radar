@@ -1,4 +1,5 @@
 import { supabase } from '../../lib/supabase'
+import { aggregateObservedMetrics } from '../posts/metrics'
 import type {
   InstagramPostRow,
   MonitoredProfilePostRow,
@@ -30,19 +31,6 @@ function dataError(error: { message: string }) {
 function normalizeAssociationType(value: string): PostAssociationType {
   if (value === 'author' || value === 'collaborator') return value
   return 'discovered'
-}
-
-function toMetrics(row: PostMetricSnapshotRow): PostMetrics {
-  return {
-    monitoredProfileId: row.monitored_profile_id,
-    likesCount: row.likes_count,
-    commentsCount: row.comments_count,
-    viewsCount: row.views_count,
-    playsCount: row.plays_count,
-    sharesCount: row.shares_count,
-    savesCount: row.saves_count,
-    capturedAt: row.captured_at,
-  }
 }
 
 function toProfileMetadata(row: MonitoredProfileRow): TrendProfileMetadata {
@@ -321,7 +309,7 @@ export const trendsRepository: TrendsRepository = {
 
     const snapshotsByContext = new Map<
       string,
-      { latest: PostMetricSnapshotRow; count: number }
+      { rows: PostMetricSnapshotRow[]; count: number }
     >()
 
     snapshotsResult.data.forEach((snapshot) => {
@@ -329,10 +317,11 @@ export const trendsRepository: TrendsRepository = {
       const current = snapshotsByContext.get(key)
 
       if (!current) {
-        snapshotsByContext.set(key, { latest: snapshot, count: 1 })
+        snapshotsByContext.set(key, { rows: [snapshot], count: 1 })
         return
       }
 
+      current.rows.push(snapshot)
       current.count += 1
     })
 
@@ -350,7 +339,9 @@ export const trendsRepository: TrendsRepository = {
         contextKey(association.instagram_post_id, association.monitored_profile_id),
       )
 
-      const latestMetrics = snapshotContext ? toMetrics(snapshotContext.latest) : null
+      const latestMetrics = snapshotContext
+        ? aggregateObservedMetrics(snapshotContext.rows)
+        : null
       const mapped: TrendReelAssociation = {
         associationType: normalizeAssociationType(association.association_type),
         profile,
