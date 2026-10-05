@@ -42,6 +42,7 @@ export default function Trends() {
   const [period, setPeriod] = useState<TrendPeriod>('all')
   const [sort, setSort] = useState<TrendSort>('highlight')
   const [selectedReel, setSelectedReel] = useState<TrendReelItem | null>(null)
+  const [playingReelId, setPlayingReelId] = useState<string | null>(null)
 
   const loadReels = useCallback(async () => {
     if (!role) {
@@ -69,6 +70,7 @@ export default function Trends() {
   useEffect(() => {
     setProfileId('all')
     setSelectedReel(null)
+    setPlayingReelId(null)
   }, [market])
 
   const marketProfiles = useMemo(
@@ -126,10 +128,28 @@ export default function Trends() {
       .sort((a, b) => compareTrendReels(a, b, sort))
   }, [marketReels, niche, period, profileId, search, sort])
 
+  useEffect(() => {
+    if (
+      playingReelId &&
+      !filteredReels.some((item) => item.id === playingReelId)
+    ) {
+      setPlayingReelId(null)
+    }
+  }, [filteredReels, playingReelId])
+
   const completeMetricsCount = useMemo(
     () => filteredReels.filter((item) => item.observedInteractions !== null).length,
     [filteredReels],
   )
+
+  function handleOpenReel(item: TrendReelItem) {
+    setPlayingReelId(null)
+    setSelectedReel(item)
+  }
+
+  function handlePlayReel(item: TrendReelItem) {
+    setPlayingReelId(item.id)
+  }
 
   const hasMarketProfiles = marketProfiles.length > 0
   const hasMarketReels = marketReels.length > 0
@@ -254,7 +274,13 @@ export default function Trends() {
               ) : (
                 <div className="trends-reels-grid">
                   {filteredReels.map((item) => (
-                    <TrendReelCard key={item.id} item={item} onOpen={setSelectedReel} />
+                    <TrendReelCard
+                      key={item.id}
+                      item={item}
+                      isPlaying={playingReelId === item.id}
+                      onOpen={handleOpenReel}
+                      onPlay={handlePlayReel}
+                    />
                   ))}
                 </div>
               )}
