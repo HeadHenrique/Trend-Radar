@@ -1,6 +1,69 @@
 # Changelog
 
 
+## 2026-10-05 — Cobertura nativa de mídia dos Reels
+
+### Backfill
+
+Estado inicial:
+
+- 67 Reels;
+- 43 cacheados;
+- 24 faltantes.
+
+Executions temporárias:
+
+- lote 1: execution 110 — 10 requests, 9 caches;
+- lote 2: execution 111 — 10 requests, 10 caches;
+- lote 3: execution 112 — 4 requests, 4 caches.
+
+Total:
+
+- 24 requests;
+- 24 créditos;
+- 23 caches concluídos;
+- 1 falha: DbLadvXBHYU / storage_upload_failed.
+
+Estado final:
+
+- 66/67 Reels cacheados;
+- 66 objetos no reel-media-cache;
+- 0 paths registrados sem objeto;
+- 0 snapshots de métricas criados pelo backfill.
+
+### Reel Plays Enrichment
+
+Publicado novo activeVersionId com reparo oportunista:
+
+- lê video_storage_path;
+- reaproveita data.xdt_shortcode_media.video_url;
+- chama cache-reel-media somente quando necessário;
+- não gera request extra ao ScrapeCreators;
+- cache é best effort e não bloqueia snapshots.
+
+Schedule e limites permanecem inalterados.
+
+### Frontend
+
+`CachedReelPlayer`:
+
+- player principal continua <video>;
+- InstagramReelEmbed deixou de ser fallback padrão;
+- inline e drawer usam fallback próprio:
+  - thumbnail;
+  - “Vídeo indisponível no momento”;
+  - “Abrir no Instagram”.
+
+### Verificação
+
+- 66/66 signed URLs geradas sem erro;
+- HTTP 200 + video/mp4 + byte ranges para:
+  - DbEfPaWp6mU;
+  - Dd9rGewjfVK;
+  - DXjjjjZB1SM;
+  - DeCkDcCFFJC.
+
+
 ## 2026-10-05 — Reel Plays Enrichment em produção
 
 ### n8n

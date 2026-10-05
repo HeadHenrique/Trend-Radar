@@ -1,5 +1,5 @@
+import { ExternalLink, PlayCircle } from 'lucide-react'
 import { useState } from 'react'
-import { InstagramReelEmbed } from './InstagramReelEmbed'
 
 interface CachedReelPlayerProps {
   playbackUrl: string | null
@@ -20,25 +20,56 @@ export function CachedReelPlayer({
 }: CachedReelPlayerProps) {
   const [nativeFailed, setNativeFailed] = useState(false)
   const useNative = Boolean(playbackUrl) && !nativeFailed
+  const wrapperClassName =
+    variant === 'inline'
+      ? 'cached-reel-player cached-reel-player--inline'
+      : 'cached-reel-player cached-reel-player--drawer'
 
   if (!useNative) {
     return (
-      <InstagramReelEmbed
-        permalink={permalink}
-        thumbnailUrl={thumbnailUrl}
-        authorUsername={authorUsername}
-        variant={variant === 'inline' ? 'inline' : 'drawer'}
-      />
+      <div
+        className={wrapperClassName + ' cached-reel-player--fallback'}
+        onClick={(event) => event.stopPropagation()}
+        onKeyDown={(event) => event.stopPropagation()}
+      >
+        {thumbnailUrl ? (
+          <img
+            className="cached-reel-fallback-image"
+            src={thumbnailUrl}
+            alt={authorUsername
+              ? 'Thumbnail do Reel de @' + authorUsername
+              : 'Thumbnail do Reel'}
+          />
+        ) : (
+          <div className="cached-reel-fallback-placeholder">
+            <PlayCircle size={34} />
+          </div>
+        )}
+
+        <div className="cached-reel-fallback-overlay">
+          <div className="cached-reel-fallback-message">
+            <PlayCircle size={18} />
+            <strong>Vídeo indisponível no momento</strong>
+          </div>
+
+          {permalink ? (
+            <a
+              className="secondary-button cached-reel-fallback-link"
+              href={permalink}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir no Instagram <ExternalLink size={13} />
+            </a>
+          ) : null}
+        </div>
+      </div>
     )
   }
 
   return (
     <div
-      className={
-        variant === 'inline'
-          ? 'cached-reel-player cached-reel-player--inline'
-          : 'cached-reel-player cached-reel-player--drawer'
-      }
+      className={wrapperClassName}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}
     >

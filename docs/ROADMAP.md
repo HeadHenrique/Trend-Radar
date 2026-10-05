@@ -643,3 +643,29 @@ Próximo passo:
 - auditar as primeiras executions automáticas;
 - medir cobertura de plays por mercado/perfil;
 - acompanhar consumo real de créditos.
+
+
+## Correção de cobertura de mídia dos Reels
+
+Concluído:
+
+- [x] diagnóstico 67 Reels / 43 cacheados / 24 faltantes;
+- [x] backfill em lotes 10 + 10 + 4;
+- [x] teto de 24 requests respeitado;
+- [x] 23 Reels recuperados;
+- [x] 1 falha não repetida automaticamente;
+- [x] 66/67 Reels com video_storage_path;
+- [x] 66 objetos reais no bucket;
+- [x] 66/66 signed URLs válidas;
+- [x] teste HTTP real em Raphael, Hélio, Leonardo e controle antigo;
+- [x] cache oportunista no Reel Plays Enrichment;
+- [x] zero requests extras ao ScrapeCreators para o reparo oportunista;
+- [x] snapshot de plays independente da mídia;
+- [x] Instagram embed removido do fallback inline;
+- [x] Instagram embed removido do fallback do drawer;
+- [x] fallback próprio Caliber Orbit.
+
+Pendência:
+
+- DbLadvXBHYU permanece sem cache por `storage_upload_failed`;
+- o enrichment automático poderá tentar repará-lo quando esse Reel for elegível novamente, usando a própria resposta já paga de plays.
