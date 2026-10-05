@@ -11,7 +11,7 @@ interface TrendsToolbarProps {
   period: TrendPeriod
   sort: TrendSort
   profiles: TrendProfileMetadata[]
-  viewsAvailable: boolean
+  playsAvailable: boolean
   onSearchChange: (value: string) => void
   onProfileChange: (value: string) => void
   onPeriodChange: (value: TrendPeriod) => void
@@ -24,7 +24,7 @@ export function TrendsToolbar({
   period,
   sort,
   profiles,
-  viewsAvailable,
+  playsAvailable,
   onSearchChange,
   onProfileChange,
   onPeriodChange,
@@ -81,8 +81,8 @@ export function TrendsToolbar({
           <option value="likes">Mais curtidos</option>
           <option value="comments">Mais comentados</option>
           <option value="recent">Mais recentes</option>
-          <option value="views" disabled={!viewsAvailable}>
-            Mais visualizados{viewsAvailable ? '' : ' — indisponível'}
+          <option value="plays" disabled={!playsAvailable}>
+            Mais reproduzidos{playsAvailable ? '' : ' — indisponível'}
           </option>
         </select>
         <ChevronDown size={13} />
