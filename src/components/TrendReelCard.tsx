@@ -2,19 +2,29 @@ import {
   Eye,
   Heart,
   MessageCircle,
+  Play,
+  Share2,
   UserRound,
 } from 'lucide-react'
-import type { KeyboardEvent } from 'react'
-import { formatMetric, formatPostDate } from '../features/posts/presentation'
+import type { KeyboardEvent, MouseEvent } from 'react'
+import { formatMetric, formatPostDate, formatPostDateTime } from '../features/posts/presentation'
 import { trendItemNicheLabel } from '../features/trends/presentation'
 import type { TrendReelItem } from '../features/trends/types'
+import { InstagramReelEmbed } from './InstagramReelEmbed'
 
 interface TrendReelCardProps {
   item: TrendReelItem
+  isPlaying: boolean
   onOpen: (item: TrendReelItem) => void
+  onPlay: (item: TrendReelItem) => void
 }
 
-export function TrendReelCard({ item, onOpen }: TrendReelCardProps) {
+export function TrendReelCard({
+  item,
+  isPlaying,
+  onOpen,
+  onPlay,
+}: TrendReelCardProps) {
   const { post, latestMetrics, rankingContext } = item
   const primaryAssociation =
     item.associations.find(
@@ -27,14 +37,20 @@ export function TrendReelCard({ item, onOpen }: TrendReelCardProps) {
   )
 
   function handleKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.target !== event.currentTarget) return
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault()
     onOpen(item)
   }
 
+  function handlePlay(event: MouseEvent<HTMLButtonElement>) {
+    event.stopPropagation()
+    onPlay(item)
+  }
+
   return (
     <article
-      className="trend-reel-card"
+      className={'trend-reel-card' + (isPlaying ? ' is-playing' : '')}
       role="button"
       tabIndex={0}
       aria-label={'Abrir análise do Reel ' + (post.instagramShortcode ?? post.id)}
@@ -42,33 +58,86 @@ export function TrendReelCard({ item, onOpen }: TrendReelCardProps) {
       onKeyDown={handleKeyDown}
     >
       <div className="trend-reel-media">
-        {post.thumbnailUrl ? (
-          <img
-            src={post.thumbnailUrl}
-            alt={item.author.instagramUsername
-              ? 'Thumbnail do Reel de @' + item.author.instagramUsername
-              : 'Thumbnail do Reel'}
-            loading="lazy"
+        {isPlaying ? (
+          <InstagramReelEmbed
+            permalink={post.permalink}
+            thumbnailUrl={post.thumbnailUrl}
+            authorUsername={item.author.instagramUsername}
+            variant="inline"
           />
         ) : (
-          <div className="post-media-placeholder trend-reel-placeholder">
-            <span>Reel sem thumbnail observada</span>
-          </div>
+          <>
+            {post.thumbnailUrl ? (
+              <img
+                src={post.thumbnailUrl}
+                alt={item.author.instagramUsername
+                  ? 'Thumbnail do Reel de @' + item.author.instagramUsername
+                  : 'Thumbnail do Reel'}
+                loading="lazy"
+              />
+            ) : (
+              <div className="post-media-placeholder trend-reel-placeholder">
+                <span>Reel sem thumbnail observada</span>
+              </div>
+            )}
+
+            <button
+              className="trend-reel-play-button"
+              type="button"
+              aria-label={
+                item.author.instagramUsername
+                  ? 'Reproduzir Reel de @' + item.author.instagramUsername
+                  : 'Reproduzir Reel'
+              }
+              onClick={handlePlay}
+            >
+              <Play size={25} fill="currentColor" />
+            </button>
+
+            <div className="trend-reel-media-badges">
+              <span className="trend-market-badge">{item.market === 'BR' ? 'Brasil' : 'EUA'}</span>
+              {hasCollab ? <span className="post-association-badge collaborator">Collab</span> : null}
+            </div>
+
+            <div className="trend-reel-traction-badges">
+              {rankingContext.recent ? <span>Recente</span> : null}
+              {rankingContext.highInteraction ? (
+                <span>Alta interação</span>
+              ) : rankingContext.aboveBaseline ? (
+                <span>Acima do baseline</span>
+              ) : null}
+            </div>
+          </>
         )}
+      </div>
 
-        <div className="trend-reel-media-badges">
-          <span className="trend-market-badge">{item.market === 'BR' ? 'Brasil' : 'EUA'}</span>
-          {hasCollab ? <span className="post-association-badge collaborator">Collab</span> : null}
+      <section className="trend-reel-primary-metrics" aria-label="Métricas da última observação">
+        <div className="trend-reel-primary-metric">
+          <Eye size={15} aria-hidden="true" />
+          <strong>{formatMetric(latestMetrics?.viewsCount ?? null)}</strong>
+          <span>Visualizações</span>
         </div>
+        <div className="trend-reel-primary-metric">
+          <Heart size={15} aria-hidden="true" />
+          <strong>{formatMetric(latestMetrics?.likesCount ?? null)}</strong>
+          <span>Curtidas</span>
+        </div>
+        <div className="trend-reel-primary-metric">
+          <Share2 size={15} aria-hidden="true" />
+          <strong>{formatMetric(latestMetrics?.sharesCount ?? null)}</strong>
+          <span>Compartilhamentos</span>
+        </div>
+        <div className="trend-reel-primary-metric">
+          <MessageCircle size={15} aria-hidden="true" />
+          <strong>{formatMetric(latestMetrics?.commentsCount ?? null)}</strong>
+          <span>Comentários</span>
+        </div>
+      </section>
 
-        <div className="trend-reel-traction-badges">
-          {rankingContext.recent ? <span>Recente</span> : null}
-          {rankingContext.highInteraction ? (
-            <span>Alta interação</span>
-          ) : rankingContext.aboveBaseline ? (
-            <span>Acima do baseline</span>
-          ) : null}
-        </div>
+      <div className="trend-reel-metrics-updated">
+        {latestMetrics
+          ? 'Atualizado em ' + formatPostDateTime(latestMetrics.capturedAt)
+          : 'Nenhuma observação de métricas disponível'}
       </div>
 
       <div className="trend-reel-card-body">
@@ -103,20 +172,6 @@ export function TrendReelCard({ item, onOpen }: TrendReelCardProps) {
             <span>@{primaryAssociation.profile.instagramUsername}</span>
           ) : null}
           {nicheLabel ? <span>{nicheLabel}</span> : <span>Categoria não informada</span>}
-        </div>
-
-        <div className="trend-reel-metrics" aria-label="Métricas da última observação">
-          <span title="Curtidas">
-            <Heart size={14} /> {formatMetric(latestMetrics?.likesCount ?? null)}
-          </span>
-          <span title="Comentários">
-            <MessageCircle size={14} /> {formatMetric(latestMetrics?.commentsCount ?? null)}
-          </span>
-          {latestMetrics?.viewsCount !== null && latestMetrics?.viewsCount !== undefined ? (
-            <span title="Views">
-              <Eye size={14} /> {formatMetric(latestMetrics.viewsCount)}
-            </span>
-          ) : null}
         </div>
       </div>
     </article>
