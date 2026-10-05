@@ -431,3 +431,86 @@ No momento da implementação:
 - shares observados = 0.
 
 NULL permanece —.
+
+
+## Correção — player nativo para todos os Reels recuperáveis
+
+Estado antes:
+
+- Reels canônicos: 67
+- com video_storage_path: 43
+- sem video_storage_path: 24
+
+Foi executado backfill controlado de mídia usando o endpoint já validado do ScrapeCreators:
+
+`GET /v1/instagram/post`
+
+A URL temporária `data.xdt_shortcode_media.video_url` foi usada somente em memória para alimentar:
+
+`cache-reel-media`
+
+Nunca foi persistida em `instagram_posts`.
+
+### Backfill
+
+Lote 1:
+
+- requests: 10
+- identidades válidas: 10
+- cacheados: 9
+- falha: DbLadvXBHYU → storage_upload_failed
+
+Lote 2:
+
+- requests: 10
+- cacheados: 10
+
+Lote 3:
+
+- requests: 4
+- cacheados: 4
+
+Total:
+
+- requests/créditos: 24
+- sucessos de cache: 23
+- falhas: 1
+- Reels cacheados: 66/67
+- faltantes: 1
+
+Nenhum post_metric_snapshot foi criado pelo backfill.
+
+### Signed URLs
+
+Foi validada geração de signed URLs para todos os 66 paths cacheados:
+
+- 66/66 URLs assinadas;
+- 0 erros;
+- 0 paths registrados sem objeto.
+
+Quatro MP4s foram testados por HTTP HEAD e responderam 200 / video/mp4 / Accept-Ranges: bytes:
+
+- Raphael: DbEfPaWp6mU
+- Hélio: Dd9rGewjfVK
+- Leonardo: DXjjjjZB1SM
+- controle já cacheado: DeCkDcCFFJC
+
+### Fallback visual
+
+`CachedReelPlayer` não carrega mais `InstagramReelEmbed` como fallback padrão.
+
+Agora:
+
+```text
+playbackUrl disponível
+→ <video>
+
+playbackUrl ausente ou player nativo falhou
+→ thumbnail
+→ “Vídeo indisponível no momento”
+→ “Abrir no Instagram”
+```
+
+Essa regra vale para inline e drawer.
+
+O componente `InstagramReelEmbed` permanece no repositório, mas não é mais utilizado pelo player padrão.
