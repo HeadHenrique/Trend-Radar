@@ -166,22 +166,58 @@ Preço anunciado:
 | Apify Reel Analytics | playCount | US$2,50/1K | Alto | só 12 recentes/perfil |
 | Apify Reels Scraper | videoPlayCount/igPlayCount/etc. | ~US$1–2,60/1K | Alto | Actor recente/comunidade |
 
-## Recomendação para próxima POC
+## POC ScrapeCreators — resultado 2026-10-05
 
-Ordem sugerida:
+A POC isolada com 5 Reels reais foi concluída com sucesso.
 
-1. ScrapeCreators Post/Reel Info em 3–5 Reels canônicos já conhecidos;
-2. Bright Data Reels dedicado em exatamente os mesmos Reels;
-3. comparar os valores com o Instagram visível manualmente;
-4. somente então escolher a semântica interna:
-   - views_count;
-   - ou plays_count.
+Resultado:
+
+- 5/5 requests bem-sucedidos;
+- 5 créditos consumidos;
+- 0 cache hits;
+- `video_play_count` numérico em 5/5;
+- nenhum `video_view_count` numérico separado;
+- nenhum contador de shares observado;
+- nenhuma métrica persistida.
+
+Valores observados:
+
+- DeFiYZsprp8: 44.490
+- DeEQ2SzOYLs: 7.807
+- Dd99oCuxVjK: 2.708
+- Dd9rGewjfVK: 1.972
+- DdK2zkTNQXJ: 2.501
+
+Classificação: **CASO A**.
+
+Conclusão atual:
+
+- ScrapeCreators é fonte validada para um `plays_count` candidate;
+- não preencher `views_count` automaticamente;
+- preferir label “Reproduções” até validar a semântica visualmente contra o Instagram;
+- manter shares como NULL.
+
+Detalhes completos em:
+
+`docs/REEL_PLAY_COUNT_POC.md`
+
+## Recomendação para próxima etapa
+
+A opção com melhor evidência prática agora é ScrapeCreators para `plays_count`.
+
+Antes de produção:
+
+1. validar manualmente 3–5 valores contra o contador público visível no Instagram;
+2. definir orçamento/frequência;
+3. criar enrichment separado;
+4. persistir somente `plays_count`;
+5. manter `views_count` e `shares_count` NULL até fonte/semântica própria.
 
 Não integrar duas fontes em produção ao mesmo tempo antes de definir precedência e semântica.
 
 ## Regra de segurança
 
-Nenhuma opção desta lista foi integrada nesta etapa.
+Nenhuma fonte de play/view foi integrada em produção nesta etapa.
 
 O Caliber Orbit continua exibindo:
 
