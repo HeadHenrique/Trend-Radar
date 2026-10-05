@@ -1,6 +1,70 @@
 # Changelog
 
 
+## 2026-10-05 — Reel Plays Enrichment em produção
+
+### n8n
+
+Criado e publicado:
+
+`Caliber Orbit — Reel Plays Enrichment`
+
+ID:
+
+`2rekO9lh9xpgH9lt`
+
+Schedule:
+
+- 00:20
+- 06:20
+- 12:20
+- 18:20
+- America/Sao_Paulo
+
+Limites:
+
+- manual = 5;
+- produção = 20.
+
+Provider:
+
+- ScrapeCreators;
+- `video_play_count → plays_count`;
+- views_count independente;
+- shares_count independente.
+
+### Validação manual
+
+Execution 108:
+
+- 5 requests;
+- 5 créditos;
+- 5 sucessos;
+- 5 snapshots;
+- run `81753ab7-528a-4fa1-b47d-128245daccce`;
+- status success;
+- received=5;
+- inserted=5;
+- updated=0;
+- views NULL;
+- shares NULL;
+- saves NULL;
+- zero duplicidades.
+
+### Frontend
+
+/trends:
+
+- Visualizações → Reproduções no card principal;
+- fonte = playsCount;
+- sort interno `plays`;
+- coverage baseado em playsCount;
+- drawer renomeia Plays para Reproduções;
+- Views continua sendo exibida somente quando viewsCount != NULL.
+
+Player/cache de mídia não foram alterados.
+
+
 ## 2026-10-04 — Player nativo de Reels + cache estável
 
 ### Database / Storage

@@ -1,5 +1,4 @@
 import {
-  Eye,
   Heart,
   MessageCircle,
   Play,
@@ -115,9 +114,9 @@ export function TrendReelCard({
 
       <section className="trend-reel-primary-metrics" aria-label="Métricas da última observação">
         <div className="trend-reel-primary-metric">
-          <Eye size={15} aria-hidden="true" />
-          <strong>{formatMetric(latestMetrics?.viewsCount ?? null)}</strong>
-          <span>Visualizações</span>
+          <Play size={15} aria-hidden="true" />
+          <strong>{formatMetric(latestMetrics?.playsCount ?? null)}</strong>
+          <span>Reproduções</span>
         </div>
         <div className="trend-reel-primary-metric">
           <Heart size={15} aria-hidden="true" />

@@ -149,3 +149,70 @@ Durante esta POC:
 A regra permanece:
 
 `NULL → —`
+
+
+## Continuação — validação de produção
+
+A POC original permanece inalterada.
+
+A rotina de produção foi validada posteriormente no workflow:
+
+`Caliber Orbit — Reel Plays Enrichment`
+
+ID:
+
+`2rekO9lh9xpgH9lt`
+
+### Tentativas técnicas antes da validação final
+
+Execution 106:
+
+- 0 requests ao ScrapeCreators;
+- falha local antes do provider;
+- 0 créditos;
+- 0 collection_runs;
+- 0 snapshots.
+
+Execution 107:
+
+- 5 requests;
+- 5 respostas válidas;
+- 5 créditos;
+- persistência falhou por `pairedItem Multiple matches found`;
+- 0 snapshots;
+- run encerrado como error técnico.
+
+Nenhuma segunda chamada foi feita durante a correção do pairing.
+
+### Validação final autorizada
+
+Execution 108:
+
+- 5 requests;
+- 5 sucessos;
+- 5 créditos;
+- identidade correta em 5/5;
+- 5 snapshots persistidos;
+- run success.
+
+Valores:
+
+| Shortcode | plays_count | likes_count | comments_count |
+|---|---:|---:|---:|
+| DIe1t5bN7oO | 196.472 | 4.929 | 7 |
+| DXfQ250BxAc | 264 | 11 | 0 |
+| DXjjjjZB1SM | 271 | 3 | 0 |
+| DXotEFOBHCw | 709 | 3 | 0 |
+| DXuLP_OBpuE | 314 | 3 | 0 |
+
+Em todos:
+
+- views_count = NULL;
+- shares_count = NULL;
+- saves_count = NULL.
+
+Conclusão:
+
+`video_play_count → plays_count → Reproduções`
+
+continua sendo a decisão semântica adotada.

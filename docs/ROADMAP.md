@@ -606,3 +606,40 @@ Pendências:
 - 25 Reels sem cache aguardam nova aparição em coleta automática ou resolução futura autorizada;
 - views/plays/shares permanecem sem fonte observada no pipeline atual;
 - avaliar POC pequena de segunda fonte antes de qualquer integração.
+
+
+## Reel Plays Enrichment
+
+Concluído:
+
+- [x] POC ScrapeCreators com video_play_count;
+- [x] workflow separado de produção;
+- [x] credential reutilizada sem hardcode;
+- [x] fila adaptativa por idade;
+- [x] limite manual 5;
+- [x] limite produção 20;
+- [x] guard de concorrência;
+- [x] no-op barato;
+- [x] validação de identidade;
+- [x] snapshots imutáveis;
+- [x] likes/comments da mesma observação;
+- [x] views/shares/saves preservados como NULL;
+- [x] execução manual 108 validada;
+- [x] schedule 00:20 / 06:20 / 12:20 / 18:20;
+- [x] /trends usa Reproduções;
+- [x] sort por playsCount;
+- [x] coverage por playsCount;
+- [x] drawer preserva plays e views separados.
+
+Teto operacional:
+
+- 4 executions/dia;
+- máximo 20 requests/execution;
+- teto absoluto 80 requests/dia;
+- aproximadamente 2.400 requests/mês antes de no-ops.
+
+Próximo passo:
+
+- auditar as primeiras executions automáticas;
+- medir cobertura de plays por mercado/perfil;
+- acompanhar consumo real de créditos.
