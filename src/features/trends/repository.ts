@@ -294,6 +294,28 @@ export const trendsRepository: TrendsRepository = {
     if (profilesResult.error) throw dataError(profilesResult.error)
     if (snapshotsResult.error) throw dataError(snapshotsResult.error)
 
+    const storagePaths = Array.from(new Set(
+      postsResult.data
+        .map((post) => post.video_storage_path)
+        .filter((path): path is string => Boolean(path)),
+    ))
+
+    const signedUrlsByPath = new Map<string, string>()
+
+    if (storagePaths.length) {
+      const signedResult = await supabase.storage
+        .from('reel-media-cache')
+        .createSignedUrls(storagePaths, 60 * 60)
+
+      if (!signedResult.error) {
+        signedResult.data.forEach((entry) => {
+          if (entry.path && entry.signedUrl) {
+            signedUrlsByPath.set(entry.path, entry.signedUrl)
+          }
+        })
+      }
+    }
+
     const profiles = profilesResult.data.map(toProfileMetadata)
     const profilesById = new Map(profiles.map((profile) => [profile.id, profile]))
 
@@ -379,6 +401,11 @@ export const trendsRepository: TrendsRepository = {
           profileMetadata: marketAssociations.map((association) => association.profile),
           primaryAssociationProfileId: primaryAssociation?.profile.id ?? null,
           latestMetrics,
+          videoStoragePath: post.video_storage_path,
+          videoCachedAt: post.video_cached_at,
+          videoPlaybackUrl: post.video_storage_path
+            ? signedUrlsByPath.get(post.video_storage_path) ?? null
+            : null,
           observedInteractions: observedInteractions(latestMetrics),
           rankingContext: buildRankingContext(post, primaryAssociation, metricsByProfile),
         })
