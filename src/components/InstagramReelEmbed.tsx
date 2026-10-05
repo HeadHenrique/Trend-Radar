@@ -15,6 +15,7 @@ interface InstagramReelEmbedProps {
   permalink: string | null
   thumbnailUrl: string | null
   authorUsername: string | null
+  variant?: 'drawer' | 'inline'
 }
 
 const SCRIPT_ID = 'instagram-embed-script'
@@ -23,6 +24,7 @@ export function InstagramReelEmbed({
   permalink,
   thumbnailUrl,
   authorUsername,
+  variant = 'drawer',
 }: InstagramReelEmbedProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'fallback'>(
@@ -74,8 +76,18 @@ export function InstagramReelEmbed({
     }
   }, [permalink])
 
+  const isInline = variant === 'inline'
+  const wrapperClassName = isInline
+    ? 'instagram-reel-player instagram-reel-player--inline'
+    : 'instagram-reel-player'
+
   return (
-    <div className="instagram-reel-player" ref={containerRef}>
+    <div
+      className={wrapperClassName}
+      ref={containerRef}
+      onClick={(event) => event.stopPropagation()}
+      onKeyDown={(event) => event.stopPropagation()}
+    >
       {permalink && status !== 'fallback' ? (
         <blockquote
           className="instagram-media"
@@ -95,7 +107,37 @@ export function InstagramReelEmbed({
         </div>
       ) : null}
 
-      {status === 'fallback' ? (
+      {status === 'fallback' && isInline ? (
+        <div className="instagram-reel-fallback instagram-reel-fallback--inline">
+          {thumbnailUrl ? (
+            <img
+              src={thumbnailUrl}
+              alt={authorUsername ? 'Thumbnail do Reel de @' + authorUsername : 'Thumbnail do Reel'}
+            />
+          ) : (
+            <div className="instagram-reel-fallback-placeholder">
+              <PlayCircle size={30} />
+              <span>Player indisponível</span>
+            </div>
+          )}
+
+          <div className="instagram-reel-fallback-overlay">
+            <strong>Player indisponível</strong>
+            {permalink ? (
+              <a
+                className="secondary-button instagram-reel-open-inline"
+                href={permalink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Abrir no Instagram <ExternalLink size={13} />
+              </a>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      {status === 'fallback' && !isInline ? (
         <div className="instagram-reel-fallback">
           {thumbnailUrl ? (
             <img
@@ -116,7 +158,7 @@ export function InstagramReelEmbed({
         </div>
       ) : null}
 
-      {permalink ? (
+      {permalink && !isInline ? (
         <a
           className="secondary-button instagram-reel-open"
           href={permalink}
