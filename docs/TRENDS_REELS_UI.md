@@ -514,3 +514,50 @@ playbackUrl ausente ou player nativo falhou
 Essa regra vale para inline e drawer.
 
 O componente `InstagramReelEmbed` permanece no repositório, mas não é mais utilizado pelo player padrão.
+
+
+## Reproduções — latest observed value
+
+O bloco `Reproduções` continua usando:
+
+`latestMetrics.playsCount`
+
+A diferença é semântica:
+
+`latestMetrics` agora agrega a observação mais recente não-NULL por métrica.
+
+Exemplo:
+
+```text
+ScrapeCreators:
+plays = 10.000
+likes = 500
+
+Bright Data posterior:
+plays = NULL
+likes = 510
+```
+
+Resultado da UI:
+
+```text
+plays = 10.000
+likes = 510
+```
+
+O mesmo vale para:
+
+- comments;
+- views;
+- shares;
+- saves.
+
+NULL posterior nunca apaga uma observação válida anterior.
+
+Após o backfill controlado:
+
+- 66/67 Reels possuem plays_count;
+- cobertura = 98,51%;
+- único Reel sem plays: DeEQ2SzOYLs.
+
+`Mais reproduzidos` usa o `playsCount` agregado, portanto não cai para NULL por causa de snapshots posteriores de outro provider.
