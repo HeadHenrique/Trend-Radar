@@ -98,6 +98,8 @@ export type Database = {
           published_at: string | null
           thumbnail_url: string | null
           updated_at: string
+          video_cached_at: string | null
+          video_storage_path: string | null
         }
         Insert: {
           audio_name?: string | null
@@ -117,6 +119,8 @@ export type Database = {
           published_at?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          video_cached_at?: string | null
+          video_storage_path?: string | null
         }
         Update: {
           audio_name?: string | null
@@ -136,6 +140,8 @@ export type Database = {
           published_at?: string | null
           thumbnail_url?: string | null
           updated_at?: string
+          video_cached_at?: string | null
+          video_storage_path?: string | null
         }
         Relationships: []
       }
