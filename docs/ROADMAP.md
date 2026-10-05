@@ -669,3 +669,34 @@ Pendência:
 
 - DbLadvXBHYU permanece sem cache por `storage_upload_failed`;
 - o enrichment automático poderá tentar repará-lo quando esse Reel for elegível novamente, usando a própria resposta já paga de plays.
+
+
+## Correção definitiva de Reproduções
+
+Concluído:
+
+- [x] agregação latest-non-null por métrica;
+- [x] helper compartilhado entre posts e trends;
+- [x] plays NULL posterior não apaga valor anterior;
+- [x] likes/comments/views/shares/saves com mesma regra;
+- [x] zero real preservado;
+- [x] timestamp agregado coerente;
+- [x] backfill baseado em ausência histórica de plays, não última row;
+- [x] lote 1: 20/20;
+- [x] lote 2: 20/20;
+- [x] lote 3: 20/20;
+- [x] lote 4: 1/2;
+- [x] 62 requests no teto autorizado;
+- [x] 61 créditos;
+- [x] 61 snapshots inseridos;
+- [x] cobertura final 66/67 = 98,51%;
+- [x] zero duplicidades;
+- [x] teste de regressão latest-non-null em memória;
+- [x] nenhuma alteração de schema;
+- [x] schedule normal de enrichment preservado.
+
+Pendência:
+
+- DeEQ2SzOYLs continua sem plays_count por provider_unsuccessful;
+- não repetir automaticamente;
+- próxima observação normal poderá resolver isso no futuro.
