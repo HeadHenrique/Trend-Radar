@@ -89,15 +89,15 @@ export default function Trends() {
     [dataset.items, market],
   )
 
-  const viewsAvailable = useMemo(
-    () => marketReels.some((item) => item.latestMetrics?.viewsCount !== null &&
-      item.latestMetrics?.viewsCount !== undefined),
+  const playsAvailable = useMemo(
+    () => marketReels.some((item) => item.latestMetrics?.playsCount !== null &&
+      item.latestMetrics?.playsCount !== undefined),
     [marketReels],
   )
 
   useEffect(() => {
-    if (!viewsAvailable && sort === 'views') setSort('highlight')
-  }, [sort, viewsAvailable])
+    if (!playsAvailable && sort === 'plays') setSort('highlight')
+  }, [sort, playsAvailable])
 
   const filteredReels = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -213,7 +213,7 @@ export default function Trends() {
             period={period}
             sort={sort}
             profiles={marketProfiles}
-            viewsAvailable={viewsAvailable}
+            playsAvailable={playsAvailable}
             onSearchChange={setSearch}
             onProfileChange={setProfileId}
             onPeriodChange={setPeriod}
@@ -259,7 +259,7 @@ export default function Trends() {
                   <h2>{market === 'BR' ? 'Reels do Brasil' : 'Reels dos EUA'}</h2>
                 </div>
                 <div className="trends-coverage-note">
-                  <span>{viewsAvailable ? 'Views disponíveis no recorte' : 'Views ainda indisponíveis'}</span>
+                  <span>{playsAvailable ? 'Reproduções disponíveis' : 'Reproduções ainda indisponíveis'}</span>
                 </div>
               </div>
 
